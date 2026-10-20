@@ -4,3 +4,5 @@
 // As committed, both are empty, so the game runs offline, saving only in the browser.
 export const SUPABASE_URL = '';
 export const SUPABASE_KEY = '';
+// For testing: how many times faster than real time the time of day runs (see time.js).
+export const TIME_SPEED = 1;

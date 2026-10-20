@@ -39,7 +39,7 @@ const NO_STAR = makeSprite(STAR_ART.map((r) => r.replaceAll('f', 'q')), PALETTE,
 /** Names of the maps (and boat trips) where a species can turn up, or a nemesis perches. */
 function habitats(birdId) {
   const perches = Object.values(NEMESES).map((n) => n.bird === birdId && n.map);
-  const maps = MAP_IDS.map(getMap).filter((m) => m.birds?.table.includes(birdId) || perches.includes(m.id));
+  const maps = MAP_IDS.map(getMap).filter((m) => m.birds?.table.includes(birdId) || m.birds?.rare?.includes(birdId) || perches.includes(m.id));
   const voyages = Object.values(VOYAGES).filter((v) => v.table.includes(birdId) || v.rare?.includes(birdId));
   return [...maps, ...voyages].map((place) => place.name);
 }

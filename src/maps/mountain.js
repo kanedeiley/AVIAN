@@ -45,5 +45,5 @@ export default {
     { x: 11, y: 20, text: ['EAGLE PEAK TRAIL', 'Summit straight up. Mind the cliffs, and the eagles!'] },
     { x: 13, y: 2, text: ['SUMMIT OF EAGLE PEAK', 'Far below, you can just make out the shrine stones and the village roofs.'] },
   ],
-  birds: { count: 6, table: ['raven', 'raven', 'ptarmigan', 'ptarmigan', 'wren', 'eagle'] },
+  birds: { count: 6, table: ['raven', 'raven', 'ptarmigan', 'ptarmigan', 'wren'], rare: ['eagle'], rareChance: 0.15 },
 };

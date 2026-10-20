@@ -1265,8 +1265,8 @@ export const FARM_DEFS = {
   slateEave:      { art: recolor(METAL_EAVE, LEISTER_ROOF), solid: true },
   whiteSiding:    { art: leister(CLAPBOARD), solid: true },
   whiteSidingBase: { art: leister(CLAPBOARD_BASE), solid: true },
-  whiteWindow:    { art: leister(stamp(CLAPBOARD, FARM_WINDOW)), solid: true },
-  whiteWindowBase: { art: leister(stamp(CLAPBOARD_BASE, FARM_WINDOW)), solid: true },
+  whiteWindow:    { art: leister(stamp(CLAPBOARD, FARM_WINDOW)), solid: true, glow: 1 },
+  whiteWindowBase: { art: leister(stamp(CLAPBOARD_BASE, FARM_WINDOW)), solid: true, glow: 1 },
   leisterDoor:    { art: leister(stamp(CLAPBOARD_BASE, FARM_DOOR)) },  // walkable: the map puts a warp on it
 
   // The grandparents' farmhouse: butter yellow, with a red roof and a blue door.
@@ -1277,8 +1277,8 @@ export const FARM_DEFS = {
   redEave:        { art: recolor(METAL_EAVE, GRANDPARENTS_ROOF), solid: true },
   yellowSiding:   { art: grand(CLAPBOARD), solid: true },
   yellowSidingBase: { art: grand(CLAPBOARD_BASE), solid: true },
-  yellowWindow:   { art: grand(stamp(CLAPBOARD, FARM_WINDOW)), solid: true },
-  yellowWindowBase: { art: grand(stamp(CLAPBOARD_BASE, FARM_WINDOW)), solid: true },
+  yellowWindow:   { art: grand(stamp(CLAPBOARD, FARM_WINDOW)), solid: true, glow: 1 },
+  yellowWindowBase: { art: grand(stamp(CLAPBOARD_BASE, FARM_WINDOW)), solid: true, glow: 1 },
   grandparentsDoor: { art: grand(stamp(CLAPBOARD_BASE, stamp(recolor(FARM_DOOR, { p: 'u', P: 'U' }), WREATH))) },
 
   porchPost:   { art: PORCH_POST, base: 'porch', solid: true },
@@ -1292,7 +1292,7 @@ export const FARM_DEFS = {
   barnBoards:  { art: BARN_BOARDS, solid: true },
   hayloft:     { art: HAYLOFT, solid: true },
   barnWall:    { art: BARN_WALL, solid: true },
-  barnWindow:  { art: stamp(BARN_WALL, BARN_WINDOW), solid: true },
+  barnWindow:  { art: stamp(BARN_WALL, BARN_WINDOW), solid: true, glow: 1 },
   barnDoorLeft:  { art: BARN_DOOR, solid: true },   // closed: give it sign text
   barnDoorRight: { art: mirror(BARN_DOOR), solid: true },
 
@@ -1307,15 +1307,15 @@ export const FARM_DEFS = {
   // The chicken coop (red roof) and the goats' shed.
   coopWall:    { art: COOP_WALL, base: 'dirt', solid: true },
   coopDoor:    { art: stamp(COOP_WALL, COOP_DOOR), base: 'dirt', solid: true },
-  coopWindow:  { art: stamp(COOP_WALL, COOP_WINDOW), base: 'dirt', solid: true },
+  coopWindow:  { art: stamp(COOP_WALL, COOP_WINDOW), base: 'dirt', solid: true, glow: 1 },
   goatShed:    { art: SHED, base: 'dirt', solid: true },
 
   // Inside both farmhouses.
   planks:      { art: PLANKS },
   beams:       { art: BEAMS, solid: true },
   braidedRug:  { art: RAG_RUG },
-  bedHead:     { art: BED_HEAD, base: 'planks', solid: true },
-  bedFoot:     { art: BED_FOOT, base: 'planks', solid: true },
+  bedHead:     { art: BED_HEAD, base: 'planks', solid: true, rest: true },
+  bedFoot:     { art: BED_FOOT, base: 'planks', solid: true, rest: true },
   farmTableLeft:  { art: TABLE_LEFT, base: 'planks', solid: true },
   farmTableRight: { art: mirror(TABLE_LEFT), base: 'planks', solid: true },
   farmTable:   { art: TABLE_MIDDLE, base: 'planks', solid: true },
@@ -1331,7 +1331,7 @@ export const FARM_DEFS = {
 
   // The Leisters' walls: white shiplap over navy beadboard.
   leisterWall:    { art: leisterWall, solid: true },
-  leisterWindow:  { art: stamp(leisterWall, GINGHAM_WINDOW), solid: true },
+  leisterWindow:  { art: stamp(leisterWall, GINGHAM_WINDOW), solid: true, pane: true },
   leisterHooks:   { art: stamp(leisterWall, COAT_HOOKS), solid: true },
   leisterHutch:   { art: stamp(leisterWall, HUTCH_TOP), solid: true },
   leisterPipe:    { art: stamp(leisterWall, STOVE_PIPE), solid: true },
@@ -1344,7 +1344,7 @@ export const FARM_DEFS = {
 
   // The grandparents' walls: white shiplap over sage beadboard, blue gingham curtains.
   grandWall:      { art: grandWall, solid: true },
-  grandWindow:    { art: stamp(grandWall, recolor(GINGHAM_WINDOW, { p: 'u' })), solid: true },
+  grandWindow:    { art: stamp(grandWall, recolor(GINGHAM_WINDOW, { p: 'u' })), solid: true, pane: true },
   grandHooks:     { art: stamp(grandWall, recolor(COAT_HOOKS, { p: 'u', P: 'U' })), solid: true },
   grandHutch:     { art: stamp(grandWall, HUTCH_TOP), solid: true },
   grandMantel:    { art: stamp(grandWall, CHIMNEY_BREAST), solid: true },

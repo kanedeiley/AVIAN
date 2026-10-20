@@ -1,3 +1,5 @@
 # Local settings (copy .env.example to make one)
 .env
 .DS_Store
+
+/docs

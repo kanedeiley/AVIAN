@@ -22,6 +22,11 @@ device pixels so the pixel art stays sharp. Add it to your home screen to play f
 
 Dev shortcut: `http://localhost:8000/?map=house&x=4&y=6` starts you on any map.
 
+**Time of day and weather** follow the real clock (`src/time.js`). To test them,
+`?hour=19&weather=rain` starts the clock at that hour with that weather, and
+`TIME_SPEED=720` in `.env` (with `serve.py`) runs a whole day in 2 minutes, cycling
+the weather one per in-game day.
+
 ## Online saves (Supabase)
 
 With Supabase keys in `.env`, the game opens on a sign-in screen (email + password).

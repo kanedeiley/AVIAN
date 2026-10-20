@@ -14,7 +14,7 @@ export function regionSpecies(regionId) {
   const maps = MAP_IDS.map(getMap).filter((m) => m.region === regionId && m.birds);
   const voyages = Object.values(VOYAGES).filter((v) => v.region === regionId);
   return new Set([
-    ...maps.flatMap((m) => m.birds.table),
+    ...maps.flatMap((m) => [...m.birds.table, ...(m.birds.rare ?? [])]),
     ...voyages.flatMap((v) => [...v.table, ...(v.rare ?? [])]),
   ]);
 }

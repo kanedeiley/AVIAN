@@ -1,5 +1,6 @@
-# Writes src/cloudConfig.js from SUPABASE_URL and SUPABASE_KEY, taken from the
-# environment or, failing that, from a .env file in the project root.
+# Writes src/cloudConfig.js from SUPABASE_URL and SUPABASE_KEY (and the testing
+# setting TIME_SPEED), taken from the environment or, failing that, from a
+# .env file in the project root.
 #   serve.py uses this to serve your local .env values to the game.
 #   The deploy workflow runs it to build the live site's config:
 #     python3 scripts/cloud_config.py > _site/src/cloudConfig.js
@@ -8,7 +9,7 @@ import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-NAMES = ("SUPABASE_URL", "SUPABASE_KEY")
+NAMES = ("SUPABASE_URL", "SUPABASE_KEY", "TIME_SPEED")
 
 
 def read_env_file(path):
@@ -37,6 +38,7 @@ def cloud_config_js():
         "// The committed src/cloudConfig.js is the empty, offline version.\n"
         f"export const SUPABASE_URL = {json.dumps(s['SUPABASE_URL'])};\n"
         f"export const SUPABASE_KEY = {json.dumps(s['SUPABASE_KEY'])};\n"
+        f"export const TIME_SPEED = {json.dumps(float(s['TIME_SPEED'] or 1))};\n"
     )
 
 
