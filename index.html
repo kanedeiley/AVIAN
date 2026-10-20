@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#101018">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,7 +12,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
     html, body { margin: 0; height: 100%; background: #101018; overscroll-behavior: none; }
-    body { font: 10px/1.6 "Press Start 2P", monospace; color: #f8f8f8; touch-action: manipulation; }
+    /* No double-tap zoom anywhere: rapid taps on the controls are normal play. */
+    html, body { touch-action: manipulation; }
+    body { font: 10px/1.6 "Press Start 2P", monospace; color: #f8f8f8; }
     canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; }
     [hidden] { display: none !important; }
 
@@ -31,7 +33,6 @@
       #controls, #controls * { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
                                -webkit-tap-highlight-color: transparent; touch-action: none; }
       #app { grid-template: "screen screen" minmax(0, 1fr) "dpad ab" auto "menu menu" auto "account account" auto / 1fr 1fr; }
-      #signin-form input { font-size: 16px; } /* smaller text makes iOS zoom in on the form */
     }
     /* Portrait phones: the screen, with the controls right under it, centered
        together like a handheld. The screen keeps the game's 3:2 shape. */
@@ -72,7 +73,8 @@
                    display: flex; flex-direction: column; gap: 10px; }
     #signin-form h1 { margin: 0; font-size: 16px; text-align: center; }
     #signin-form p { margin: 0; }
-    #signin-form input { font: inherit; padding: 8px; border: 2px solid #283050; background: #fff; color: #283050; }
+    /* 16px or more, or iOS zooms in on the field when you type. */
+    #signin-form input { font: inherit; font-size: 16px; padding: 8px; border: 2px solid #283050; background: #fff; color: #283050; }
     #signin-form .row { display: flex; gap: 8px; }
     #signin-form button { flex: 1; }
     button { font: inherit; padding: 8px; border: 2px solid #283050; border-radius: 2px; background: #f0b030;
