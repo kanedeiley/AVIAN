@@ -6,7 +6,7 @@ create table if not exists public.saves (
   user_id    uuid primary key references auth.users (id) on delete cascade,
   journal    jsonb not null default '{}'::jsonb check (jsonb_typeof(journal) = 'object'), -- bird id -> best photo stars (1-3)
   money      integer not null default 0 check (money >= 0),                              -- dollars, for boat fares
-  progress   jsonb not null default '{}'::jsonb check (jsonb_typeof(progress) = 'object'), -- story flags + beaten nemesis birds
+  progress   jsonb not null default '{}'::jsonb check (jsonb_typeof(progress) = 'object'), -- story flags, beaten nemesis birds, found collectibles
   location   jsonb,                                                                          -- where you last stood: { map, x, y, facing, at }
   updated_at timestamptz not null default now()
 );

@@ -71,9 +71,10 @@ export function saveMoney(money) {
  * The saved story progress, or a fresh one:
  *   flags    story beats you've reached, e.g. { metHannah: true } (see data/flags.js)
  *   nemeses  nemesis birds you've beaten -> stars of the winning photo (see data/nemeses.js)
+ *   collectibles  collectibles you've found, e.g. { jacobsDoobie: true } (see data/collectibles.js)
  */
 export function loadProgress() {
-  const fresh = { flags: {}, nemeses: {} };
+  const fresh = { flags: {}, nemeses: {}, collectibles: {} };
   try {
     const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY));
     return saved && typeof saved === 'object' ? { ...fresh, ...saved } : fresh;

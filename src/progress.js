@@ -1,10 +1,11 @@
 // Story progress: what you've done (flags), which nemesis birds you've beaten,
-// and how many of each region's birds you've photographed. It lives in
+// which collectibles you've found, and how many of each region's birds you've photographed. It lives in
 // game.progress and is saved with save.js (and online, like the journal).
 import { REGIONS } from './data/regions.js';
 import { FLAGS } from './data/flags.js';
 import { NEMESES } from './data/nemeses.js';
 import { VOYAGES } from './data/voyages.js';
+import { COLLECTIBLES } from './data/collectibles.js';
 import { MAP_IDS, getMap } from './maps/index.js';
 import { saveProgress } from './save.js';
 
@@ -57,3 +58,14 @@ export function recordNemesis(game, id, stars) {
   saveProgress(game.progress);
 }
 
+/** The collectibles still hidden on this map: [{ id, ...entry }]. */
+export function collectiblesOn(game, mapId) {
+  return Object.entries(COLLECTIBLES)
+    .filter(([id, c]) => c.map === mapId && !game.progress.collectibles[id])
+    .map(([id, c]) => ({ id, ...c }));
+}
+
+export function collect(game, id) {
+  game.progress.collectibles[id] = true;
+  saveProgress(game.progress);
+}
