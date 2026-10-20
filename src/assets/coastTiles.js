@@ -576,6 +576,102 @@ const TOUR_SHIP = [
   '................................................................',
 ];
 
+// ---------- the van on the beach ----------
+
+// A grey Sprinter camper van parked on the sand, 3x2 tiles, facing right: a
+// yellow-orange surfboard on the roof, and the sliding door always open, showing
+// string lights, a cabinet and the end of the bed. Cut into tiles by bigProp().
+const SPRINTER_VAN = [
+  '.......kkkkkkkkkkkkkkkkkkkkkkk..................',
+  '......kaafffffaaaaeeaaaaaaaaaaak................',
+  '.....kAAAAAAAAAAAAeeAAAAAAAAAAAAkk..............',
+  '.kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk..........',
+  '.kwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwqk.........',
+  '.kqqqqqqqqqqqqqqqqqqqqqqqqqqqqqkkkkkkkck........',
+  '.kqkkkkkkqqqqqqkQQkkkkkkkkkkkkkkwccckkcck.......',
+  '.kqkwccckqqqqqqkQQkfFfFfFfFfFfkkcccckkccck......',
+  '.kqkcccckqqqqqqkQQkFbFpFbFpFbFkkcccckkcccck.....',
+  '.kqkcccckqqqqqqkQQkFFFFFFFFFFFkkcccckkccccck....',
+  '.kqkkkkkkqqqqqqkQQkFFFFFFFFFFFkkkkkkkkcccccck...',
+  '.kqqqqqqqqqqqqqkQQkFFFFFFFFFFFkqqqqqqqqqqqqqqk..',
+  '.ppqqqqqqqqqqqqkQQkFFFFFFFFFFFkqqqqqqqqqqqqqqkk.',
+  '.ppqqqqqqqqqqqqkkQkNNNNNFFFFFFkqqqkkkqqqqqqqqqk.',
+  '.ppqqqqqqqqqqqqkQQknnnnnFFFFFFkqqqqqqqqqqqqqqff.',
+  '.ppqqqqqqqqqqqqkQQknnfnnFFFFFFkqqqqqqqqqqqqqqff.',
+  '.kqqqqqqqqqqqqqkQQknnnnnFFOOOOkqqqqqqqqqqqqqqqk.',
+  '.kqqqqqqqqqqqqqkQQknnnnnFFooookqqqqqqqqqqqqqqqe.',
+  '.kqqqqqqqqqqqqqkQQkNNNNNFFooookqqqqqqqqqqqqqqqk.',
+  '.kqqqqqqqqqqqqqkQQknnnnnFFooookqqqqqqqqqqqqqqqk.',
+  '.kkkkkkkkkkkkkkkkkknnfnnFFooookkkkkkkkkkkkkkkkk.',
+  '.kQQQQQQQQQQQQQQQQknnnnnFFooookQQQQQQQQQQQQQQQk.',
+  '.kQQQQQQkkkkkQQQQQknnnnnFFooookQQQQQkkkkkQQQQQk.',
+  '.kQQQQQkkkkkkkQQQQknnnnnFFooookQQQQkkkkkkkQQQQk.',
+  '.kQQQQkkkkkkkkkQQQkNNNNNNNNNNNkQQQkkkkkkkkkQQQk.',
+  '.kkkkkkkkqqqkkkkkknnnnnnnnnnnnnkkkkkkqqqkkkkkkk.',
+  '...JJJkkkqQqkkkJJJJJJJJJJJJJJJJJJJkkkqQqkkkJJ...',
+  '...JJJkkkqqqkkkJJJJJJJJJJJJJJJJJJJkkkqqqkkkJJ...',
+  '...JJJkkkkkkkkkJJJJJJJJJJJJJJJJJJJkkkkkkkkkJJ...',
+  '.......kkkkkkk.....................kkkkkkk......',
+  '........kkkkk.......................kkkkk.......',
+  '................................................',
+];
+
+// A campfire in a ring of stones; three frames of flickering flame.
+const CAMPFIRE_A = [
+  '................',
+  '.......p........',
+  '......pp....p...',
+  '......pep..pp...',
+  '.....peep..pep..',
+  '....pefep.peep..',
+  '....peffepefep..',
+  '....pefffeffep..',
+  '....pefwwffep...',
+  '.....pefwfep....',
+  '......peeep.....',
+  '...qQ.......Qq..',
+  '..qQnNNnnNNnNQq.',
+  '..QkNnnNNnnNkQ..',
+  '...qQqQqQqQqQq..',
+  '................',
+];
+const CAMPFIRE_B = [
+  '................',
+  '........p.......',
+  '...p....pp......',
+  '...pp..pep......',
+  '..pep..peep.....',
+  '..peep.pefep....',
+  '..pefepeffep....',
+  '...peffefffep...',
+  '....pefwwffep...',
+  '.....pefwfep....',
+  '......peeep.....',
+  '...qQ.......Qq..',
+  '..qQnNNnnNNnNQq.',
+  '..QkNnnNNnnNkQ..',
+  '...qQqQqQqQqQq..',
+  '................',
+];
+const CAMPFIRE_C = [
+  '................',
+  '................',
+  '.......p........',
+  '......ppp.......',
+  '.....peep..p....',
+  '....peefep.pp...',
+  '....pefffeepp...',
+  '...peffwfffep...',
+  '...pefwwwffep...',
+  '....pefwfeep....',
+  '......peeep.....',
+  '...qQ.......Qq..',
+  '..qQnNNnnNNnNQq.',
+  '..QkNnnNNnnNkQ..',
+  '...qQqQqQqQqQq..',
+  '................',
+];
+
 // ---------- the boutique ----------
 // White plaster, a pink roof with a pediment, a signboard, and a striped
 // awning over display windows. It's the town's centerpiece, so it gets its
@@ -941,6 +1037,7 @@ export const COAST_DEFS = {
   shoreNorth: { frames: [flipY(SHORE), flipY(shiftX(SHORE, 4))], frameTime: 0.7 },
   beachUmbrella: { art: recolor(BEACH_UMBRELLA, { p: 'u', P: 'U' }), base: 'sand', solid: true },
   towel: { art: TOWEL, base: 'sand' },
+  campfire: { frames: [CAMPFIRE_A, CAMPFIRE_B, CAMPFIRE_C], frameTime: 0.15, base: 'sand', solid: true },
   boat: { art: BOAT, base: 'water', solid: true },
 
   ...BOUTIQUE_DEFS,
@@ -953,20 +1050,28 @@ export const COAST_DEFS = {
 // PROPS[id] is the grid of tile ids, rows of columns.
 export const PROPS = {};
 
-function bigProp(id, art, def) {
+/**
+ * Cut `art` into tiles that all get `def`, plus `overrides` for single tiles by
+ * `${col}_${row}` (e.g. { '1_1': { solid: false } } for a doorway you can walk into).
+ * The tiles go in `defs`: COAST_DEFS, or another tile file's table.
+ */
+export function bigProp(id, art, def, overrides = {}, defs = COAST_DEFS) {
   const cols = art[0].length / 16;
   PROPS[id] = [];
   for (let row = 0; row < art.length / 16; row++) {
     PROPS[id].push([]);
     for (let col = 0; col < cols; col++) {
       const tileId = `${id}_${col}_${row}`;
-      COAST_DEFS[tileId] = { ...def, art: art.slice(row * 16, row * 16 + 16).map((r) => r.slice(col * 16, col * 16 + 16)) };
+      const tileArt = art.slice(row * 16, row * 16 + 16).map((r) => r.slice(col * 16, col * 16 + 16));
+      defs[tileId] = { ...def, ...overrides[`${col}_${row}`], art: tileArt };
       PROPS[id][row].push(tileId);
     }
   }
 }
 
 bigProp('tourShip', TOUR_SHIP, { base: 'water', solid: true });
+// The van's open side door (middle of the bottom row) is walkable: the map puts a warp on it.
+bigProp('sprinterVan', SPRINTER_VAN, { base: 'sand', solid: true }, { '1_1': { solid: false } });
 
 for (const [color, swaps] of Object.entries(PLASTERS)) {
   for (const [part, { art, walk }] of Object.entries(BUILDING_PARTS)) {

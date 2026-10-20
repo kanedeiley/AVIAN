@@ -18,6 +18,7 @@ import { makeSprite, shiftX, layer, recolor, stamp } from '../gfx/sprite.js';
 import { COAST_DEFS } from './coastTiles.js';
 import { HOUSE_DEFS } from './houseTiles.js';
 import { CAVE_DEFS } from './caveTiles.js';
+import { VAN_DEFS } from './vanTiles.js';
 
 // ---------- outdoor ----------
 
@@ -684,6 +685,7 @@ const DEFS = {
   ...COAST_DEFS, // the Italian seaside town: see coastTiles.js
   ...HOUSE_DEFS, // inside Hannah's house: see houseTiles.js
   ...CAVE_DEFS,  // Echo Cave and Eagle Peak: see caveTiles.js
+  ...VAN_DEFS,   // inside the van on Hannahville beach: see vanTiles.js
 
   floor:     { art: FLOOR },
   innerWall: { art: INNER_WALL, solid: true },

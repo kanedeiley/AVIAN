@@ -99,6 +99,7 @@ export default {
     '}': 'towel',
     '(': 'violetBush',
     ')': 'whiteBush',
+    'B': 'campfire',
   },
   rows: [
     'TTTTTTTTTTTTTTTTTTTTMTTTTTTTTTTTTTTTTTTT',
@@ -131,9 +132,9 @@ export default {
     '2..!@!@5@!@!..22w*1.u*Y*2*SVQVSuIGIEIGI.',
     '>C>400000004>>>>b>>>>>>>>>}>>>b>>>>>>}>>',
     '>>>>>}>>>}>>>b>>>}>>>>>>>b>>>>>}>>>>b>>>',
-    '????????????????????=???????????????????',
-    '~~~~~~~~~~~~~~~~d~~~=~~~~~~~~~~~~d~~~~~~',
-    '~~~~~~~~~d~~~~~~~~~~=~~~~~d~~~~~~~~~~~~~',
+    '????????????????????=?????>>>>>>>B>>>>>>',
+    '~~~~~~~~~~~~~~~~d~~~=~~~~~??????????????',
+    '~~~~~~~~~d~~~~~~~~~~=~~~~~d~~~~~~~~~d~~~',
     '~~~~~~~~~~~~~~~~~~~~=~~~~~~~~~~~~~~~~~~~',
   ],
   warps: [
@@ -141,6 +142,8 @@ export default {
     { x: 20, y: 0, to: 'village', toX: 16, toY: 17, facing: 'up' },
     // Hannah's front door. Arrive inside just above the doormat, facing up.
     { x: 7, y: 27, to: 'hannahHouse', toX: 7, toY: 7, facing: 'up' },
+    // The van's open side door. Arrive inside, in the gap between the cabinets.
+    { x: 37, y: 29, to: 'van', toX: 5, toY: 3, facing: 'up' },
   ],
   signs: [
     { x: 20, y: 15, text: ['HANNAHVILLE BOUTIQUE', 'Sun hats, sandals and binocular straps.', 'A note on the door: OUT BIRDWATCHING! Back by sundown.'] },
@@ -158,13 +161,24 @@ export default {
     { x: 32, y: 15, text: ['CASA ESPOSITO', 'A cat watches you from the window.'] },
     { x: 28, y: 27, text: ['PENSIONE DEL MARE', 'Rooms with a sea view. No vacancies.'] },
     { x: 35, y: 27, text: ['THE HARBOR MASTER', 'Gone fishing.', 'BIRD TOURS leave from the end of the pier!'] },
+    { x: 36, y: 29, text: ['A grey SPRINTER VAN, sandy up to the wheel arches.', 'Its side door is always open.'] },
+    { x: 38, y: 29, text: ['The plates are from somewhere far away. A bumper sticker says: HOME IS WHERE YOU PARK IT.'] },
+    { x: 33, y: 30, text: ['A crackling campfire. Someone has been roasting marshmallows.'] },
   ],
   npcs: [
     { id: 'macie', x: 1, y: 26, area: [0, 24, 14, 29], text: ['MACIE the red schnoodle wags her whole body!', 'Her curls are full of sand.'] },
     { id: 'chloe', x: 12, y: 27, area: [0, 24, 14, 29], text: ['CHLOE the white cockapoo bounces in a circle.', 'She is a fluffy little cloud with a nose.'] },
     { id: 'libby', x: 7, y: 29, area: [0, 24, 14, 29], text: ['LIBBY the white lab leans against your legs.', 'She would like you to throw something. Anything.'] },
+    // Wyatt lives in the van, and hangs out by his campfire. He moves around a lot; this is his first stop.
+    { id: 'wyatt', x: 34, y: 29, area: [32, 28, 35, 29], text: [
+      'WYATT: Hey! Pull up a log. Welcome to my place.',
+      'Home is wherever I park it. This week, it\'s this beach.',
+      'I follow the birds: north for the summer, south for the winter.',
+      'The door\'s always open. Have a look inside!',
+    ] },
   ],
   // The bird tour ship, moored along the east side of the pier: face it and press A to book a voyage.
-  props: [{ x: 21, y: 31, id: 'tourShip', voyage: 'bay' }],
+  // Wyatt's van is parked on the beach at the east end.
+  props: [{ x: 21, y: 31, id: 'tourShip', voyage: 'bay' }, { x: 36, y: 28, id: 'sprinterVan' }],
   birds: { count: 7, table: ['robin', 'goldfinch', 'cardinal', 'goldfinch', 'gull', 'gull'] },
 };
