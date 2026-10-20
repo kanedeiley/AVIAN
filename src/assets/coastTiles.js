@@ -181,16 +181,16 @@ const PLASTERS = {
 const BUILDING_PARTS = {
   // upper floors
   Wall: { art: PLASTER },
-  Shutters: { art: stamp(PLASTER, SHUTTERS) },
+  Shutters: { art: stamp(PLASTER, SHUTTERS), glow: 1, lit: 0.5 },
   Balcony: { art: stamp(PLASTER, BALCONY) },
   Vines: { art: stamp(PLASTER, VINES) },
   Pot: { art: stamp(PLASTER, HANGING_POT) },
   // ground floors
   WallBase: { art: PLASTER_BASE },
-  ShuttersBase: { art: stamp(PLASTER_BASE, SHUTTERS) },
+  ShuttersBase: { art: stamp(PLASTER_BASE, SHUTTERS), glow: 1, lit: 0.5 },
   PotBase: { art: stamp(PLASTER_BASE, HANGING_POT) },
   VinesBase: { art: stamp(PLASTER_BASE, VINES) },
-  Door: { art: stamp(PLASTER_BASE, DOOR) },          // solid: give it sign text
+  Door: { art: stamp(PLASTER_BASE, DOOR), glow: 1 }, // solid: give it sign text
   Arch: { art: stamp(PLASTER_BASE, ARCH), walk: true },
 };
 
@@ -821,17 +821,17 @@ const BOUTIQUE_DEFS = {
   boutiqueRoof: { art: recolor(ROOF, PINK_ROOF), solid: true },
   boutiqueGable: { art: stamp(recolor(ROOF, PINK_ROOF), GABLE), solid: true },
   boutiqueEave: { art: recolor(EAVE, PINK_ROOF), solid: true },
-  boutiqueSignLeft: { art: stamp(recolor(EAVE, PINK_ROOF), SIGN_LEFT), solid: true },
-  boutiqueSignMiddle: { art: stamp(recolor(EAVE, PINK_ROOF), SIGN_MIDDLE), solid: true },
-  boutiqueSignRight: { art: stamp(recolor(EAVE, PINK_ROOF), SIGN_RIGHT), solid: true },
+  boutiqueSignLeft: { art: stamp(recolor(EAVE, PINK_ROOF), SIGN_LEFT), solid: true, glow: 1 },
+  boutiqueSignMiddle: { art: stamp(recolor(EAVE, PINK_ROOF), SIGN_MIDDLE), solid: true, glow: 1 },
+  boutiqueSignRight: { art: stamp(recolor(EAVE, PINK_ROOF), SIGN_RIGHT), solid: true, glow: 1 },
   boutiqueVines: { art: boutique(stamp(PLASTER, VINES)), solid: true },
   boutiqueBalcony: { art: boutique(stamp(PLASTER, BALCONY)), solid: true },
-  boutiqueShutters: { art: recolor(boutique(stamp(PLASTER, SHUTTERS)), { t: 'i', T: 'I' }), solid: true },
+  boutiqueShutters: { art: recolor(boutique(stamp(PLASTER, SHUTTERS)), { t: 'i', T: 'I' }), solid: true, glow: 1, lit: 0.5 },
   boutiqueAwningPot: { art: boutique(stamp(PLASTER_BASE, stamp(AWNING, HANGING_POT.map((r, y) => (y < 6 ? '................' : r))))), solid: true },
-  boutiqueDisplayPink: { art: recolor(boutique(stamp(PLASTER_BASE, DISPLAY)), { X: 'i' }), solid: true },
-  boutiqueDisplayViolet: { art: recolor(boutique(stamp(PLASTER_BASE, DISPLAY)), { X: 'v' }), solid: true },
-  boutiqueDisplayYellow: { art: recolor(boutique(stamp(PLASTER_BASE, DISPLAY)), { X: 'f' }), solid: true },
-  boutiqueDoor: { art: boutique(stamp(PLASTER_BASE, GLASS_DOOR)), solid: true },
+  boutiqueDisplayPink: { art: recolor(boutique(stamp(PLASTER_BASE, DISPLAY)), { X: 'i' }), solid: true, glow: 1.5 },
+  boutiqueDisplayViolet: { art: recolor(boutique(stamp(PLASTER_BASE, DISPLAY)), { X: 'v' }), solid: true, glow: 1.5 },
+  boutiqueDisplayYellow: { art: recolor(boutique(stamp(PLASTER_BASE, DISPLAY)), { X: 'f' }), solid: true, glow: 1.5 },
+  boutiqueDoor: { art: boutique(stamp(PLASTER_BASE, GLASS_DOOR)), solid: true, glow: 1.5 },
   boutiqueCarpet: { art: stamp(PAVING, CARPET) },
   topiary: { art: recolor(LEMON_TREE, { f: 'G', e: 'w', E: 'q' }), base: 'paving', solid: true },
 };
@@ -998,8 +998,8 @@ const RANCH_DEFS = {
   ranchRidgeRight: { art: hipRight(RANCH_RIDGE), base: 'grass', solid: true },
   ranchEave: { art: RANCH_EAVE, solid: true },
   ranchWall: { art: SIDING, solid: true },
-  ranchWindow: { art: stamp(SIDING, RANCH_WINDOW), solid: true },
-  ranchDoor: { art: stamp(SIDING, RANCH_DOOR) },  // walkable: the map puts a warp on it
+  ranchWindow: { art: stamp(SIDING, RANCH_WINDOW), solid: true, glow: 1 },
+  ranchDoor: { art: stamp(SIDING, RANCH_DOOR), glow: 1 },  // walkable: the map puts a warp on it
   porch: { art: DECK },
   porchRailing: { art: stamp(DECK, RAILING), solid: true },
   mailbox: { art: MAILBOX, base: 'sand', solid: true },
@@ -1021,7 +1021,7 @@ export const COAST_DEFS = {
   brick: { art: BRICK, perch: true },
   laundry: { art: stamp(BRICK, LAUNDRY), perch: true },
   cafeTable: { art: CAFE_TABLE, base: 'paving', solid: true },
-  bench: { art: BENCH, base: 'paving', solid: true },
+  bench: { art: BENCH, base: 'paving', solid: true, rest: true },
   stoneBridge: { art: STONE_BRIDGE },
 
   planter: { art: PLANTER, base: 'paving', solid: true },
@@ -1037,7 +1037,7 @@ export const COAST_DEFS = {
   shoreNorth: { frames: [flipY(SHORE), flipY(shiftX(SHORE, 4))], frameTime: 0.7 },
   beachUmbrella: { art: recolor(BEACH_UMBRELLA, { p: 'u', P: 'U' }), base: 'sand', solid: true },
   towel: { art: TOWEL, base: 'sand' },
-  campfire: { frames: [CAMPFIRE_A, CAMPFIRE_B, CAMPFIRE_C], frameTime: 0.15, base: 'sand', solid: true },
+  campfire: { frames: [CAMPFIRE_A, CAMPFIRE_B, CAMPFIRE_C], frameTime: 0.15, base: 'sand', solid: true, glow: 3, flicker: true },
   boat: { art: BOAT, base: 'water', solid: true },
 
   ...BOUTIQUE_DEFS,
@@ -1074,7 +1074,7 @@ bigProp('tourShip', TOUR_SHIP, { base: 'water', solid: true });
 bigProp('sprinterVan', SPRINTER_VAN, { base: 'sand', solid: true }, { '1_1': { solid: false } });
 
 for (const [color, swaps] of Object.entries(PLASTERS)) {
-  for (const [part, { art, walk }] of Object.entries(BUILDING_PARTS)) {
-    COAST_DEFS[color + part] = { art: recolor(art, swaps), solid: !walk };
+  for (const [part, { art, walk, ...rest }] of Object.entries(BUILDING_PARTS)) {
+    COAST_DEFS[color + part] = { ...rest, art: recolor(art, swaps), solid: !walk };
   }
 }

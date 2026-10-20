@@ -564,7 +564,7 @@ export const HOUSE_DEFS = {
   cottageFloor: { art: FLOOR },
   cottageWallTop: { art: WALL_TOP, solid: true },
   cottageWall: { art: WALL, solid: true },
-  cottageWindow: { art: stamp(WALL, WINDOW), solid: true },
+  cottageWindow: { art: stamp(WALL, WINDOW), solid: true, pane: true },
   cottagePainting: { art: stamp(WALL, PAINTING), solid: true },
   cottageFrames: { art: stamp(WALL, LITTLE_FRAMES), solid: true },
   plantShelf: { art: stamp(WALL, PLANT_SHELF), solid: true },

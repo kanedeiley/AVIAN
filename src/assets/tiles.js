@@ -9,7 +9,12 @@
 //   perch       birds can land and hop around here (if the map has birds)
 //   cover       birds barely notice you walking here
 //   coversFeet  redraw the bottom of the tile over the player (tall grass)
-//   glow        lights up this many tiles around it on a `dark` map (cave crystals, daylight)
+//   glow        lights up this many tiles around it on a `dark` map (cave crystals, daylight),
+//               and shines at night outdoors (windows, lamps)
+//   flicker     its glow flickers like a fire
+//   lit         only this fraction of these tiles glow (picked by position), so not every window is lit
+//   rest        face it and press A to rest until another time of day (beds, benches)
+//   pane        a window on an indoor map: tinted with the sky outside
 //
 // Maps refer to tiles by a single character, set in LEGEND at the bottom.
 
@@ -665,7 +670,9 @@ const DEFS = {
   fence:     { art: FENCE, base: 'grass', solid: true },
   fenceSide: { art: FENCE_SIDE, base: 'grass', solid: true },
   fountain:  { frames: [FOUNTAIN, recolor(FOUNTAIN, { c: 'b', w: 'c' })], frameTime: 0.4, base: 'cobble', solid: true },
-  lampPost:  { art: LAMP_POST, base: 'cobble', solid: true },
+  lampPost:  { art: LAMP_POST, base: 'cobble', solid: true, glow: 2 },
+  lampPostGrass:  { art: LAMP_POST, base: 'grass', solid: true, glow: 2 },
+  lampPostPaving: { art: LAMP_POST, base: 'paving', solid: true, glow: 2 },
   pinkBed:   { art: recolor(FLOWER_BED, { x: 'i', z: 'f' }), perch: true },
   violetBed: { art: recolor(FLOWER_BED, { x: 'v', z: 'w' }), perch: true },
   yellowBed: { art: recolor(FLOWER_BED, { x: 'f', z: 'e' }), perch: true },
@@ -674,14 +681,14 @@ const DEFS = {
 
   roof:      { art: ROOF, solid: true },
   wall:      { art: WALL, solid: true },
-  window:    { art: WINDOW, solid: true },
+  window:    { art: WINDOW, solid: true, glow: 1 },
   door:      { art: DOOR },          // walkable: the map puts a warp on it
   shopDoor:  { art: DOOR, solid: true },  // a door with no inside yet; give it sign text
   pinkRoof:  { art: recolor(ROOF, { r: 'i', R: 'I' }), solid: true },
   awning:    { art: AWNING, base: 'wall', solid: true },
   pinkAwning: { art: recolor(AWNING, { p: 'i', P: 'I' }), base: 'wall', solid: true },
   pinkDoor:  { art: recolor(DOOR, { n: 'i', N: 'I' }), solid: true },
-  flowerBoxWindow: { art: FLOWER_BOX_WINDOW, solid: true },
+  flowerBoxWindow: { art: FLOWER_BOX_WINDOW, solid: true, glow: 1 },
 
   ...COAST_DEFS, // the Italian seaside town: see coastTiles.js
   ...HOUSE_DEFS, // inside Hannah's house: see houseTiles.js
@@ -693,7 +700,7 @@ const DEFS = {
   innerWall: { art: INNER_WALL, solid: true },
   rug:       { art: RUG },
   table:     { art: TABLE, base: 'floor', solid: true },
-  bed:       { art: BED, base: 'floor', solid: true },
+  bed:       { art: BED, base: 'floor', solid: true, rest: true },
   mat:       { art: MAT, base: 'floor' },  // the map puts the exit warp on it
   glyphs:    { art: GLYPHS, solid: true },
 };

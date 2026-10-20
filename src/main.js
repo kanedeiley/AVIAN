@@ -11,6 +11,7 @@ import { canStand } from './maps/index.js';
 import { cloud } from './cloud.js';
 import { askToSignIn, showAccount } from './signIn.js';
 import { setUpTouchControls } from './touch.js';
+import { currentPhase, currentWeather } from './time.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -37,9 +38,13 @@ const game = {
   fadeDir: 0,    // 1 fading out, -1 fading in, 0 idle
   onBlack: null,
   journal: loadJournal(), // bird id -> best photo (1-3 stars); saved in the browser
-  money: loadMoney(),     // dollars, for boat fares; there's no way to earn any yet
+  money: loadMoney(),     // dollars, earned for photos (photo.js) and spent on boat fares
   progress: loadProgress(), // story flags, beaten nemesis birds and found collectibles (see progress.js)
   location: loadLocation(), // where you last stood, to carry on from there; the Overworld keeps it up to date
+
+  // The time of day and weather (time.js), read off the real clock: never saved.
+  get phase() { return currentPhase(); },
+  get weather() { return currentWeather(); },
 
   setScene(scene) {
     this.scene = scene;

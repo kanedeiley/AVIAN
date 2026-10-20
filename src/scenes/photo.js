@@ -10,14 +10,19 @@
 // `setting` picks the backdrop: 'field' (a branch in front of the trees) or
 // 'ocean' (the bird floats and paddles along the water, seen from the boat).
 // When it's done it calls `returnTo.resume(stars)` if the scene it returns to has one.
+//
+// A photo earns money: more for more stars, a new species or a better photo
+// than before, and half again at golden hour (dawn and dusk, see time.js).
 import { TILE, VIEW_W } from '../config.js';
 import { BIRDS } from '../data/birds.js';
 import { BIRD_SPRITES } from '../assets/birds.js';
 import { TILES } from '../assets/tiles.js';
 import { input } from '../input.js';
 import { drawBox, drawText, drawDialog, paginate } from '../gfx/ui.js';
-import { saveJournal } from '../save.js';
+import { saveJournal, saveMoney } from '../save.js';
 import { drawOcean, drawWater } from '../gfx/ocean.js';
+import { drawLighting, tintSky } from '../gfx/lighting.js';
+import { phaseMultiplier } from '../time.js';
 
 const BRANCH_Y = 92;      // top edge of the branch the bird stands on (or the waterline at sea)
 const HORIZON = 40;       // the ocean backdrop's horizon
@@ -32,6 +37,9 @@ const FLASH_TIME = 0.25;
 const FOCUS_DRAIN = 1.5;  // focus lost per second while the bird is out of frame
 const NERVOUS_TIME = 2.5; // show '!' when the bird has this little patience left
 const INK = '#283050';
+const PAY = [0, 5, 10, 20]; // dollars for a photo of 0-3 stars
+const NEW_SPECIES_PAY = 25; // on top, for a bird that's not in the journal yet
+const IMPROVED_PAY = 10;    // on top, for beating your best photo of it
 
 const rand = (a, b) => a + Math.random() * (b - a);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -45,6 +53,9 @@ export class PhotoScene {
     this.species = BIRDS[birdId];
     this.sprites = BIRD_SPRITES[birdId];
     this.time = 0;
+    // The time of day and weather when the bird landed: they set the light, and the pay.
+    this.timeOfDay = game.phase;
+    this.weather = game.weather;
 
     // phase: 'arrive' -> 'aim' -> 'leave' -> 'result'
     this.phase = 'arrive';
@@ -175,6 +186,7 @@ export class PhotoScene {
       if (!Object.keys(journal).length) lines.push(`New journal entry: ${name}!`, 'Press J any time to open your journal.');
       else if (!(this.id in journal)) lines.push(`New journal entry: ${name}!`);
       else if (this.best > previous) lines.push(`Your best ${name} photo yet!`);
+      lines.push(...this.pay(previous));
     }
     if (this.best > previous) {
       journal[this.id] = this.best;
@@ -182,6 +194,19 @@ export class PhotoScene {
     }
     this.phase = 'result';
     this.dialog = { pages: paginate(lines), page: 0 };
+  }
+
+  /** Pay for the best photo, given the best one in the journal before it; returns lines for the result. */
+  pay(previous) {
+    const isNew = !(this.id in this.game.journal);
+    const multiplier = phaseMultiplier(this.timeOfDay);
+    let earned = PAY[this.best] + (isNew ? NEW_SPECIES_PAY : 0) + (!isNew && this.best > previous ? IMPROVED_PAY : 0);
+    earned = Math.round(earned * multiplier);
+    this.game.money += earned;
+    saveMoney(this.game.money);
+    const lines = [`You earned $${earned}. You have $${this.game.money}.`];
+    if (multiplier > 1) lines.unshift(`GOLDEN HOUR! +${Math.round((multiplier - 1) * 100)}%`);
+    return lines;
   }
 
   updateResult() {
@@ -201,6 +226,7 @@ export class PhotoScene {
   draw(ctx) {
     this.drawBackground(ctx);
     if (this.phase !== 'result') this.drawBird(ctx);
+    drawLighting(ctx, this.timeOfDay, { weather: this.weather, time: this.time, h: 116 });
     if (this.phase === 'aim') this.drawViewfinder(ctx);
 
     if (this.phase === 'result') {
@@ -217,9 +243,13 @@ export class PhotoScene {
   }
 
   drawBackground(ctx) {
-    if (this.swimming) return drawOcean(ctx, this.time, HORIZON, 116);
+    if (this.swimming) {
+      drawOcean(ctx, this.time, HORIZON, 116);
+      return tintSky(ctx, this.timeOfDay, 0, 0, VIEW_W, HORIZON);
+    }
     ctx.fillStyle = '#b8e0f8';
     ctx.fillRect(0, 0, VIEW_W, 116);
+    tintSky(ctx, this.timeOfDay, 0, 0, VIEW_W, 40);
     for (let x = 0; x < VIEW_W; x += TILE) {
       ctx.drawImage(TILES.tree.sprites[0], x, 24);
       for (let y = 40; y < 116; y += TILE) ctx.drawImage(TILES.grass.sprites[0], x, y);

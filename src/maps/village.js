@@ -5,8 +5,10 @@
 //   legend      optional extra/overridden characters for this map only
 //   warps       tiles that move you somewhere else when you step on them
 //   signs       text shown when you face a tile and press A
-//   birds       how many birds are out on the map at once, and which species
+//   birds       how many birds are out on the map at once, and which species (`table`), plus
+//               optional `rare` ones picked `rareChance` of the time (doubled at dawn and dusk)
 //   indoor      true for maps you reach through a door; they're left off the world map
+//               (species' `times` and `weather` in data/birds.js decide who's out right now)
 //   dark        true for caves: only your lantern and tiles with `glow` light the map
 //   npcs        characters who wander a box of tiles and talk when you press A (see scenes/npcs.js)
 //
@@ -15,22 +17,25 @@
 export default {
   name: 'WILLOW VILLAGE',
   region: 'valley',
+  legend: {
+    'i': 'lampPostGrass', // lamp posts along the paths
+  },
   rows: [
     'TTTTTTTTTTTT:TTTTTTTTTTT',
     'T...........:..........T',
     'T..RRRR....S:......,,,,T',
     'T..RRRR.....:.....,,,,,T',
     'T.PWHDWP....:...*..,,,,T',
-    'T....:......:.......,,,T',
+    'T....:.....i:.......,,,T',
     'T....:::::::::::::....,T',
     'T..*.........:.........T',
     'T............:.........T',
     'T...~~~~.....:....*....T',
-    'T..~~~~~~....:.........T',
+    'T..~~~~~~....:i........T',
     'T..~~~~~~....::::......T',
-    'T.S.~~~~........:..*...T',
+    'T.S.~~~~.......i:..*...T',
     ':::::::::::::::::......T',
-    'T.,,,,.....*....:...,,,T',
+    'T.,,,,.....*....:i..,,,T',
     'T,,,,,,.........:..,,,,T',
     'T,,,,,,,........:.,,,,,T',
     'TTTTTTTTTTTTTTTT:TTTTTTT',

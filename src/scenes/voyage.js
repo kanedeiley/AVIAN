@@ -13,6 +13,8 @@ import { input } from '../input.js';
 import { drawBox, drawText, drawDialog, paginate } from '../gfx/ui.js';
 import { drawOcean, drawWater } from '../gfx/ocean.js';
 import { PhotoScene } from './photo.js';
+import { pickSpecies } from '../time.js';
+import { drawLighting, tintSky } from '../gfx/lighting.js';
 
 const HORIZON = 44;
 const SEA_BOTTOM = 116;
@@ -28,7 +30,6 @@ const FLYING = 0.35;       // share of birds gliding overhead instead of floatin
 const NEW_COLOR = '#d05040';
 
 const rand = (a, b) => a + Math.random() * (b - a);
-const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
 export class VoyageScene {
   /** `returnTo` is the Overworld, left standing on the pier. */
@@ -70,8 +71,7 @@ export class VoyageScene {
   }
 
   spawn(delay = 0) {
-    const { table, rare = [], rareChance = 0 } = this.voyage;
-    const id = rare.length && Math.random() < rareChance ? pick(rare) : pick(table);
+    const id = pickSpecies(this.voyage, this.game.phase, this.game.weather);
     const flying = Math.random() < FLYING;
     const depth = Math.random();
     const scale = flying ? (Math.random() < 0.5 ? 1 : 2) : depth > 0.55 ? 2 : 1;
@@ -204,12 +204,15 @@ export class VoyageScene {
     // The boat rocks gently, so the whole sea moves a pixel or two.
     const rock = Math.round(Math.sin(this.time * 1.2) * 1.5);
     drawOcean(ctx, this.time, HORIZON + rock, SEA_BOTTOM, this.drift);
+    const { phase, weather } = this.game;
+    tintSky(ctx, phase, 0, 0, VIEW_W, HORIZON + rock);
 
     const visible = this.birds.filter((b) => b.delay <= 0).sort((a, b) => a.y - b.y);
     for (const b of visible) this.drawBird(ctx, b, rock);
     if (this.phase === 'watch' && this.selected) this.drawTarget(ctx, this.selected, rock);
 
     this.drawRail(ctx);
+    drawLighting(ctx, phase, { weather, time: this.time, h: SEA_BOTTOM });
 
     if (this.phase === 'end') {
       const { pages, page } = this.dialog;

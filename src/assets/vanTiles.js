@@ -259,7 +259,7 @@ const BED = [
 export const VAN_DEFS = {
   vanFloor: { art: FLOOR },
   vanWall: { art: WALL, solid: true },
-  vanWindow: { art: stamp(WALL, WINDOW), solid: true },
+  vanWindow: { art: stamp(WALL, WINDOW), solid: true, pane: true },
   vanCabinet: { art: CABINET, base: 'vanFloor', solid: true },
   vanSink: { art: stamp(CABINET, SINK), base: 'vanFloor', solid: true },
   vanStove: { art: stamp(CABINET, STOVE), base: 'vanFloor', solid: true },
@@ -271,4 +271,4 @@ export const VAN_DEFS = {
   vanStep: { art: STEP }, // walkable: the map puts the exit warp on it
 };
 
-bigProp('vanBed', BED, { base: 'vanFloor', solid: true }, {}, VAN_DEFS);
+bigProp('vanBed', BED, { base: 'vanFloor', solid: true, rest: true }, {}, VAN_DEFS);

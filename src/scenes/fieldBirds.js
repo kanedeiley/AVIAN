@@ -9,6 +9,7 @@ import { BIRDS } from '../data/birds.js';
 import { BIRD_SPRITES } from '../assets/birds.js';
 import { TILES } from '../assets/tiles.js';
 import { drawText } from '../gfx/ui.js';
+import { pickSpecies } from '../time.js';
 
 const NOTICE = 5;          // tiles: birds only react to you inside this distance
 const RANGE = 2;           // tiles: how close you need to be to raise the camera
@@ -67,7 +68,8 @@ export class FieldBirds {
     const spots = this.perches.filter((s) => this.isFree(s.x, s.y) && Math.hypot(s.x - pos.x, s.y - pos.y) >= SPAWN_DIST);
     if (!spots.length) return this.respawns.push(rand(...RESPAWN)); // try again later
     const { x, y } = pick(spots);
-    const id = pick(this.config.table);
+    const { phase, weather } = this.world.game;
+    const id = pickSpecies(this.config, phase, weather);
     this.birds.push({
       id, species: BIRDS[id], x, y, fromX: x, fromY: y,
       hop: 1, idle: rand(...IDLE), facing: Math.random() < 0.5 ? -1 : 1,
