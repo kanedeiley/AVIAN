@@ -73,8 +73,9 @@ const PAGES = [
 
       drawText(ctx, 'LIVES IN:', x0 + 8, TOP + 86, MUTED);
       const places = habitats(id);
-      (places.length ? places : ['UNKNOWN']).slice(0, 2).forEach((place, i) => {
-        drawText(ctx, place, x0 + 8, TOP + 100 + i * 12);
+      const lines = (places.length ? places : ['UNKNOWN']).slice(0, 2).flatMap((place) => wrap(place, Math.floor((w - 16) / 8)));
+      lines.slice(0, 3).forEach((line, i) => {
+        drawText(ctx, line, x0 + 8, TOP + 100 + i * 12);
       });
     },
   },
@@ -98,7 +99,9 @@ const PAGES = [
         });
       } else {
         drawText(ctx, 'HIDDEN IN:', x0 + 8, TOP + 86, MUTED);
-        drawText(ctx, getMap(item.map).name, x0 + 8, TOP + 100);
+        wrap(getMap(item.map).name, Math.floor((w - 16) / 8)).slice(0, 2).forEach((line, i) => {
+          drawText(ctx, line, x0 + 8, TOP + 100 + i * 12);
+        });
       }
     },
   },
