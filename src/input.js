@@ -16,9 +16,12 @@ const held = new Set();
 const pressed = new Set();
 const dirStack = []; // most recently pressed direction wins
 
+// Keys typed into the sign-in form (text boxes, buttons) aren't game input.
+const typing = (e) => e.target instanceof HTMLInputElement || e.target instanceof HTMLButtonElement;
+
 window.addEventListener('keydown', (e) => {
   const action = KEYMAP[e.code];
-  if (!action) return;
+  if (!action || typing(e)) return;
   e.preventDefault();
   if (e.repeat) return;
   held.add(action);

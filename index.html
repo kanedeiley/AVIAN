@@ -8,12 +8,55 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
     html, body { margin: 0; height: 100%; background: #101018; }
-    body { display: flex; align-items: center; justify-content: center; }
+    body { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+           font: 10px/1.6 "Press Start 2P", monospace; color: #f8f8f8; }
     canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
+    [hidden] { display: none !important; }
+
+    /* The sign-in form, drawn over the game like a GBA text box. */
+    #signin { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+              background: rgba(16, 16, 24, 0.85); padding: 16px; }
+    #signin-form { width: 100%; max-width: 360px; box-sizing: border-box; padding: 20px;
+                   background: #f8f8f8; color: #283050; border: 4px solid #283050; border-radius: 4px;
+                   display: flex; flex-direction: column; gap: 10px; }
+    #signin-form h1 { margin: 0; font-size: 16px; text-align: center; }
+    #signin-form p { margin: 0; }
+    #signin-form input { font: inherit; padding: 8px; border: 2px solid #283050; background: #fff; color: #283050; }
+    #signin-form .row { display: flex; gap: 8px; }
+    #signin-form button { flex: 1; }
+    button { font: inherit; padding: 8px; border: 2px solid #283050; border-radius: 2px; background: #f0b030;
+             color: #283050; cursor: pointer; }
+    button:disabled { opacity: 0.5; cursor: wait; }
+    button.plain { background: none; border-color: transparent; text-decoration: underline; }
+    #signin-error { min-height: 1.6em; color: #d05040; }
+
+    #account { display: flex; align-items: center; gap: 12px; color: #9898a8; font-size: 8px; }
+    #account button { font-size: 8px; padding: 4px 8px; }
   </style>
 </head>
 <body>
   <canvas id="game" width="240" height="160"></canvas>
+
+  <div id="account" hidden>
+    <span id="account-label"></span>
+    <button id="account-button" type="button"></button>
+  </div>
+
+  <div id="signin" hidden>
+    <form id="signin-form">
+      <h1>AVIAN</h1>
+      <p>Sign in to save your journal online and play on any device.</p>
+      <input id="signin-email" type="email" placeholder="Email" autocomplete="email" required>
+      <input id="signin-password" type="password" placeholder="Password (6+ characters)" autocomplete="current-password" minlength="6" required>
+      <div class="row">
+        <button type="submit" value="signin">Sign in</button>
+        <button type="submit" value="create">New account</button>
+      </div>
+      <p id="signin-error" role="alert"></p>
+      <button id="signin-offline" class="plain" type="button">Play offline</button>
+    </form>
+  </div>
+
   <script type="module" src="src/main.js"></script>
 </body>
 </html>

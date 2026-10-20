@@ -17,11 +17,48 @@ Tap a direction to turn in place; hold it to walk.
 
 Dev shortcut: `http://localhost:8000/?map=house&x=4&y=6` starts you on any map.
 
+## Online saves (Supabase)
+
+With Supabase keys in `.env`, the game opens on a sign-in screen (email + password).
+Your journal and money are then saved to a Supabase database as well as the browser,
+so you can carry on from another device. **Play offline** skips it, and the bar under the
+game lets you sign in later. Signing in keeps the best photo of each bird from both
+this browser and your account, so nothing you did offline is lost. Without keys (or with a plain
+web server instead of `serve.py`) the game runs offline as before.
+
+One-time setup in the Supabase dashboard:
+
+1. **SQL Editor** → New query → paste `supabase/schema.sql` → Run. This makes the `saves`
+   table and the security rules that keep each player's save private.
+2. **Authentication → Sign In / Providers → Email**: turn **Confirm email** off, so new
+   accounts can play right away without a confirmation link.
+3. **Project Settings → API**: copy the Project URL and the anon (or publishable) key into
+   a `.env` file (`cp .env.example .env`). `serve.py` hands them to the game. For the live
+   site, add the same two names, `SUPABASE_URL` and `SUPABASE_KEY`, on GitHub under
+   **Settings → Secrets and variables → Actions → Variables**. Both values are safe to
+   publish. Never use the `service_role` / secret key.
+
+How it fits together: `cloud.js` talks to Supabase (the library is loaded from a CDN only
+when the config is filled in), `signIn.js` is the sign-in form and account bar (the HTML
+is in `index.html`), and `save.js` calls a hook after every save that sends it online.
+
+Note: the database trusts what the game sends, so a player could edit their own money in
+the browser. That's fine while fares are $0. Once money matters, move fares and rewards
+into a Supabase database function.
+
+## Deploying
+
+`.github/workflows/pages.yml` publishes the game to GitHub Pages on every push to `main`
+(at https://kanedeiley.github.io/AVIAN/). It copies `index.html` and `src/` as they are,
+with no build step. Setup, once: on GitHub, **Settings → Pages → Source: GitHub Actions**.
+
 ## Layout
 
 ```
 src/
-  main.js            game loop, scene switching, screen fades
+  main.js            game loop, scene switching, screen fades, signing in at startup
+  cloud.js           online saves with Supabase (keys come from .env, see .env.example)
+  signIn.js          the sign-in form and account bar
   config.js          tile size, screen size, walk speed
   input.js           keys -> actions ('up', 'a', 'b', ...)
   gfx/sprite.js      text pixel art -> images

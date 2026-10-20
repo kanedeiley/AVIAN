@@ -6,7 +6,9 @@
 import { VIEW_W, VIEW_H, FADE_TIME } from './config.js';
 import { input } from './input.js';
 import { Overworld } from './scenes/overworld.js';
-import { loadJournal, loadMoney } from './save.js';
+import { loadJournal, loadMoney, saveJournal, saveMoney, whenSaved, clearSave } from './save.js';
+import { cloud } from './cloud.js';
+import { askToSignIn, showAccount } from './signIn.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -32,6 +34,52 @@ const game = {
   },
 };
 
+// Online saves (cloud.js). If Supabase is set up, sign in before the game
+// starts so your online journal is loaded first. Without it, or if it can't
+// be reached, the game just saves in this browser.
+if (cloud.enabled) {
+  whenSaved(() => cloud.queueSave({ journal: game.journal, money: game.money }));
+  try {
+    if (!(await cloud.connect())) await askToSignIn();
+    if (cloud.user) await mergeOnlineSave();
+  } catch (err) {
+    console.warn('Playing offline, online saves are unavailable:', err.message);
+  }
+  updateAccount();
+}
+
+/**
+ * Combine this browser's save with the online one: keep the best photo of
+ * each bird from either, and the online money. Then save the result to both,
+ * so progress made offline (or before signing in) isn't lost.
+ */
+async function mergeOnlineSave() {
+  const online = await cloud.load();
+  if (online) {
+    for (const [id, stars] of Object.entries(online.journal)) {
+      game.journal[id] = Math.max(game.journal[id] ?? 0, stars);
+    }
+    game.money = online.money;
+  }
+  saveMoney(game.money);
+  saveJournal(game.journal);
+}
+
+function updateAccount() {
+  if (!cloud.user && !cloud.ready) return; // couldn't reach Supabase: no account bar
+  showAccount({
+    onSignIn: async () => {
+      if (await askToSignIn()) await mergeOnlineSave();
+      updateAccount();
+    },
+    onSignOut: async () => {
+      await cloud.signOut();
+      clearSave(); // the next player on this browser starts fresh
+      location.reload();
+    },
+  });
+}
+
 // Dev shortcut: index.html?map=house&x=4&y=6 starts you anywhere.
 const params = new URLSearchParams(location.search);
 const start = {
@@ -41,9 +89,11 @@ const start = {
 };
 game.setScene(new Overworld(game, start.map, start.x, start.y, 'down'));
 
-// Scale the 240x160 canvas by the biggest whole number that fits the window.
+// Scale the 240x160 canvas by the biggest whole number that fits the window,
+// leaving room for the account bar underneath.
+const BAR_H = 40;
 function resize() {
-  const scale = Math.max(1, Math.floor(Math.min(innerWidth / VIEW_W, innerHeight / VIEW_H)));
+  const scale = Math.max(1, Math.floor(Math.min(innerWidth / VIEW_W, (innerHeight - BAR_H) / VIEW_H)));
   canvas.style.width = `${VIEW_W * scale}px`;
   canvas.style.height = `${VIEW_H * scale}px`;
 }
