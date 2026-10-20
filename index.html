@@ -2,16 +2,67 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101018">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <title>AVIAN</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
-    html, body { margin: 0; height: 100%; background: #101018; }
-    body { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
-           font: 10px/1.6 "Press Start 2P", monospace; color: #f8f8f8; }
-    canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
+    html, body { margin: 0; height: 100%; background: #101018; overscroll-behavior: none; }
+    body { font: 10px/1.6 "Press Start 2P", monospace; color: #f8f8f8; touch-action: manipulation; }
+    canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; }
     [hidden] { display: none !important; }
+
+    /* The screen takes all the room the controls and account bar leave; main.js
+       scales the canvas to fit it (see resize()). */
+    #app { height: 100vh; height: 100dvh; box-sizing: border-box; display: grid; gap: 12px;
+           grid-template: "screen" minmax(0, 1fr) "account" auto / minmax(0, 1fr);
+           padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+                    max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); }
+    #screen { grid-area: screen; min-width: 0; min-height: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+
+    /* On-screen controls (touch.js), only on touch screens. */
+    #controls { display: none; }
+    @media (pointer: coarse) {
+      #controls { display: contents; }
+      #controls, #controls * { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+                               -webkit-tap-highlight-color: transparent; touch-action: none; }
+      #app { grid-template: "screen screen" minmax(0, 1fr) "dpad ab" auto "menu menu" auto "account account" auto / 1fr 1fr; }
+      #signin-form input { font-size: 16px; } /* smaller text makes iOS zoom in on the form */
+    }
+    /* Portrait phones: the screen, with the controls right under it, centered
+       together like a handheld. The screen keeps the game's 3:2 shape. */
+    @media (pointer: coarse) and (orientation: portrait) {
+      #app { align-content: center; gap: 20px 12px;
+             grid-template: "screen screen" auto "dpad ab" auto "menu menu" auto "account account" auto / 1fr 1fr; }
+      #screen { aspect-ratio: 3 / 2; }
+    }
+    @media (pointer: coarse) and (orientation: landscape) {
+      #app { gap: 8px 16px; grid-template: "dpad screen ab" minmax(0, 1fr) "menu account ab" auto / auto minmax(0, 1fr) auto; }
+    }
+
+    #dpad { grid-area: dpad; position: relative; width: 132px; height: 132px; align-self: center; justify-self: center; }
+    #dpad span { position: absolute; background: #383848; }
+    #dpad .up    { left: 44px; top: 0;     width: 44px; height: 48px; border-radius: 6px 6px 0 0; }
+    #dpad .down  { left: 44px; bottom: 0;  width: 44px; height: 48px; border-radius: 0 0 6px 6px; }
+    #dpad .left  { top: 44px;  left: 0;    width: 48px; height: 44px; border-radius: 6px 0 0 6px; }
+    #dpad .right { top: 44px;  right: 0;   width: 48px; height: 44px; border-radius: 0 6px 6px 0; }
+    #dpad .mid   { left: 44px; top: 44px;  width: 44px; height: 44px; }
+    #dpad[data-dir="up"] .up, #dpad[data-dir="down"] .down,
+    #dpad[data-dir="left"] .left, #dpad[data-dir="right"] .right { background: #585870; }
+
+    #ab { grid-area: ab; display: flex; gap: 16px; align-self: center; justify-self: center; }
+    #ab button { width: 64px; height: 64px; border-radius: 50%; border: none; font-size: 14px;
+                 background: #a83850; color: #f8f8f8; box-shadow: 0 4px 0 #702030; }
+    #ab button[data-action="b"] { margin-top: 36px; }
+    #ab button.down, #menu button.down { transform: translateY(3px); box-shadow: 0 1px 0 #702030; }
+
+    #menu { grid-area: menu; display: flex; gap: 12px; justify-content: center; align-self: end; }
+    #menu button { font-size: 8px; padding: 6px 12px; border: none; border-radius: 12px;
+                   background: #383848; color: #c8c8d8; box-shadow: 0 3px 0 #202028; }
 
     /* The sign-in form, drawn over the game like a GBA text box. */
     #signin { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
@@ -30,17 +81,35 @@
     button.plain { background: none; border-color: transparent; text-decoration: underline; }
     #signin-error { min-height: 1.6em; color: #d05040; }
 
-    #account { display: flex; align-items: center; gap: 12px; color: #9898a8; font-size: 8px; }
+    #account { grid-area: account; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+               gap: 4px 12px; color: #9898a8; font-size: 8px; }
     #account button { font-size: 8px; padding: 4px 8px; }
   </style>
 </head>
 <body>
-  <canvas id="game" width="240" height="160"></canvas>
+  <main id="app">
+    <div id="screen"><canvas id="game" width="240" height="160"></canvas></div>
 
-  <div id="account" hidden>
-    <span id="account-label"></span>
-    <button id="account-button" type="button"></button>
-  </div>
+    <!-- On-screen controls for touch screens (see src/touch.js). -->
+    <div id="controls">
+      <div id="dpad" role="group" aria-label="D-pad">
+        <span class="up"></span><span class="down"></span><span class="left"></span><span class="right"></span><span class="mid"></span>
+      </div>
+      <div id="ab">
+        <button type="button" data-action="b">B</button>
+        <button type="button" data-action="a">A</button>
+      </div>
+      <div id="menu">
+        <button type="button" data-action="map">MAP</button>
+        <button type="button" data-action="journal">JOURNAL</button>
+      </div>
+    </div>
+
+    <div id="account" hidden>
+      <span id="account-label"></span>
+      <button id="account-button" type="button"></button>
+    </div>
+  </main>
 
   <div id="signin" hidden>
     <form id="signin-form">

@@ -15,6 +15,11 @@ python3 serve.py
 **Controls:** arrows / WASD to walk, Z / Enter / Space = A, X / Esc = B, M / Tab = world map, J = journal.
 Tap a direction to turn in place; hold it to walk.
 
+**On phones and tablets** an on-screen D-pad, A/B and MAP/JOURNAL buttons appear (touch
+screens only; `src/touch.js`). Slide your thumb around the D-pad to change direction
+without lifting it. The game fills the screen in portrait or landscape, scaled by whole
+device pixels so the pixel art stays sharp. Add it to your home screen to play full screen.
+
 Dev shortcut: `http://localhost:8000/?map=house&x=4&y=6` starts you on any map.
 
 ## Online saves (Supabase)
@@ -61,6 +66,7 @@ src/
   signIn.js          the sign-in form and account bar
   config.js          tile size, screen size, walk speed
   input.js           keys -> actions ('up', 'a', 'b', ...)
+  touch.js           on-screen controls for touch screens (D-pad, A/B, MAP/JOURNAL)
   gfx/sprite.js      text pixel art -> images
   gfx/ui.js          text boxes and font
   assets/palette.js  the shared color palette

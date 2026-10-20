@@ -9,10 +9,26 @@ import { Overworld } from './scenes/overworld.js';
 import { loadJournal, loadMoney, saveJournal, saveMoney, whenSaved, clearSave } from './save.js';
 import { cloud } from './cloud.js';
 import { askToSignIn, showAccount } from './signIn.js';
+import { setUpTouchControls } from './touch.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
+
+// Scale the 240x160 canvas to fill the space the page leaves for it (#screen,
+// which shrinks for the account bar and, on touch screens, the controls). The
+// scale is a whole number of *device* pixels per game pixel so the pixels stay
+// crisp on phones too, where a CSS pixel is 2-3 device pixels.
+const screenBox = document.getElementById('screen');
+function resize() {
+  const dpr = devicePixelRatio || 1;
+  const fit = Math.min(screenBox.clientWidth / VIEW_W, screenBox.clientHeight / VIEW_H);
+  const scale = Math.max(1, Math.floor(fit * dpr)) / dpr;
+  canvas.style.width = `${VIEW_W * scale}px`;
+  canvas.style.height = `${VIEW_H * scale}px`;
+}
+new ResizeObserver(resize).observe(screenBox);
+setUpTouchControls();
 
 const game = {
   scene: null,
@@ -89,16 +105,6 @@ const start = {
 };
 game.setScene(new Overworld(game, start.map, start.x, start.y, 'down'));
 
-// Scale the 240x160 canvas by the biggest whole number that fits the window,
-// leaving room for the account bar underneath.
-const BAR_H = 40;
-function resize() {
-  const scale = Math.max(1, Math.floor(Math.min(innerWidth / VIEW_W, (innerHeight - BAR_H) / VIEW_H)));
-  canvas.style.width = `${VIEW_W * scale}px`;
-  canvas.style.height = `${VIEW_H * scale}px`;
-}
-addEventListener('resize', resize);
-resize();
 
 let last = performance.now();
 function frame(now) {
