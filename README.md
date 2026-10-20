@@ -80,6 +80,7 @@ src/
   assets/tiles.js    every tile: art + rules (solid, perch, cover, ...)
   assets/coastTiles.js  the Italian seaside town's tiles (houses, terraces, beach)
   assets/caveTiles.js   Echo Cave and Eagle Peak (cave rock, crystals, cliffs, pines, snow)
+  assets/vanTiles.js    inside Wyatt's van (cabinets, sink, stove, cab seats, dash, bed)
   assets/player.js   people's walk cycles: a 'male' body (cap) and a 'female' body (long hair, skirt)
   assets/birds.js    bird body shapes (songbird, seabird, raptor...); species pick one + colors
   maps/              one file per map, plus the registry (index.js)
@@ -222,7 +223,9 @@ there's no way to earn money yet. To charge for a trip, set its `price` in `data
 
 Art bigger than one tile (like the tour ship) is drawn as one piece in
 `assets/coastTiles.js` and cut into 16x16 tiles by `bigProp()`. A map places it with
-`props: [{ x, y, id }]`, where (x, y) is its top-left tile. This saves using up map
+`props: [{ x, y, id }]`, where (x, y) is its top-left tile. Single tiles of a prop can
+have their own rules: Wyatt's camper van on Hannahville beach is solid except its open
+side door, which has a warp into the van (`maps/van.js`). This saves using up map
 characters, and the loader checks that the prop fits on the map.
 
 ## Regions and nemesis birds

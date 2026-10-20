@@ -7,6 +7,8 @@ import { personSprites } from './player.js';
 const PEOPLE = {
   // Long auburn hair, a teal top and a violet skirt.
   hannah: personSprites('hannah', 'female', { top: PALETTE.t, topShade: PALETTE.T, bottoms: PALETTE.v, hair: '#a0502c', hairShade: '#6a3018' }),
+  // Wyatt lives in his van: a green beanie, a rust-red flannel and worn khakis.
+  wyatt: personSprites('wyatt', 'male', { hat: '#3a6a48', hatShade: '#284a30', top: '#c05030', topShade: '#802818', bottoms: '#8a7a58', hair: PALETTE.n, hairShade: PALETTE.N }),
 };
 
 export const PEOPLE_SPRITES = {};
