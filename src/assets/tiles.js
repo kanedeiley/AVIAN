@@ -19,6 +19,7 @@ import { COAST_DEFS } from './coastTiles.js';
 import { HOUSE_DEFS } from './houseTiles.js';
 import { CAVE_DEFS } from './caveTiles.js';
 import { VAN_DEFS } from './vanTiles.js';
+import { FARM_DEFS } from './farmTiles.js';
 
 // ---------- outdoor ----------
 
@@ -686,6 +687,7 @@ const DEFS = {
   ...HOUSE_DEFS, // inside Hannah's house: see houseTiles.js
   ...CAVE_DEFS,  // Echo Cave and Eagle Peak: see caveTiles.js
   ...VAN_DEFS,   // inside the van on Hannahville beach: see vanTiles.js
+  ...FARM_DEFS,  // the Leister family farm and its farmhouses: see farmTiles.js
 
   floor:     { art: FLOOR },
   innerWall: { art: INNER_WALL, solid: true },

@@ -1,7 +1,7 @@
-// Characters who wander around part of a map: Hannah and her puppies.
+// Characters who wander around part of a map: Hannah, her puppies, and the farm animals.
 // They come from the map's `npcs` list:
 //   { id, name, x, y, area: [x0, y0, x1, y1], text: ['...'] }
-// `id` picks the sprites (assets/dogs.js or assets/people.js) and `area` is the
+// `id` picks the sprites (assets/dogs.js, assets/people.js or assets/farmAnimals.js) and `area` is the
 // box of tiles they wander in. Instead of `text`, `talk` names a function in
 // data/dialogue.js whose lines change as you progress, and `sets` is a story
 // flag (data/flags.js) you earn by talking to them. They block the player like any solid tile. Face one and press A
@@ -9,6 +9,7 @@
 import { TILE } from '../config.js';
 import { DOG_SPRITES } from '../assets/dogs.js';
 import { PEOPLE_SPRITES } from '../assets/people.js';
+import { ANIMAL_SPRITES } from '../assets/farmAnimals.js';
 
 const STEP_TIME = 0.3;   // seconds to walk one tile
 const IDLE = [0.8, 3];   // seconds between moves
@@ -16,7 +17,7 @@ const SIT_CHANCE = 0.3;  // chance to sit down instead of moving
 const LISTEN_TIME = 2;   // seconds it keeps sitting after you talk to it
 const STEPS = [[0, -1], [0, 1], [-1, 0], [1, 0]];
 
-const SPRITES = { ...DOG_SPRITES, ...PEOPLE_SPRITES };
+const SPRITES = { ...DOG_SPRITES, ...PEOPLE_SPRITES, ...ANIMAL_SPRITES };
 
 const rand = (a, b) => a + Math.random() * (b - a);
 

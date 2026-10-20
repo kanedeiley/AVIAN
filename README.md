@@ -81,6 +81,8 @@ src/
   assets/coastTiles.js  the Italian seaside town's tiles (houses, terraces, beach)
   assets/caveTiles.js   Echo Cave and Eagle Peak (cave rock, crystals, cliffs, pines, snow)
   assets/vanTiles.js    inside Wyatt's van (cabinets, sink, stove, cab seats, dash, bed)
+  assets/farmTiles.js   the Leister family farm (farmhouses, barn, greenhouse, coop, bamboo) and both farmhouse interiors
+  assets/farmAnimals.js the farm's horse, goats and chickens, who wander their pens like the puppies
   assets/player.js   people's walk cycles: a 'male' body (cap) and a 'female' body (long hair, skirt)
   assets/birds.js    bird body shapes (songbird, seabird, raptor...); species pick one + colors
   maps/              one file per map, plus the registry (index.js)
