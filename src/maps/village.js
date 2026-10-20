@@ -1,5 +1,6 @@
 // A map is plain data:
 //   name        shown in the banner when you arrive
+//   region      which part of the world it's in (data/regions.js); its birds count toward that region
 //   rows        one string per row, one character per tile (see LEGEND in tiles.js)
 //   legend      optional extra/overridden characters for this map only
 //   warps       tiles that move you somewhere else when you step on them
@@ -13,6 +14,7 @@
 
 export default {
   name: 'WILLOW VILLAGE',
+  region: 'valley',
   rows: [
     'TTTTTTTTTTTT:TTTTTTTTTTT',
     'T...........:..........T',

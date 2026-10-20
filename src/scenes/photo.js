@@ -52,7 +52,8 @@ export class PhotoScene {
     this.lens = VIEW_W / 2;
     this.focus = 0;
     this.patience = this.species.patience * (1 - alert / 2);
-    this.shots = SHOTS;
+    this.film = SHOTS;
+    this.shots = this.film;
     this.best = 0;
     this.flash = 0;
     this.popup = null;
@@ -135,6 +136,7 @@ export class PhotoScene {
     return Math.abs(this.bird.x - this.lens) <= ON_TARGET;
   }
 
+  /** Take a photo; returns its stars (0-3). */
   snap() {
     const stars = this.focus >= 1 ? 3 : this.focus >= 0.6 ? 2 : this.focus >= 0.25 ? 1 : 0;
     this.best = Math.max(this.best, stars);
@@ -146,6 +148,7 @@ export class PhotoScene {
     this.bird.pause = 0;
     this.bird.targetX = this.pickTarget();
     this.patience -= 1.5;
+    return stars;
   }
 
   startLeaving() {
@@ -283,12 +286,17 @@ export class PhotoScene {
     ctx.fillRect(60, 126, Math.round(96 * this.focus), 6);
 
     drawText(ctx, 'FILM', 168, 125);
-    for (let i = 0; i < SHOTS; i++) {
-      ctx.fillStyle = INK;
-      ctx.fillRect(204 + i * 10, 124, 8, 9);
-      if (i >= this.shots) {
-        ctx.fillStyle = '#f8f8f8';
-        ctx.fillRect(206 + i * 10, 126, 4, 5);
+    // A box per shot; a longer roll (a nemesis fight) just shows the count.
+    if (this.film > SHOTS) {
+      drawText(ctx, `x${this.shots}`, 208, 125);
+    } else {
+      for (let i = 0; i < SHOTS; i++) {
+        ctx.fillStyle = INK;
+        ctx.fillRect(204 + i * 10, 124, 8, 9);
+        if (i >= this.shots) {
+          ctx.fillStyle = '#f8f8f8';
+          ctx.fillRect(206 + i * 10, 126, 4, 5);
+        }
       }
     }
 

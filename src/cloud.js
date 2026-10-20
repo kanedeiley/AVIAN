@@ -4,12 +4,14 @@
 import { SUPABASE_URL, SUPABASE_KEY } from './cloudConfig.js';
 
 const SDK_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
-const SAVE_DELAY = 1500; // ms: saves made close together are sent as one
+const SAVE_DELAY = 1500;  // ms: saves made close together are sent as one
+const LAZY_DELAY = 60000; // ms: a lazy save (just your location, every step) waits up to this long
 
 let client = null;
 let user = null;
 let pending = null;
 let timer = null;
+let dueAt = 0;
 
 export const cloud = {
   enabled: Boolean(SUPABASE_URL && SUPABASE_KEY),
@@ -55,28 +57,36 @@ export const cloud = {
     user = null;
   },
 
-  /** The player's save from the database ({ journal, money }), or null if they don't have one yet. */
+  /** The player's save from the database ({ journal, money, progress, location }), or null if they don't have one yet. */
   async load() {
-    const { data, error } = await client.from('saves').select('journal, money').eq('user_id', user.id).maybeSingle();
+    const { data, error } = await client.from('saves').select('journal, money, progress, location').eq('user_id', user.id).maybeSingle();
     if (error) throw error;
     return data;
   },
 
-  /** Send this save soon. Only the latest one is sent if several come in quickly. */
-  queueSave(save) {
+  /**
+   * Send this save soon: in SAVE_DELAY, or for a `lazy` one within LAZY_DELAY.
+   * Only the latest save is sent, and a later save never puts off one that's
+   * already due, so walking around doesn't hold back a new photo.
+   */
+  queueSave(save, lazy = false) {
     if (!user) return;
     pending = save;
+    const due = Date.now() + (lazy ? LAZY_DELAY : SAVE_DELAY);
+    if (timer && dueAt <= due) return;
     clearTimeout(timer);
-    timer = setTimeout(() => this.flush(), SAVE_DELAY);
+    dueAt = due;
+    timer = setTimeout(() => this.flush(), due - Date.now());
   },
 
   /** Send the queued save now. */
   async flush() {
     clearTimeout(timer);
+    timer = null;
     if (!pending || !user) return;
-    const { journal, money } = pending;
+    const { journal, money, progress, location } = pending;
     pending = null;
-    const { error } = await client.from('saves').upsert({ user_id: user.id, journal, money, updated_at: new Date().toISOString() });
+    const { error } = await client.from('saves').upsert({ user_id: user.id, journal, money, progress, location, updated_at: new Date().toISOString() });
     // It's still saved in the browser, and that gets merged in on the next sign-in.
     if (error) console.warn('Online save failed:', error.message);
   },

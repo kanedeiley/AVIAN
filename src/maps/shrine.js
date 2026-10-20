@@ -3,6 +3,7 @@
 // east leads to a cave mouth in the cliff (Echo Cave, then Eagle Peak).
 export default {
   name: 'OLD SHRINE',
+  region: 'valley',
   legend: { R: 'cliff', C: 'caveMouth' },
   rows: [
     'TTTTTTTTTTTTTTT',

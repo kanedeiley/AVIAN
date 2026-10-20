@@ -1,5 +1,6 @@
 // Bird-watching voyages: boat trips you book from a map's `voyages` list.
 //   name      shown in the booking dialog and as a habitat in the journal
+//   region    the region its birds count toward (data/regions.js)
 //   price     the fare in dollars, checked against game.money before you board
 //   stops     how many times the boat stops; each stop you pick one bird to photograph
 //   flock     how many birds are around the boat at once
@@ -10,6 +11,7 @@
 export const VOYAGES = {
   bay: {
     name: 'BAY TOUR',
+    region: 'valley',
     price: 0, // free for now; raise it once there's a way to earn money
     stops: 3,
     flock: 5,

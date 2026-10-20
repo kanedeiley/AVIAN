@@ -1,9 +1,11 @@
 // Walking around a map: grid movement, collisions, warps, signs, boats you can
-// book a voyage on (see voyage.js), and the birds you sneak up on (see fieldBirds.js).
+// book a voyage on (see voyage.js), the birds you sneak up on (see fieldBirds.js),
+// and the nemesis bird guarding its perch (see nemesis.js).
 import { TILE, VIEW_W, VIEW_H, STEP_TIME } from '../config.js';
 import { getMap } from '../maps/index.js';
 import { TILES } from '../assets/tiles.js';
 import { PLAYER } from '../assets/player.js';
+import { BIRD_SPRITES } from '../assets/birds.js';
 import { input } from '../input.js';
 import { drawBox, drawText, drawDialog, paginate } from '../gfx/ui.js';
 import { PhotoScene } from './photo.js';
@@ -12,13 +14,17 @@ import { Npcs } from './npcs.js';
 import { WorldMapScene } from './worldMap.js';
 import { JournalScene } from './journal.js';
 import { VoyageScene } from './voyage.js';
+import { NemesisScene } from './nemesis.js';
 import { VOYAGES } from '../data/voyages.js';
-import { saveMoney } from '../save.js';
+import { DIALOGUE } from '../data/dialogue.js';
+import { saveMoney, saveLocation } from '../save.js';
+import { nemesisNeeds, nemesisOn, setFlag } from '../progress.js';
 
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const TURN_DELAY = 0.09; // a quick tap turns in place instead of walking
 const LANTERN = 4.5;     // tiles your lantern lights up on a `dark` map
 const DARKNESS = 'rgba(10,8,20,0.9)';
+const NEMESIS_FLAP = [3, 0.4]; // the nemesis on its perch flaps for 0.4s every 3s
 
 export class Overworld {
   constructor(game, mapId, x, y, facing = 'down') {
@@ -31,6 +37,8 @@ export class Overworld {
   loadMap(id, x, y, facing) {
     this.map = getMap(id);
     Object.assign(this.player, { x, y, facing, moving: false, progress: 0 });
+    this.nemesis = nemesisOn(this.game, id);
+    this.rememberLocation();
     this.npcs = new Npcs(this);
     this.birds = new FieldBirds(this);
     this.bannerTime = 2;
@@ -50,7 +58,13 @@ export class Overworld {
 
   isBlocked(x, y) {
     const tile = this.tileAt(x, y);
-    return !tile || tile.solid || this.npcs.occupies(x, y);
+    return !tile || tile.solid || this.npcs.occupies(x, y) || this.nemesisAt(x, y);
+  }
+
+  /** True if the (not yet beaten) nemesis perches on this tile. */
+  nemesisAt(x, y) {
+    const n = this.nemesis;
+    return Boolean(n && n.x === x && n.y === y && !this.game.progress.nemeses[n.id]);
   }
 
   update(dt) {
@@ -114,7 +128,15 @@ export class Overworld {
       const npc = this.npcs.at(p.x + dx, p.y + dy);
       if (npc) {
         this.npcs.listen(npc);
-        this.dialog = { pages: paginate(npc.text), page: 0 };
+        // Pick the lines before setting the flag, so a first meeting says hello.
+        const text = npc.talk ? DIALOGUE[npc.talk](this.game) : npc.text;
+        if (npc.sets) setFlag(this.game, npc.sets);
+        this.dialog = { pages: paginate(text), page: 0 };
+        p.walking = false;
+        return;
+      }
+      if (this.nemesisAt(p.x + dx, p.y + dy)) {
+        this.offerNemesis();
         p.walking = false;
         return;
       }
@@ -177,6 +199,35 @@ export class Overworld {
     };
   }
 
+  /** Face the nemesis: it tells you what you still need, or asks if you're ready to fight. */
+  offerNemesis() {
+    const n = this.nemesis;
+    const needs = nemesisNeeds(this.game, n.id);
+    if (needs.length) {
+      this.dialog = { pages: paginate([...n.locked, 'To get close, you need to:', ...needs]), page: 0 };
+      return;
+    }
+    const pages = paginate(n.challenge);
+    pages.push(['Face your NEMESIS BIRD?', 'A:YES  B:NO']);
+    this.dialog = {
+      pages, page: 0,
+      onYes: () => this.game.transition(() => this.game.setScene(new NemesisScene(this.game, n.id, this))),
+    };
+  }
+
+  /** The nemesis on its perch, drawn in front of (`front`) or behind the player's row. */
+  drawNemesis(ctx, camX, camY, front) {
+    const n = this.nemesis;
+    if (!n || !this.nemesisAt(n.x, n.y) || n.y >= this.player.y !== front) return;
+    const [every, flapFor] = NEMESIS_FLAP;
+    const flapping = this.time % every < flapFor && Math.floor(this.time * 12) % 2;
+    const sprite = BIRD_SPRITES[n.bird][this.player.x < n.x ? 'left' : 'right'][flapping ? 'flap' : 'perched'];
+    // Twice the size of an ordinary bird, centered on its tile with its feet (row 12) near the bottom.
+    const x = n.x * TILE - camX - TILE / 2;
+    const y = n.y * TILE - camY + 14 - 26;
+    ctx.drawImage(sprite, Math.round(x), Math.round(y), 32, 32);
+  }
+
   /** Called after each completed step. Returns true if it started a transition. */
   onStep() {
     const p = this.player;
@@ -185,7 +236,15 @@ export class Overworld {
       this.game.transition(() => this.loadMap(warp.to, warp.toX, warp.toY, warp.facing ?? p.facing));
       return true;
     }
+    this.rememberLocation();
     return false;
+  }
+
+  /** Save where you're standing, so the next visit starts here (never on a warp: loadMap saves where it lands). */
+  rememberLocation() {
+    const p = this.player;
+    this.game.location = { map: this.map.id, x: p.x, y: p.y, facing: p.facing, at: Date.now() };
+    saveLocation(this.game.location);
   }
 
   frameOf(tile) {
@@ -218,6 +277,7 @@ export class Overworld {
 
     this.npcs.draw(ctx, camX, camY, false, this.time);
     this.birds.draw(ctx, camX, camY, false, this.time);
+    this.drawNemesis(ctx, camX, camY, false);
 
     // Player
     const frames = PLAYER[p.facing];
@@ -236,6 +296,7 @@ export class Overworld {
 
     this.npcs.draw(ctx, camX, camY, true, this.time);
     this.birds.draw(ctx, camX, camY, true, this.time);
+    this.drawNemesis(ctx, camX, camY, true);
 
     if (this.map.dark) {
       // The lantern flickers a little.

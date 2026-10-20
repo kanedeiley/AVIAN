@@ -3,6 +3,7 @@
 // and through one more gap to the snowy summit and its cairn.
 export default {
   name: 'EAGLE PEAK',
+  region: 'valley',
   legend: {
     'R': 'cliff',
     'C': 'caveMouth',

@@ -3,6 +3,7 @@
 // bowls and toys near the door. Plants everywhere. Tiles are in houseTiles.js.
 export default {
   name: "HANNAH'S HOUSE",
+  region: 'valley',
   indoor: true, // left off the world map
   legend: {
     '#': 'cottageWallTop',
@@ -50,6 +51,10 @@ export default {
   warps: [
     // The doormat. Arrive outside on the porch, just below the front door.
     { x: 7, y: 8, to: 'hannahville', toX: 7, toY: 28, facing: 'down' },
+  ],
+  // Hannah, painting in her art corner. Talking to her starts the hunt for the BALD EAGLE.
+  npcs: [
+    { id: 'hannah', x: 11, y: 4, area: [9, 3, 12, 5], talk: 'hannah', sets: 'metHannah' },
   ],
   signs: [
     { x: 4, y: 2, text: ['A pile of mail and a bowl of lemons.', 'One envelope says: HANNAH - BIRD CLUB.'] },

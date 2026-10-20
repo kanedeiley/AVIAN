@@ -3,13 +3,16 @@
 // game just starts fresh, or stops saving, if it fails.
 //
 // Every save also calls the `onSave` hook, which main.js uses to send the
-// save to the database when you're signed in (see cloud.js).
+// save to the database when you're signed in (see cloud.js). Your location is
+// saved on every step, so it's a `lazy` save: it can wait a while to go online.
 const JOURNAL_KEY = 'avian.journal';
 const MONEY_KEY = 'avian.money';
+const PROGRESS_KEY = 'avian.progress';
+const LOCATION_KEY = 'avian.location';
 
 let onSave = () => {};
 
-/** Call `fn` after every save, e.g. to save online too. */
+/** Call `fn(lazy)` after every save, e.g. to save online too. */
 export function whenSaved(fn) {
   onSave = fn;
 }
@@ -19,6 +22,8 @@ export function clearSave() {
   try {
     localStorage.removeItem(JOURNAL_KEY);
     localStorage.removeItem(MONEY_KEY);
+    localStorage.removeItem(PROGRESS_KEY);
+    localStorage.removeItem(LOCATION_KEY);
   } catch {
     // Nothing saved to clear.
   }
@@ -60,4 +65,47 @@ export function saveMoney(money) {
     // Not saved; the money still counts until the page is closed.
   }
   onSave();
+}
+
+/**
+ * The saved story progress, or a fresh one:
+ *   flags    story beats you've reached, e.g. { metHannah: true } (see data/flags.js)
+ *   nemeses  nemesis birds you've beaten -> stars of the winning photo (see data/nemeses.js)
+ */
+export function loadProgress() {
+  const fresh = { flags: {}, nemeses: {} };
+  try {
+    const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY));
+    return saved && typeof saved === 'object' ? { ...fresh, ...saved } : fresh;
+  } catch {
+    return fresh;
+  }
+}
+
+export function saveProgress(progress) {
+  try {
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+  } catch {
+    // Not saved; the progress still counts until the page is closed.
+  }
+  onSave();
+}
+
+/** Where you last stood ({ map, x, y, facing, at }, `at` in ms since 1970), or null. */
+export function loadLocation() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(LOCATION_KEY));
+    return saved && typeof saved.map === 'string' && Number.isInteger(saved.x) && Number.isInteger(saved.y) ? saved : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveLocation(location) {
+  try {
+    localStorage.setItem(LOCATION_KEY, JSON.stringify(location));
+  } catch {
+    // Not saved; you'll start back in the village next time.
+  }
+  onSave(true);
 }

@@ -9,10 +9,21 @@ import mountain from './mountain.js';
 import { TILES, LEGEND } from '../assets/tiles.js';
 import { PROPS } from '../assets/coastTiles.js';
 import { VOYAGES } from '../data/voyages.js';
+import { REGIONS } from '../data/regions.js';
+import { NEMESES } from '../data/nemeses.js';
+import { FLAGS } from '../data/flags.js';
+import { BIRDS } from '../data/birds.js';
 
 const MAPS = { village, house, shrine, hannahville, hannahHouse, cave, mountain };
 export const MAP_IDS = Object.keys(MAPS);
 const cache = {};
+
+/** True if this map exists and (x, y) is a tile on it you can stand on. */
+export function canStand(id, x, y) {
+  if (!MAPS[id]) return false;
+  const map = getMap(id);
+  return x >= 0 && y >= 0 && x < map.width && y < map.height && !TILES[map.grid[y][x]].solid;
+}
 
 /** Load a map by id, turning its character rows into a grid of tile ids. */
 export function getMap(id) {
@@ -20,6 +31,7 @@ export function getMap(id) {
   const raw = MAPS[id];
   if (!raw) throw new Error(`No map called "${id}"`);
 
+  if (!REGIONS[raw.region]) throw new Error(`Map "${id}": unknown region "${raw.region}" (see data/regions.js)`);
   const legend = { ...LEGEND, ...raw.legend };
   const width = raw.rows[0].length;
   const grid = raw.rows.map((row, y) => {
@@ -41,6 +53,7 @@ export function getMap(id) {
     const w = parts[0].length, h = parts.length;
     if (!inside(p.x, p.y) || !inside(p.x + w - 1, p.y + h - 1)) throw new Error(`${at} (${w}x${h}) doesn't fit on the map`);
     if (p.voyage && !VOYAGES[p.voyage]) throw new Error(`${at} books unknown voyage "${p.voyage}"`);
+    if (p.voyage && !REGIONS[VOYAGES[p.voyage].region]) throw new Error(`${at}: voyage "${p.voyage}" has unknown region "${VOYAGES[p.voyage].region}"`);
     parts.forEach((row, dy) => row.forEach((tileId, dx) => (grid[p.y + dy][p.x + dx] = tileId)));
     return { ...p, w, h };
   });
@@ -63,6 +76,16 @@ export function getMap(id) {
     const at = `Map "${id}": npc "${n.id}" at ${n.x},${n.y}`;
     if (!inside(n.x, n.y)) throw new Error(`${at} is outside the map`);
     if (TILES[grid[n.y][n.x]].solid) throw new Error(`${at} starts on a solid tile`);
+  }
+
+  for (const [nid, n] of Object.entries(NEMESES)) {
+    if (n.map !== id) continue;
+    const at = `Map "${id}": nemesis "${nid}" at ${n.x},${n.y}`;
+    if (!inside(n.x, n.y)) throw new Error(`${at} is outside the map`);
+    if (TILES[grid[n.y][n.x]].solid) throw new Error(`${at} perches on a solid tile`);
+    if (!BIRDS[n.bird]) throw new Error(`${at} is unknown bird "${n.bird}" (see data/birds.js)`);
+    if (!REGIONS[n.region]) throw new Error(`${at} has unknown region "${n.region}"`);
+    for (const f of n.requires.flags ?? []) if (!FLAGS[f]) throw new Error(`${at} requires unknown flag "${f}" (see data/flags.js)`);
   }
 
   return (cache[id] = {
