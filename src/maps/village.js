@@ -28,8 +28,8 @@ export default {
     'T...~~~~.....:....*....T',
     'T..~~~~~~....:.........T',
     'T..~~~~~~....::::......T',
-    'T...~~~~........:..*...T',
-    'T...............:......T',
+    'T.S.~~~~........:..*...T',
+    ':::::::::::::::::......T',
     'T.,,,,.....*....:...,,,T',
     'T,,,,,,.........:..,,,,T',
     'T,,,,,,,........:.,,,,,T',
@@ -41,9 +41,12 @@ export default {
     // The gap in the top tree line. Arrive on the shrine's entrance path.
     { x: 12, y: 0, to: 'shrine', toX: 7, toY: 8, facing: 'up' },
     { x: 16, y: 17, to: 'hannahville', toX: 20, toY: 0, facing: 'down' },
+    // The lane west, to the Leister family farm.
+    { x: 0, y: 13, to: 'farm', toX: 42, toY: 35, facing: 'left' },
   ],
   signs: [
     { x: 11, y: 2, text: ['NORTH: Old Shrine', 'Few who enter remember the way back...'] },
+    { x: 2, y: 12, text: ['WEST: Leister Family Farm', 'Fresh eggs! Mind the goats.'] },
   ],
   birds: { count: 4, table: ['robin', 'bluejay', 'wren'] },
 };

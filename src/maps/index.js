@@ -7,6 +7,9 @@ import hannahHouse from './hannahHouse.js';
 import cave from './cave.js';
 import mountain from './mountain.js';
 import van from './van.js';
+import farm from './farm.js';
+import leisterHouse from './leisterHouse.js';
+import grandparentsHouse from './grandparentsHouse.js';
 import { TILES, LEGEND } from '../assets/tiles.js';
 import { PROPS } from '../assets/coastTiles.js';
 import { VOYAGES } from '../data/voyages.js';
@@ -15,7 +18,7 @@ import { NEMESES } from '../data/nemeses.js';
 import { FLAGS } from '../data/flags.js';
 import { BIRDS } from '../data/birds.js';
 
-const MAPS = { village, house, shrine, hannahville, hannahHouse, cave, mountain, van };
+const MAPS = { village, house, shrine, hannahville, hannahHouse, cave, mountain, van, farm, leisterHouse, grandparentsHouse };
 export const MAP_IDS = Object.keys(MAPS);
 const cache = {};
 

@@ -1,0 +1,63 @@
+// Inside the grandparents' farmhouse: a little kitchen with a mint green
+// fridge (left), the stone fireplace with two rocking chairs on a braided rug,
+// the grandfather clock, and a quilted bed in the corner (right). There's
+// always a pie on the table. Tiles are in assets/farmTiles.js.
+export default {
+  name: "GRANDPARENTS' HOUSE",
+  region: 'valley',
+  indoor: true, // left off the world map
+  legend: {
+    '#': 'beams',
+    '-': 'grandWall',
+    'W': 'grandWindow',
+    'U': 'grandHutch',
+    'M': 'grandMantel',
+    'C': 'grandClockTop',
+    'R': 'grandFridgeTop',
+    '_': 'planks',
+    'r': 'grandFridge',
+    'c': 'grandCounter',
+    's': 'grandSink',
+    'o': 'grandOven',
+    'u': 'hutch',
+    'F': 'fireplace',
+    'k': 'clock',
+    'B': 'bookshelf',
+    'H': 'bedHead',
+    'f': 'bedFoot',
+    'l': 'farmTableLeft',
+    'L': 'tablePie',
+    'i': 'farmTableRight',
+    'h': 'chair',
+    'g': 'braidedRug',
+    'z': 'rockingChair',
+    'b': 'boots',
+    'm': 'doormat',
+  },
+  rows: [
+    '#############',
+    'R-W-U-M-C-W--',
+    'rcsou_F_k_BH_',
+    '____ggggg__f_',
+    '____zgggz____',
+    '____ggggg____',
+    '_lLi_________',
+    '_hhh_________',
+    '_____bm______',
+  ],
+  warps: [
+    // The doormat. Arrive outside on the porch, just below the front door.
+    { x: 6, y: 8, to: 'farm', toX: 6, toY: 33, facing: 'down' },
+  ],
+  signs: [
+    { x: 0, y: 2, text: ['A mint green fridge from a long time ago. It hums a little tune.'] },
+    { x: 2, y: 2, text: ['A deep farmhouse sink. Through the window you can see the barn.'] },
+    { x: 3, y: 2, text: ['A pot of soup on the stove. There is always enough for one more.'] },
+    { x: 4, y: 2, text: ['The good china. Only for Sundays and holidays.'] },
+    { x: 6, y: 2, text: ['A crackling fire. Two pairs of slippers are warming on the hearth.'] },
+    { x: 8, y: 2, text: ['TICK... TOCK... The grandfather clock is older than the farmhouse.'] },
+    { x: 10, y: 2, text: ['Photo albums, cookbooks, and farm almanacs going back fifty years.'] },
+    { x: 11, y: 3, text: ['A quilt made from patches of old shirts. Every square has a story.'] },
+    { x: 2, y: 6, text: ['A rhubarb pie. A note on it says: FOR THE GRANDKIDS. HANDS OFF.'] },
+  ],
+};
