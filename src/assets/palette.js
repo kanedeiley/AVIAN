@@ -38,4 +38,18 @@ export const PALETTE = {
   f: '#f8e050',    // yellow (flowers, trim)
   e: '#d07040',    // terracotta (flower pots)
   E: '#984828',    // terracotta shade
+  i: '#f890b8',    // pink (flowers, boutique)
+  I: '#d05888',    // pink shade
+  v: '#b088e0',    // violet (flowers)
+  V: '#7850b0',    // violet shade
+  a: '#f0c070',    // ochre plaster
+  A: '#d0a050',    // ochre plaster shade
+  m: '#f8b898',    // peach plaster
+  M: '#d89070',    // peach plaster shade
+  l: '#f4c0c0',    // rose plaster
+  L: '#d89898',    // rose plaster shade
+  t: '#3a9088',    // teal (shutters)
+  T: '#286060',    // teal shade
+  j: '#f4e4b0',    // sand
+  J: '#dcc488',    // sand shade / wet sand
 };

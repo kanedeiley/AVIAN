@@ -5,7 +5,8 @@ import shrine from './shrine.js';
 import hannahville from './hannahville.js';
 import { TILES, LEGEND } from '../assets/tiles.js';
 
-const MAPS = { village, house, shrine, hannahville};
+const MAPS = { village, house, shrine, hannahville };
+export const MAP_IDS = Object.keys(MAPS);
 const cache = {};
 
 /** Load a map by id, turning its character rows into a grid of tile ids. */

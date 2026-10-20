@@ -1,10 +1,12 @@
 // Boot + game loop + scene switching.
 //
 // A "scene" is any object with update(dt) and draw(ctx). The game runs
-// exactly one at a time: Overworld now, BattleScene later, menus after that.
+// exactly one at a time: the Overworld, or a PhotoScene, WorldMapScene or
+// JournalScene that hands control back to it when it's done.
 import { VIEW_W, VIEW_H, FADE_TIME } from './config.js';
 import { input } from './input.js';
 import { Overworld } from './scenes/overworld.js';
+import { loadJournal } from './save.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -15,6 +17,7 @@ const game = {
   fade: 0,       // 0 = clear, 1 = fully black
   fadeDir: 0,    // 1 fading out, -1 fading in, 0 idle
   onBlack: null,
+  journal: loadJournal(), // bird id -> best photo (1-3 stars); saved in the browser
 
   setScene(scene) {
     this.scene = scene;

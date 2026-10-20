@@ -1,6 +1,6 @@
-# Poki
+# AVIAN
 
-A tiny Pokémon-style game. Plain JavaScript and an HTML canvas, with no build step.
+A tiny bird-watching game in the style of the GBA Pokémon games. Plain JavaScript and an HTML canvas, with no build step.
 
 ## Run it
 
@@ -12,7 +12,7 @@ python3 serve.py
 # then open http://localhost:8000
 ```
 
-**Controls:** arrows / WASD to walk, Z / Enter / Space = A, X / Esc = B.
+**Controls:** arrows / WASD to walk, Z / Enter / Space = A, X / Esc = B, M / Tab = world map, J = journal.
 Tap a direction to turn in place; hold it to walk.
 
 Dev shortcut: `http://localhost:8000/?map=house&x=4&y=6` starts you on any map.
@@ -27,12 +27,14 @@ src/
   gfx/sprite.js      text pixel art -> images
   gfx/ui.js          text boxes and font
   assets/palette.js  the shared color palette
-  assets/tiles.js    every tile: art + rules (solid, encounter, ...)
+  assets/tiles.js    every tile: art + rules (solid, perch, cover, ...)
+  assets/coastTiles.js  the Italian seaside town's tiles (houses, terraces, beach)
   assets/player.js   the player's walk cycle
+  assets/birds.js    the bird sprite, recolored per species
   maps/              one file per map, plus the registry (index.js)
-  data/creatures.js  creature species (battle data will grow here)
-  scenes/overworld.js  walking, collisions, warps, encounters
-  scenes/battle.js     placeholder battle screen
+  data/birds.js      bird species: colors and how they move
+  scenes/overworld.js  walking, collisions, warps, bird sightings
+  scenes/photo.js      the photo minigame (keep the bird in frame, snap)
 ```
 
 ## How assets work
@@ -73,7 +75,7 @@ table:     { art: TABLE, base: 'floor', solid: true },
 | `frames` + `frameTime` | animated tile |
 | `base`       | tile drawn underneath (fills `.` holes) |
 | `solid`      | can't walk onto it |
-| `encounter`  | can start a wild battle |
+| `encounter`  | can start a bird sighting |
 | `coversFeet` | drawn over the player's feet |
 
 Then give it a map character in `LEGEND` at the bottom of the file.
@@ -92,7 +94,7 @@ export default {
     ...
   ],
   warps: [{ x: 5, y: 4, to: 'house', toX: 4, toY: 6, facing: 'up' }],
-  encounters: { rate: 0.12, table: ['sproutle', 'puddlefin'] },
+  encounters: { rate: 0.12, table: ['robin', 'wren'] },
 };
 ```
 
@@ -113,12 +115,18 @@ and add a warp to it from an existing map.
 
 A scene is any object with `update(dt)` and `draw(ctx)`. `game.transition(fn)`
 fades to black, runs `fn` (change map or scene), then fades back in. The
-overworld hands itself to the battle scene, which returns to it when the
-battle ends. Later you can add menus, a bag, and so on the same way.
+overworld hands itself to the photo scene, which returns to it when the
+bird flies off. Later you can add menus, a field journal screen, and so on the same way.
 
-## Next steps toward battles
+## The photo minigame
 
-1. Give creatures stats and moves in `data/creatures.js`.
-2. Add a party to the player (`game.party = [...]`).
-3. Grow `scenes/battle.js` into a state machine:
-   intro → choose action → resolve turn → win/lose → return.
+Stepping in tall grass can start a sighting. A bird lands on a branch and hops
+around; hold left/right to keep the viewfinder on it. The FOCUS meter fills
+while it's in frame and drains when it isn't. Press A to snap: a full meter is
+a 3-star photo. You have 3 shots, each one startles the bird, and it flies off
+when its patience runs out. The best photo per species goes in the journal
+(`game.journal`, press J to view it), which is saved in the browser's
+localStorage so it survives a reload (see `save.js`).
+
+How hard a bird is comes from its numbers in `data/birds.js` (speed, hop
+distance, pauses, patience, focus time).

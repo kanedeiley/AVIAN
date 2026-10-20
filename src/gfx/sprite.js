@@ -32,6 +32,15 @@ export function makeSprite(rows, palette, name = 'sprite') {
 /** Flip pixel art horizontally (e.g. make a right-facing sprite from a left one). */
 export const mirror = (rows) => rows.map((r) => [...r].reverse().join(''));
 
+/** Flip pixel art upside down. */
+export const flipY = (rows) => [...rows].reverse();
+
+/** Swap colors in pixel art, e.g. recolor(ROOF, { r: 'i', R: 'I' }) for a pink roof. */
+export const recolor = (rows, swaps) => rows.map((r) => [...r].map((c) => swaps[c] ?? c).join(''));
+
+/** Paint `top` art over `bottom` art; '.' in `top` lets `bottom` show through. */
+export const stamp = (bottom, top) => bottom.map((r, y) => [...r].map((c, x) => (top[y][x] === '.' ? c : top[y][x])).join(''));
+
 /** Wrap pixel art sideways by n pixels (handy for cheap water animation). */
 export const shiftX = (rows, n) => rows.map((r) => r.slice(-n) + r.slice(0, -n));
 

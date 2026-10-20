@@ -6,13 +6,15 @@
 //   frameTime   seconds per animation frame
 //   base        id of another tile drawn underneath (for art with '.' holes)
 //   solid       the player can't walk onto it
-//   encounter   stepping here can start a wild battle (if the map has encounters)
+//   perch       birds can land and hop around here (if the map has birds)
+//   cover       birds barely notice you walking here
 //   coversFeet  redraw the bottom of the tile over the player (tall grass)
 //
 // Maps refer to tiles by a single character, set in LEGEND at the bottom.
 
 import { PALETTE } from './palette.js';
-import { makeSprite, shiftX, layer } from '../gfx/sprite.js';
+import { makeSprite, shiftX, layer, recolor, stamp } from '../gfx/sprite.js';
+import { COAST_DEFS } from './coastTiles.js';
 
 // ---------- outdoor ----------
 
@@ -149,6 +151,162 @@ const SIGN = [
   '................',
 ];
 
+// 'x' is the petal color and 'z' the flower's center; the beds below fill them in.
+const FLOWER_BED = [
+  'ggxgGgggggggxggg',
+  'gxzxgggxgggxzxgg',
+  'ggxgggxzxgggxggg',
+  'gggggggxggggGggg',
+  'ggggxggggggggggx',
+  'gggxzxggggxgggxz',
+  'Ggggxggggxzxgggx',
+  'ggggggggggxggggg',
+  'gxgggggxGggggggg',
+  'xzxgggxzxggggxgg',
+  'gxgggggxggggxzxg',
+  'gggggggggggGgxgg',
+  'ggggxgggggxggggg',
+  'xggxzxgggxzxgggx',
+  'zxggxgggggxgggxz',
+  'xggggggGggggggGx',
+];
+
+const LILY_PADS = [
+  '................',
+  '................',
+  '...GGGG.........',
+  '..GgggGG........',
+  '..GggiiG........',
+  '..GgiIiG........',
+  '...GgiG.........',
+  '....GG..........',
+  '................',
+  '................',
+  '..........GGG...',
+  '.........GgggG..',
+  '.........GggGG..',
+  '..........GG....',
+  '................',
+  '................',
+];
+
+const COBBLE = [
+  'qqqqqqqQqqqqqqqQ',
+  'qqqqqqqQqqqqqqqQ',
+  'qqqqqqqQqqqqqqqQ',
+  'QQQQQQQQQQQQQQQQ',
+  'qqqQqqqqqqqQqqqq',
+  'qqqQqqqqqqqQqqqq',
+  'qqqQqqqqqqqQqqqq',
+  'QQQQQQQQQQQQQQQQ',
+  'qqqqqqqQqqqqqqqQ',
+  'qqqqqqqQqqqqqqqQ',
+  'qqqqqqqQqqqqqqqQ',
+  'QQQQQQQQQQQQQQQQ',
+  'qqqQqqqqqqqQqqqq',
+  'qqqQqqqqqqqQqqqq',
+  'qqqQqqqqqqqQqqqq',
+  'QQQQQQQQQQQQQQQQ',
+];
+
+// A north-south footbridge: rails down both sides, planks across.
+const BRIDGE = [
+  'kOnnnnnnnnnnnnOk',
+  'kNnnnnnnnnnnnnNk',
+  'kNnnnnnnnnnnnnNk',
+  'kNNNNNNNNNNNNNNk',
+  'kNnnnnnnnnnnnnNk',
+  'kNnnnnnnnnnnnnNk',
+  'kNnnnnnnnnnnnnNk',
+  'kNNNNNNNNNNNNNNk',
+  'kOnnnnnnnnnnnnOk',
+  'kNnnnnnnnnnnnnNk',
+  'kNnnnnnnnnnnnnNk',
+  'kNNNNNNNNNNNNNNk',
+  'kNnnnnnnnnnnnnNk',
+  'kNnnnnnnnnnnnnNk',
+  'kNnnnnnnnnnnnnNk',
+  'kNNNNNNNNNNNNNNk',
+];
+
+const FENCE = [
+  '................',
+  '................',
+  '.kk..kk..kk..kk.',
+  'kwwkkwwkkwwkkwwk',
+  'kwwkkwwkkwwkkwwk',
+  'kwwwwwwwwwwwwwwk',
+  'kqqqqqqqqqqqqqqk',
+  'kwwkkwwkkwwkkwwk',
+  'kwwkkwwkkwwkkwwk',
+  'kwwkkwwkkwwkkwwk',
+  'kwwwwwwwwwwwwwwk',
+  'kqqqqqqqqqqqqqqk',
+  'kwwkkwwkkwwkkwwk',
+  'kqqkkqqkkqqkkqqk',
+  '.kk..kk..kk..kk.',
+  '................',
+];
+
+// The same fence running north-south, for the sides of a yard.
+const FENCE_SIDE = [
+  '......kkkk......',
+  '.....kwwwwk.....',
+  '.....kwwwwk.....',
+  '.....kqqqqk.....',
+  '......kwwk......',
+  '......kwwk......',
+  '......kwwk......',
+  '......kwwk......',
+  '.....kwwwwk.....',
+  '.....kwwwwk.....',
+  '.....kqqqqk.....',
+  '......kwwk......',
+  '......kwwk......',
+  '......kwwk......',
+  '......kwwk......',
+  '......kwwk......',
+];
+
+// A little stone fountain; the second frame moves the sparkles.
+const FOUNTAIN = [
+  '................',
+  '....kkkkkkkk....',
+  '..kkqqqqqqqqkk..',
+  '.kqqQQQQQQQQqqk.',
+  '.kqQbbbbbbbbQqk.',
+  'kqQbbcbwwbcbbQqk',
+  'kqQbbbkwwkbbbQqk',
+  'kqQbcbkqqkbcbQqk',
+  'kqQbbbkqqkbbbQqk',
+  'kqQbbcbkkbcbbQqk',
+  'kqQbbbbbbbbbbQqk',
+  '.kqQbbbbbbbbQqk.',
+  '.kqqQQQQQQQQqqk.',
+  '..kkqqqqqqqqkk..',
+  '....kkkkkkkk....',
+  '................',
+];
+
+const LAMP_POST = [
+  '......kkkk......',
+  '.....kffffk.....',
+  '.....kfwwfk.....',
+  '.....kffffk.....',
+  '......kkkk......',
+  '.......kk.......',
+  '.......kk.......',
+  '.......kk.......',
+  '.......kk.......',
+  '.......kk.......',
+  '.......kk.......',
+  '.......kk.......',
+  '.......kk.......',
+  '......kkkk......',
+  '.....kkkkkk.....',
+  '................',
+];
+
 // ---------- house exterior ----------
 
 const ROOF = [
@@ -225,6 +383,28 @@ const DOOR = [
   'yyknnnnnnnnnnkyy',
   'YYknnnnnnnnnnkYY',
   'QQkkkkkkkkkkkkQQ',
+];
+
+// A striped shop awning over the top of a wall.
+const AWNING = [
+  'kkkkkkkkkkkkkkkk',
+  'ppwwppwwppwwppww',
+  'ppwwppwwppwwppww',
+  'ppwwppwwppwwppww',
+  'PPwwPPwwPPwwPPww',
+  'kppkkwwkkppkkwwk',
+  '.kk..kk..kk..kk.',
+  ...WALL.slice(7),
+];
+
+// A window with a flower box under it.
+const FLOWER_BOX_WINDOW = [
+  ...WINDOW.slice(0, 11),
+  'YYkiifiivvfvvkYY',
+  'yykeeeeeeeeeekyy',
+  'yykEEEEEEEEEEkyy',
+  'YYYYYYYYYYYYYYYY',
+  'QQQQQQQQQQQQQQQQ',
 ];
 
 // ---------- house interior ----------
@@ -383,6 +563,26 @@ const BOUTIQUE_SIGN = [
   '................',
 ];
 
+// A pink signpost with a white arrow pointing the way down (south).
+const ARROW_SIGN = [
+  '................',
+  '................',
+  '..kkkkkkkkkkkk..',
+  '..kiiiiwwiiiik..',
+  '..kiiiiwwiiiik..',
+  '..kiiwwwwwwiik..',
+  '..kiiiwwwwiiik..',
+  '..kiiiiwwiiiik..',
+  '..kkkkkkkkkkkk..',
+  '......kNNk......',
+  '......kNNk......',
+  '......kNNk......',
+  '......kNNk......',
+  '.....kNNNNk.....',
+  '................',
+  '................',
+];
+
 const SHOP_SIGN = [
   'kkkkkkkkkkkkkkkk',
   'kyyyyyyyyyyyyyyk',
@@ -443,15 +643,27 @@ const MAT = [
 // ---------- the tile table ----------
 
 const DEFS = {
-  grass:     { art: GRASS },
-  tallGrass: { art: TALL_GRASS, encounter: true, coversFeet: true },
-  flowers:   { art: FLOWERS },
+  grass:     { art: GRASS, perch: true },
+  tallGrass: { art: TALL_GRASS, perch: true, cover: true, coversFeet: true },
+  flowers:   { art: FLOWERS, perch: true },
   flowerPot: { art: FLOWER_POT, base: 'grass', solid: true },
   flyerSign: { art: FLYER_SIGN, base: 'grass', solid: true },
   boutiqueSign: { art: BOUTIQUE_SIGN, base: 'grass', solid: true },
+  boutiqueSignPaved: { art: BOUTIQUE_SIGN, base: 'paving', solid: true },
+  arrowSign: { art: ARROW_SIGN, base: 'grass', solid: true },
   shopSign: { art: SHOP_SIGN, base: 'grass', solid: true },
-  dirt:      { art: DIRT },
+  dirt:      { art: DIRT, perch: true },
   water:     { frames: [WATER, shiftX(WATER, 3)], frameTime: 0.6, solid: true },
+  lilyPads:  { frames: [stamp(WATER, LILY_PADS), stamp(shiftX(WATER, 3), LILY_PADS)], frameTime: 0.6, solid: true },
+  bridge:    { art: BRIDGE },
+  cobble:    { art: COBBLE, perch: true },
+  fence:     { art: FENCE, base: 'grass', solid: true },
+  fenceSide: { art: FENCE_SIDE, base: 'grass', solid: true },
+  fountain:  { frames: [FOUNTAIN, recolor(FOUNTAIN, { c: 'b', w: 'c' })], frameTime: 0.4, base: 'cobble', solid: true },
+  lampPost:  { art: LAMP_POST, base: 'cobble', solid: true },
+  pinkBed:   { art: recolor(FLOWER_BED, { x: 'i', z: 'f' }), perch: true },
+  violetBed: { art: recolor(FLOWER_BED, { x: 'v', z: 'w' }), perch: true },
+  yellowBed: { art: recolor(FLOWER_BED, { x: 'f', z: 'e' }), perch: true },
   tree:      { art: TREE, base: 'grass', solid: true },
   sign:      { art: SIGN, base: 'grass', solid: true },  // the map's `signs` list holds its text
 
@@ -459,6 +671,14 @@ const DEFS = {
   wall:      { art: WALL, solid: true },
   window:    { art: WINDOW, solid: true },
   door:      { art: DOOR },          // walkable: the map puts a warp on it
+  shopDoor:  { art: DOOR, solid: true },  // a door with no inside yet; give it sign text
+  pinkRoof:  { art: recolor(ROOF, { r: 'i', R: 'I' }), solid: true },
+  awning:    { art: AWNING, base: 'wall', solid: true },
+  pinkAwning: { art: recolor(AWNING, { p: 'i', P: 'I' }), base: 'wall', solid: true },
+  pinkDoor:  { art: recolor(DOOR, { n: 'i', N: 'I' }), solid: true },
+  flowerBoxWindow: { art: FLOWER_BOX_WINDOW, solid: true },
+
+  ...COAST_DEFS, // the Italian seaside town: see coastTiles.js
 
   floor:     { art: FLOOR },
   innerWall: { art: INNER_WALL, solid: true },
@@ -493,6 +713,22 @@ export const LEGEND = {
   'b': 'bed',
   'm': 'mat',
   'G': 'glyphs',
+  'L': 'lilyPads',
+  '=': 'bridge',
+  '+': 'cobble',
+  '^': 'fence',
+  '|': 'fenceSide',
+  'o': 'fountain',
+  'l': 'lampPost',
+  '1': 'pinkBed',
+  '2': 'violetBed',
+  '3': 'yellowBed',
+  'd': 'shopDoor',
+  'K': 'pinkRoof',
+  'A': 'awning',
+  'a': 'pinkAwning',
+  'p': 'pinkDoor',
+  'Y': 'flowerBoxWindow',
 };
 
 // Bake every tile's art into canvases once, at load time.

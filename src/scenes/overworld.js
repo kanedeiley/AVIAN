@@ -1,11 +1,15 @@
-// Walking around a map: grid movement, collisions, warps, signs, wild encounters.
+// Walking around a map: grid movement, collisions, warps, signs, and the birds
+// you sneak up on (see fieldBirds.js).
 import { TILE, VIEW_W, VIEW_H, STEP_TIME } from '../config.js';
 import { getMap } from '../maps/index.js';
 import { TILES } from '../assets/tiles.js';
 import { PLAYER } from '../assets/player.js';
 import { input } from '../input.js';
 import { drawBox, drawText, drawDialog, paginate } from '../gfx/ui.js';
-import { BattleScene } from './battle.js';
+import { PhotoScene } from './photo.js';
+import { FieldBirds } from './fieldBirds.js';
+import { WorldMapScene } from './worldMap.js';
+import { JournalScene } from './journal.js';
 
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const TURN_DELAY = 0.09; // a quick tap turns in place instead of walking
@@ -21,6 +25,7 @@ export class Overworld {
   loadMap(id, x, y, facing) {
     this.map = getMap(id);
     Object.assign(this.player, { x, y, facing, moving: false, progress: 0 });
+    this.birds = new FieldBirds(this);
     this.bannerTime = 2;
   }
 
@@ -38,6 +43,7 @@ export class Overworld {
     this.time += dt;
     this.bannerTime = Math.max(0, this.bannerTime - dt);
     const p = this.player;
+    this.birds.update(dt);
 
     // While a text box is open, A/B only advance it.
     if (this.dialog) {
@@ -60,13 +66,30 @@ export class Overworld {
       // otherwise fall through so held keys keep walking without a hitch
     }
 
-    // A: read whatever is in front of you.
+    // M: the world map. J: the journal.
+    if (input.wasPressed('map') || input.wasPressed('journal')) {
+      const Screen = input.wasPressed('map') ? WorldMapScene : JournalScene;
+      p.walking = false;
+      this.game.transition(() => this.game.setScene(new Screen(this.game, this)));
+      return;
+    }
+
+    // A: read the sign in front of you, or photograph the bird in front of you.
     if (input.wasPressed('a')) {
       const [dx, dy] = DIRS[p.facing];
       const sign = this.map.signs.find((s) => s.x === p.x + dx && s.y === p.y + dy);
       if (sign) {
         this.dialog = { pages: paginate(sign.text), page: 0 };
         p.walking = false;
+        return;
+      }
+      const bird = this.birds.target(dx, dy);
+      if (bird) {
+        p.walking = false;
+        this.game.transition(() => {
+          this.birds.remove(bird);
+          this.game.setScene(new PhotoScene(this.game, bird.id, this, bird.alert));
+        });
         return;
       }
     }
@@ -101,14 +124,6 @@ export class Overworld {
       this.game.transition(() => this.loadMap(warp.to, warp.toX, warp.toY, warp.facing ?? p.facing));
       return true;
     }
-
-    const tile = this.tileAt(p.x, p.y);
-    const enc = this.map.encounters;
-    if (tile.encounter && enc && Math.random() < enc.rate) {
-      const creature = enc.table[Math.floor(Math.random() * enc.table.length)];
-      this.game.transition(() => this.game.setScene(new BattleScene(this.game, creature, this)));
-      return true;
-    }
     return false;
   }
 
@@ -140,6 +155,8 @@ export class Overworld {
       }
     }
 
+    this.birds.draw(ctx, camX, camY, false, this.time);
+
     // Player
     const frames = PLAYER[p.facing];
     let sprite = frames.stand;
@@ -153,6 +170,14 @@ export class Overworld {
     const under = this.tileAt(fx, fy);
     if (under?.coversFeet) {
       ctx.drawImage(this.frameOf(under), 0, 10, TILE, 6, fx * TILE - camX, fy * TILE - camY + 10, TILE, 6);
+    }
+
+    this.birds.draw(ctx, camX, camY, true, this.time);
+    const target = !this.dialog && this.birds.target(...DIRS[p.facing]);
+    if (target) {
+      this.birds.drawTarget(ctx, target, camX, camY);
+      drawBox(ctx, 4, VIEW_H - 22, 80, 18);
+      drawText(ctx, 'A: PHOTO', 12, VIEW_H - 17);
     }
 
     if (this.bannerTime > 0) {

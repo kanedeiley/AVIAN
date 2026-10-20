@@ -7,6 +7,8 @@ const KEYMAP = {
   ArrowRight: 'right', KeyD: 'right',
   KeyZ: 'a', Enter: 'a', Space: 'a',
   KeyX: 'b', Escape: 'b',
+  KeyM: 'map', Tab: 'map',
+  KeyJ: 'journal',
 };
 const DIRECTIONS = ['up', 'down', 'left', 'right'];
 
