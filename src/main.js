@@ -38,7 +38,7 @@ const game = {
   onBlack: null,
   journal: loadJournal(), // bird id -> best photo (1-3 stars); saved in the browser
   money: loadMoney(),     // dollars, for boat fares; there's no way to earn any yet
-  progress: loadProgress(), // story flags and beaten nemesis birds (see progress.js)
+  progress: loadProgress(), // story flags, beaten nemesis birds and found collectibles (see progress.js)
   location: loadLocation(), // where you last stood, to carry on from there; the Overworld keeps it up to date
 
   setScene(scene) {
@@ -72,7 +72,7 @@ if (cloud.enabled) {
 /**
  * Combine this browser's save with the online one: keep the best photo of
  * each bird from either, every story flag and beaten nemesis from either,
- * the online money, and whichever location is newer. Then save the result to both,
+ * every collectible found in either, the online money, and whichever location is newer. Then save the result to both,
  * so progress made offline (or before signing in) isn't lost.
  */
 async function mergeOnlineSave() {
@@ -82,8 +82,9 @@ async function mergeOnlineSave() {
       game.journal[id] = Math.max(game.journal[id] ?? 0, stars);
     }
     game.money = online.money;
-    const { flags = {}, nemeses = {} } = online.progress ?? {};
+    const { flags = {}, nemeses = {}, collectibles = {} } = online.progress ?? {};
     Object.assign(game.progress.flags, flags);
+    Object.assign(game.progress.collectibles, collectibles);
     for (const [id, stars] of Object.entries(nemeses)) {
       game.progress.nemeses[id] = Math.max(game.progress.nemeses[id] ?? 0, stars);
     }

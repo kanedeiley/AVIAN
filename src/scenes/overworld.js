@@ -1,11 +1,13 @@
 // Walking around a map: grid movement, collisions, warps, signs, boats you can
 // book a voyage on (see voyage.js), the birds you sneak up on (see fieldBirds.js),
-// and the nemesis bird guarding its perch (see nemesis.js).
+// the nemesis bird guarding its perch (see nemesis.js), and the collectibles
+// hidden around (see data/collectibles.js).
 import { TILE, VIEW_W, VIEW_H, STEP_TIME } from '../config.js';
 import { getMap } from '../maps/index.js';
 import { TILES } from '../assets/tiles.js';
 import { PLAYER } from '../assets/player.js';
 import { BIRD_SPRITES } from '../assets/birds.js';
+import { drawStench } from '../assets/collectibles.js';
 import { input } from '../input.js';
 import { drawBox, drawText, drawDialog, paginate } from '../gfx/ui.js';
 import { PhotoScene } from './photo.js';
@@ -18,7 +20,7 @@ import { NemesisScene } from './nemesis.js';
 import { VOYAGES } from '../data/voyages.js';
 import { DIALOGUE } from '../data/dialogue.js';
 import { saveMoney, saveLocation } from '../save.js';
-import { nemesisNeeds, nemesisOn, setFlag } from '../progress.js';
+import { nemesisNeeds, nemesisOn, setFlag, collectiblesOn, collect } from '../progress.js';
 
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const TURN_DELAY = 0.09; // a quick tap turns in place instead of walking
@@ -38,6 +40,7 @@ export class Overworld {
     this.map = getMap(id);
     Object.assign(this.player, { x, y, facing, moving: false, progress: 0 });
     this.nemesis = nemesisOn(this.game, id);
+    this.collectibles = collectiblesOn(this.game, id);
     this.rememberLocation();
     this.npcs = new Npcs(this);
     this.birds = new FieldBirds(this);
@@ -122,6 +125,14 @@ export class Overworld {
       const ship = this.propAt(p.x + dx, p.y + dy);
       if (ship?.voyage) {
         this.offerVoyage(ship.voyage);
+        p.walking = false;
+        return;
+      }
+      const item = this.collectibles.find((c) => c.x === p.x + dx && c.y === p.y + dy);
+      if (item) {
+        collect(this.game, item.id);
+        this.collectibles = this.collectibles.filter((c) => c !== item);
+        this.dialog = { pages: paginate(item.found), page: 0 };
         p.walking = false;
         return;
       }
@@ -297,6 +308,8 @@ export class Overworld {
     this.npcs.draw(ctx, camX, camY, true, this.time);
     this.birds.draw(ctx, camX, camY, true, this.time);
     this.drawNemesis(ctx, camX, camY, true);
+    // Collectibles stay hidden: all you see is the stink rising off them, over whatever's in front.
+    for (const c of this.collectibles) drawStench(ctx, c.x * TILE - camX, c.y * TILE - camY, this.time);
 
     if (this.map.dark) {
       // The lantern flickers a little.

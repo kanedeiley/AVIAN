@@ -17,6 +17,8 @@ import { REGIONS } from '../data/regions.js';
 import { NEMESES } from '../data/nemeses.js';
 import { FLAGS } from '../data/flags.js';
 import { BIRDS } from '../data/birds.js';
+import { COLLECTIBLES } from '../data/collectibles.js';
+import { COLLECTIBLE_SPRITES } from '../assets/collectibles.js';
 
 const MAPS = { village, house, shrine, hannahville, hannahHouse, cave, mountain, van, farm, leisterHouse, grandparentsHouse };
 export const MAP_IDS = Object.keys(MAPS);
@@ -90,6 +92,13 @@ export function getMap(id) {
     if (!BIRDS[n.bird]) throw new Error(`${at} is unknown bird "${n.bird}" (see data/birds.js)`);
     if (!REGIONS[n.region]) throw new Error(`${at} has unknown region "${n.region}"`);
     for (const f of n.requires.flags ?? []) if (!FLAGS[f]) throw new Error(`${at} requires unknown flag "${f}" (see data/flags.js)`);
+  }
+
+  for (const [cid, c] of Object.entries(COLLECTIBLES)) {
+    if (c.map !== id) continue;
+    const at = `Map "${id}": collectible "${cid}" at ${c.x},${c.y}`;
+    if (!inside(c.x, c.y)) throw new Error(`${at} is outside the map`);
+    if (!COLLECTIBLE_SPRITES[cid]) throw new Error(`${at} has no art in assets/collectibles.js`);
   }
 
   return (cache[id] = {

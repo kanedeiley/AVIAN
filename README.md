@@ -91,8 +91,10 @@ src/
   data/regions.js    regions of the world; every map and voyage names one
   data/nemeses.js    nemesis birds (bosses): where they perch, what they require, how they fight
   data/flags.js      story flags (e.g. metHannah) and the hint shown while you still need one
+  data/collectibles.js  hidden collectibles: where each one is, its journal note, what you're told when you find it
+  assets/collectibles.js  collectibles' journal art, and the stink lines that give them away on the map
   data/dialogue.js   what story characters say, depending on your progress
-  progress.js        story progress: flags, region photo counts, beaten nemeses
+  progress.js        story progress: flags, region photo counts, beaten nemeses, found collectibles
   assets/people.js   people NPCs (Hannah): a body from assets/player.js plus their colors
   scenes/overworld.js  walking, collisions, warps, bird sightings
   scenes/photo.js      the photo minigame (keep the bird in frame, snap)
@@ -249,7 +251,7 @@ the tile. Face it and press A:
   out of film. Every hit makes it faster (`rage`). Lose and it's back on its perch; win and
   it goes in your journal and leaves its perch for good.
 
-Progress lives in `game.progress` (`{ flags, nemeses }`), saved next to the journal in the
+Progress lives in `game.progress` (`{ flags, nemeses, collectibles }`), saved next to the journal in the
 browser and online. **Story flags** (`data/flags.js`) are set by talking to an NPC with
 `sets: 'flagName'`. An NPC with `talk: 'name'` gets its lines from `DIALOGUE.name(game)` in
 `data/dialogue.js`, so what Hannah says follows your progress.
@@ -258,3 +260,18 @@ browser and online. **Story flags** (`data/flags.js`) are set by talking to an N
 table), add an entry to `data/nemeses.js` with its perch, requirements and lines, and add
 any new flags to `data/flags.js`. The map loader checks that the perch is on the map and
 not solid, and that its region and flags exist.
+
+## Collectibles
+
+Odd things are hidden around the world (`data/collectibles.js`). You can't see one on the
+map, only the stink lines rising off its tile, which can be a solid one, tucked into bamboo
+or a hedge. Face it and press A to pick it up. Found ones go in
+`game.progress.collectibles`, saved like the rest of the progress, and on the journal's
+**COLLECTIBLES** page (open the journal and press LEFT/RIGHT to flip between BIRDS and
+COLLECTIBLES). Ones you haven't found yet show as `???`, with the map they're hidden on.
+
+The first one is **JACOB'S DOOBIE**, somewhere in the bamboo grove on the Leister family farm.
+
+**Adding a collectible:** add an entry to `data/collectibles.js` and its 16x16 art to
+`assets/collectibles.js` under the same id. The map loader checks that it's on its map
+and has art.
