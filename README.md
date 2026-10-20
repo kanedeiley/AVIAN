@@ -72,10 +72,11 @@ src/
   assets/palette.js  the shared color palette
   assets/tiles.js    every tile: art + rules (solid, perch, cover, ...)
   assets/coastTiles.js  the Italian seaside town's tiles (houses, terraces, beach)
+  assets/caveTiles.js   Echo Cave and Eagle Peak (cave rock, crystals, cliffs, pines, snow)
   assets/player.js   the player's walk cycle
-  assets/birds.js    the bird sprite, recolored per species
+  assets/birds.js    bird body shapes (songbird, seabird, raptor...); species pick one + colors
   maps/              one file per map, plus the registry (index.js)
-  data/birds.js      bird species: colors and how they move
+  data/birds.js      bird species: shape, colors and how they move
   data/voyages.js    boat trips: fare, stops, which seabirds turn up
   scenes/overworld.js  walking, collisions, warps, bird sightings
   scenes/photo.js      the photo minigame (keep the bird in frame, snap)
@@ -123,6 +124,7 @@ table:     { art: TABLE, base: 'floor', solid: true },
 | `solid`      | can't walk onto it |
 | `encounter`  | can start a bird sighting |
 | `coversFeet` | drawn over the player's feet |
+| `glow`       | on a `dark` map (`dark: true`, like Echo Cave), lights up this many tiles around it |
 
 Then give it a map character in `LEGEND` at the bottom of the file.
 

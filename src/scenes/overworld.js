@@ -17,6 +17,8 @@ import { saveMoney } from '../save.js';
 
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const TURN_DELAY = 0.09; // a quick tap turns in place instead of walking
+const LANTERN = 4.5;     // tiles your lantern lights up on a `dark` map
+const DARKNESS = 'rgba(10,8,20,0.9)';
 
 export class Overworld {
   constructor(game, mapId, x, y, facing = 'down') {
@@ -32,6 +34,13 @@ export class Overworld {
     this.npcs = new Npcs(this);
     this.birds = new FieldBirds(this);
     this.bannerTime = 2;
+    // On a dark map, every tile with `glow` is a light (see drawDarkness).
+    this.lights = [];
+    if (this.map.dark) {
+      this.map.grid.forEach((row, ty) => row.forEach((id, tx) => {
+        if (TILES[id].glow) this.lights.push({ x: (tx + 0.5) * TILE, y: (ty + 0.5) * TILE, r: TILES[id].glow * TILE });
+      }));
+    }
   }
 
   tileAt(x, y) {
@@ -227,6 +236,14 @@ export class Overworld {
 
     this.npcs.draw(ctx, camX, camY, true, this.time);
     this.birds.draw(ctx, camX, camY, true, this.time);
+
+    if (this.map.dark) {
+      // The lantern flickers a little.
+      const r = LANTERN * TILE + Math.sin(this.time * 9) * 1.5 + Math.sin(this.time * 23) * 0.8;
+      const lantern = { x: px + TILE / 2, y: py + TILE / 2, r };
+      drawDarkness(ctx, [lantern, ...this.lights].map((l) => ({ ...l, x: l.x - camX, y: l.y - camY })));
+    }
+
     const target = !this.dialog && this.birds.target(...DIRS[p.facing]);
     if (target) {
       this.birds.drawTarget(ctx, target, camX, camY);
@@ -245,6 +262,29 @@ export class Overworld {
       drawDialog(ctx, pages[page], page < pages.length - 1, this.time);
     }
   }
+}
+
+let shade = null; // reused offscreen canvas for drawDarkness
+
+/** Cover the screen in darkness, with soft holes cut out at each light ({ x, y, r } in screen px). */
+function drawDarkness(ctx, lights) {
+  shade ??= Object.assign(document.createElement('canvas'), { width: VIEW_W, height: VIEW_H });
+  const s = shade.getContext('2d');
+  s.globalCompositeOperation = 'source-over';
+  s.clearRect(0, 0, VIEW_W, VIEW_H);
+  s.fillStyle = DARKNESS;
+  s.fillRect(0, 0, VIEW_W, VIEW_H);
+  s.globalCompositeOperation = 'destination-out';
+  for (const { x, y, r } of lights) {
+    if (x + r < 0 || y + r < 0 || x - r > VIEW_W || y - r > VIEW_H) continue;
+    const g = s.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, 'rgba(0,0,0,1)');
+    g.addColorStop(0.6, 'rgba(0,0,0,0.95)');
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    s.fillStyle = g;
+    s.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+  ctx.drawImage(shade, 0, 0);
 }
 
 function cameraAxis(playerPx, mapPx, viewPx) {
