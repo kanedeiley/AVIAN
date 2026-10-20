@@ -33,8 +33,11 @@ src/
   assets/birds.js    the bird sprite, recolored per species
   maps/              one file per map, plus the registry (index.js)
   data/birds.js      bird species: colors and how they move
+  data/voyages.js    boat trips: fare, stops, which seabirds turn up
   scenes/overworld.js  walking, collisions, warps, bird sightings
   scenes/photo.js      the photo minigame (keep the bird in frame, snap)
+  scenes/voyage.js     the bird-watching boat trip (pick one bird per stop)
+  gfx/ocean.js         the sea backdrop shared by the voyage and the photo minigame
 ```
 
 ## How assets work
@@ -103,6 +106,10 @@ export default {
 - **Signs** are a `sign` tile (`S`) plus text in the map's `signs` list:
   `signs: [{ x: 11, y: 2, text: ['First box', 'Second box'] }]`.
   Face the sign and press A. Long text wraps and pages by itself.
+- **NPCs** (for now, Hannah's puppies) are listed in the map's `npcs`:
+  `npcs: [{ id: 'macie', x: 1, y: 26, area: [0, 24, 14, 29], text: ['...'] }]`.
+  They wander inside `area`, block the player, and talk when you face them and press A.
+  Their sprites are in `assets/dogs.js`; the behavior is in `scenes/npcs.js`.
 - A map can add its own characters with a `legend: { 'X': 'someTile' }` field.
 - The loader checks warps and signs: one placed outside the map, a warp on a
   solid tile, or a warp that lands off its target map shows an error in the
@@ -130,3 +137,31 @@ localStorage so it survives a reload (see `save.js`).
 
 How hard a bird is comes from its numbers in `data/birds.js` (speed, hop
 distance, pauses, patience, focus time).
+
+## Bird-watching voyages
+
+Moored along the east side of Hannahville's pier is a tour ship (4x3 tiles). Face any
+part of it and press A: the captain explains the trip, tells you the fare and asks if you want to board.
+The boat makes a few stops. At each one a flock of seabirds gathers around the boat, some
+floating and some gliding overhead, and birds keep arriving and leaving. Press left/right
+to pick one (the panel shows **NEW!** for species missing from your journal) and A to
+photograph it in the usual minigame, this time on the ocean. You only get one bird per
+stop, so you have to choose. A bird showing `?` is about to leave and will be jumpy in the
+photo. B heads back to the pier early.
+
+Seabirds (tern, puffin, cormorant, pelican and the rare albatross) only turn up on
+voyages, and the journal lists the voyage as where they live.
+
+**Money:** `game.money` is saved in the browser next to the journal. Boarding checks it
+against the voyage's `price` and takes the fare. The Bay Tour costs $0 for now, and
+there's no way to earn money yet. To charge for a trip, set its `price` in `data/voyages.js`.
+
+**Adding a voyage:** add an entry to `data/voyages.js`, then give a prop on a map a
+`voyage` field: `props: [{ x: 21, y: 31, id: 'tourShip', voyage: 'bay' }]`.
+
+### Big props
+
+Art bigger than one tile (like the tour ship) is drawn as one piece in
+`assets/coastTiles.js` and cut into 16x16 tiles by `bigProp()`. A map places it with
+`props: [{ x, y, id }]`, where (x, y) is its top-left tile. This saves using up map
+characters, and the loader checks that the prop fits on the map.

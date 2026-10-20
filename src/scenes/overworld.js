@@ -1,5 +1,5 @@
-// Walking around a map: grid movement, collisions, warps, signs, and the birds
-// you sneak up on (see fieldBirds.js).
+// Walking around a map: grid movement, collisions, warps, signs, boats you can
+// book a voyage on (see voyage.js), and the birds you sneak up on (see fieldBirds.js).
 import { TILE, VIEW_W, VIEW_H, STEP_TIME } from '../config.js';
 import { getMap } from '../maps/index.js';
 import { TILES } from '../assets/tiles.js';
@@ -8,8 +8,12 @@ import { input } from '../input.js';
 import { drawBox, drawText, drawDialog, paginate } from '../gfx/ui.js';
 import { PhotoScene } from './photo.js';
 import { FieldBirds } from './fieldBirds.js';
+import { Npcs } from './npcs.js';
 import { WorldMapScene } from './worldMap.js';
 import { JournalScene } from './journal.js';
+import { VoyageScene } from './voyage.js';
+import { VOYAGES } from '../data/voyages.js';
+import { saveMoney } from '../save.js';
 
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const TURN_DELAY = 0.09; // a quick tap turns in place instead of walking
@@ -25,6 +29,7 @@ export class Overworld {
   loadMap(id, x, y, facing) {
     this.map = getMap(id);
     Object.assign(this.player, { x, y, facing, moving: false, progress: 0 });
+    this.npcs = new Npcs(this);
     this.birds = new FieldBirds(this);
     this.bannerTime = 2;
   }
@@ -36,7 +41,7 @@ export class Overworld {
 
   isBlocked(x, y) {
     const tile = this.tileAt(x, y);
-    return !tile || tile.solid;
+    return !tile || tile.solid || this.npcs.occupies(x, y);
   }
 
   update(dt) {
@@ -44,10 +49,18 @@ export class Overworld {
     this.bannerTime = Math.max(0, this.bannerTime - dt);
     const p = this.player;
     this.birds.update(dt);
+    this.npcs.update(dt);
 
-    // While a text box is open, A/B only advance it.
+    // While a text box is open, A/B only advance it. A yes/no question
+    // (`onYes`) on the last page: A says yes, B says no.
     if (this.dialog) {
       if (input.wasPressed('a') || input.wasPressed('b')) {
+        const d = this.dialog;
+        if (d.onYes && d.page === d.pages.length - 1) {
+          this.dialog = null;
+          if (input.wasPressed('a')) d.onYes();
+          return;
+        }
         this.dialog.page++;
         if (this.dialog.page >= this.dialog.pages.length) this.dialog = null;
       }
@@ -83,6 +96,19 @@ export class Overworld {
         p.walking = false;
         return;
       }
+      const ship = this.propAt(p.x + dx, p.y + dy);
+      if (ship?.voyage) {
+        this.offerVoyage(ship.voyage);
+        p.walking = false;
+        return;
+      }
+      const npc = this.npcs.at(p.x + dx, p.y + dy);
+      if (npc) {
+        this.npcs.listen(npc);
+        this.dialog = { pages: paginate(npc.text), page: 0 };
+        p.walking = false;
+        return;
+      }
       const bird = this.birds.target(dx, dy);
       if (bird) {
         p.walking = false;
@@ -114,6 +140,32 @@ export class Overworld {
     const [dx, dy] = DIRS[dir];
     if (this.isBlocked(p.x + dx, p.y + dy)) return;
     Object.assign(p, { moving: true, dx, dy, progress: 0 });
+  }
+
+  /** The big prop (see maps/index.js) covering this tile, if any. */
+  propAt(x, y) {
+    return this.map.props.find((o) => x >= o.x && x < o.x + o.w && y >= o.y && y < o.y + o.h) ?? null;
+  }
+
+  /** The captain's pitch, the fare, and a yes/no to board. Boarding pays the fare. */
+  offerVoyage(id) {
+    const voyage = VOYAGES[id];
+    const { money } = this.game;
+    const fare = voyage.price > 0 ? `The fare is $${voyage.price}. You have $${money}.` : 'The fare is $0 today!';
+    if (money < voyage.price) {
+      this.dialog = { pages: paginate([...voyage.pitch, fare, 'Come back when you have enough money.']), page: 0 };
+      return;
+    }
+    const pages = paginate([...voyage.pitch, fare]);
+    pages.push([`Board the ${voyage.name}?`, 'A:YES  B:NO']);
+    this.dialog = {
+      pages, page: 0,
+      onYes: () => {
+        this.game.money -= voyage.price;
+        saveMoney(this.game.money);
+        this.game.transition(() => this.game.setScene(new VoyageScene(this.game, id, this)));
+      },
+    };
   }
 
   /** Called after each completed step. Returns true if it started a transition. */
@@ -155,6 +207,7 @@ export class Overworld {
       }
     }
 
+    this.npcs.draw(ctx, camX, camY, false, this.time);
     this.birds.draw(ctx, camX, camY, false, this.time);
 
     // Player
@@ -172,6 +225,7 @@ export class Overworld {
       ctx.drawImage(this.frameOf(under), 0, 10, TILE, 6, fx * TILE - camX, fy * TILE - camY + 10, TILE, 6);
     }
 
+    this.npcs.draw(ctx, camX, camY, true, this.time);
     this.birds.draw(ctx, camX, camY, true, this.time);
     const target = !this.dialog && this.birds.target(...DIRS[p.facing]);
     if (target) {

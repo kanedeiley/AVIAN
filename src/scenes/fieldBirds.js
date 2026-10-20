@@ -57,6 +57,7 @@ export class FieldBirds {
     const p = this.world.player;
     if (x === p.x && y === p.y) return false;
     if (p.moving && x === p.x + p.dx && y === p.y + p.dy) return false;
+    if (this.world.npcs?.occupies(x, y)) return false;
     return !this.birds.some((b) => b.x === x && b.y === y);
   }
 

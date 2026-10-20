@@ -3,6 +3,7 @@
 // "???", but the journal still says where they live as a hint. J or B closes.
 import { VIEW_W, VIEW_H } from '../config.js';
 import { BIRDS } from '../data/birds.js';
+import { VOYAGES } from '../data/voyages.js';
 import { BIRD_SPRITES } from '../assets/birds.js';
 import { PALETTE } from '../assets/palette.js';
 import { makeSprite } from '../gfx/sprite.js';
@@ -28,9 +29,11 @@ const STAR_ART = [
 const STAR = makeSprite(STAR_ART, PALETTE, 'star');
 const NO_STAR = makeSprite(STAR_ART.map((r) => r.replaceAll('f', 'q')), PALETTE, 'empty star');
 
-/** Names of the maps where a species can turn up. */
+/** Names of the maps (and boat trips) where a species can turn up. */
 function habitats(birdId) {
-  return MAP_IDS.map(getMap).filter((m) => m.birds?.table.includes(birdId)).map((m) => m.name);
+  const maps = MAP_IDS.map(getMap).filter((m) => m.birds?.table.includes(birdId));
+  const voyages = Object.values(VOYAGES).filter((v) => v.table.includes(birdId) || v.rare?.includes(birdId));
+  return [...maps, ...voyages].map((place) => place.name);
 }
 
 export class JournalScene {

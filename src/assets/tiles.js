@@ -15,6 +15,7 @@
 import { PALETTE } from './palette.js';
 import { makeSprite, shiftX, layer, recolor, stamp } from '../gfx/sprite.js';
 import { COAST_DEFS } from './coastTiles.js';
+import { HOUSE_DEFS } from './houseTiles.js';
 
 // ---------- outdoor ----------
 
@@ -679,6 +680,7 @@ const DEFS = {
   flowerBoxWindow: { art: FLOWER_BOX_WINDOW, solid: true },
 
   ...COAST_DEFS, // the Italian seaside town: see coastTiles.js
+  ...HOUSE_DEFS, // inside Hannah's house: see houseTiles.js
 
   floor:     { art: FLOOR },
   innerWall: { art: INNER_WALL, solid: true },

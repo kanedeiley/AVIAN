@@ -6,6 +6,10 @@
 //
 // `alert` (0-1) is how nervous the bird already was when you raised the
 // camera; a nervous bird runs out of patience up to twice as fast.
+//
+// `setting` picks the backdrop: 'field' (a branch in front of the trees) or
+// 'ocean' (the bird floats and paddles along the water, seen from the boat).
+// When it's done it calls `returnTo.resume(stars)` if the scene it returns to has one.
 import { TILE, VIEW_W } from '../config.js';
 import { BIRDS } from '../data/birds.js';
 import { BIRD_SPRITES } from '../assets/birds.js';
@@ -13,8 +17,10 @@ import { TILES } from '../assets/tiles.js';
 import { input } from '../input.js';
 import { drawBox, drawText, drawDialog, paginate } from '../gfx/ui.js';
 import { saveJournal } from '../save.js';
+import { drawOcean, drawWater } from '../gfx/ocean.js';
 
-const BRANCH_Y = 92;      // top edge of the branch the bird stands on
+const BRANCH_Y = 92;      // top edge of the branch the bird stands on (or the waterline at sea)
+const HORIZON = 40;       // the ocean backdrop's horizon
 const FRAME_W = 48;       // viewfinder size
 const FRAME_H = 44;
 const ON_TARGET = 10;     // how far the bird can be from the viewfinder's center and still be in frame
@@ -31,9 +37,10 @@ const rand = (a, b) => a + Math.random() * (b - a);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 export class PhotoScene {
-  constructor(game, birdId, returnTo, alert = 0) {
+  constructor(game, birdId, returnTo, alert = 0, setting = 'field') {
     this.game = game;
     this.returnTo = returnTo;
+    this.swimming = setting === 'ocean';
     this.id = birdId;
     this.species = BIRDS[birdId];
     this.sprites = BIRD_SPRITES[birdId];
@@ -111,7 +118,8 @@ export class PhotoScene {
       b.facing = Math.sign(dx);
       b.hop += step;
     }
-    b.air = Math.abs(Math.sin(b.hop / 7)) * 5;
+    // On the branch it hops; on the water it just paddles along.
+    b.air = this.swimming ? 0 : Math.abs(Math.sin(b.hop / 7)) * 5;
   }
 
   pickTarget() {
@@ -178,7 +186,10 @@ export class PhotoScene {
     this.dialog.page++;
     if (this.dialog.page >= this.dialog.pages.length) {
       this.dialog.page = this.dialog.pages.length - 1;
-      this.game.transition(() => this.game.setScene(this.returnTo));
+      this.game.transition(() => {
+        this.game.setScene(this.returnTo);
+        this.returnTo.resume?.(this.best);
+      });
     }
   }
 
@@ -203,6 +214,7 @@ export class PhotoScene {
   }
 
   drawBackground(ctx) {
+    if (this.swimming) return drawOcean(ctx, this.time, HORIZON, 116);
     ctx.fillStyle = '#b8e0f8';
     ctx.fillRect(0, 0, VIEW_W, 116);
     for (let x = 0; x < VIEW_W; x += TILE) {
@@ -223,8 +235,19 @@ export class PhotoScene {
     const sprite = this.sprites[b.facing < 0 ? 'left' : 'right'][pose];
     // Sprites are 16x16 drawn at 2x; the feet sit 26px below the top.
     const x = Math.round(b.x - 16);
-    const y = Math.round(BRANCH_Y - 26 - b.air);
+    // Afloat, it bobs on the swell and the water hides its feet.
+    const bob = this.swimming ? Math.round(Math.sin(this.time * 3)) : 0;
+    const y = Math.round(BRANCH_Y - 26 - b.air) + bob;
     ctx.drawImage(sprite, x, y, 32, 32);
+    if (this.swimming) {
+      // Redraw the same water over its lower edge.
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, BRANCH_Y - 4, VIEW_W, 116 - (BRANCH_Y - 4));
+      ctx.clip();
+      drawWater(ctx, this.time, HORIZON, 116);
+      ctx.restore();
+    }
     if (this.phase === 'aim' && this.patience < NERVOUS_TIME) drawText(ctx, '!', x + 12, y);
   }
 

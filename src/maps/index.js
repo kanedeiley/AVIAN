@@ -3,9 +3,12 @@ import village from './village.js';
 import house from './house.js';
 import shrine from './shrine.js';
 import hannahville from './hannahville.js';
+import hannahHouse from './hannahHouse.js';
 import { TILES, LEGEND } from '../assets/tiles.js';
+import { PROPS } from '../assets/coastTiles.js';
+import { VOYAGES } from '../data/voyages.js';
 
-const MAPS = { village, house, shrine, hannahville };
+const MAPS = { village, house, shrine, hannahville, hannahHouse };
 export const MAP_IDS = Object.keys(MAPS);
 const cache = {};
 
@@ -28,6 +31,18 @@ export function getMap(id) {
 
   const inside = (x, y) => x >= 0 && y >= 0 && x < width && y < grid.length;
 
+  // Big props are stamped over the grid; each tile of one is its own tile id.
+  const props = (raw.props ?? []).map((p) => {
+    const at = `Map "${id}": prop "${p.id}" at ${p.x},${p.y}`;
+    const parts = PROPS[p.id];
+    if (!parts) throw new Error(`${at} is not in PROPS (assets/coastTiles.js)`);
+    const w = parts[0].length, h = parts.length;
+    if (!inside(p.x, p.y) || !inside(p.x + w - 1, p.y + h - 1)) throw new Error(`${at} (${w}x${h}) doesn't fit on the map`);
+    if (p.voyage && !VOYAGES[p.voyage]) throw new Error(`${at} books unknown voyage "${p.voyage}"`);
+    parts.forEach((row, dy) => row.forEach((tileId, dx) => (grid[p.y + dy][p.x + dx] = tileId)));
+    return { ...p, w, h };
+  });
+
   for (const w of raw.warps ?? []) {
     const at = `Map "${id}": warp at ${w.x},${w.y}`;
     if (!inside(w.x, w.y)) throw new Error(`${at} is outside the map (${width}x${grid.length})`);
@@ -42,9 +57,17 @@ export function getMap(id) {
     if (!inside(s.x, s.y)) throw new Error(`Map "${id}": sign at ${s.x},${s.y} is outside the map`);
   }
 
+  for (const n of raw.npcs ?? []) {
+    const at = `Map "${id}": npc "${n.id}" at ${n.x},${n.y}`;
+    if (!inside(n.x, n.y)) throw new Error(`${at} is outside the map`);
+    if (TILES[grid[n.y][n.x]].solid) throw new Error(`${at} starts on a solid tile`);
+  }
+
   return (cache[id] = {
     id, ...raw, grid, width, height: grid.length,
     warps: raw.warps ?? [],
     signs: raw.signs ?? [],
+    npcs: raw.npcs ?? [],
+    props,
   });
 }

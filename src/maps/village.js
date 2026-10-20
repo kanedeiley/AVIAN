@@ -6,6 +6,7 @@
 //   signs       text shown when you face a tile and press A
 //   birds       how many birds are out on the map at once, and which species
 //   indoor      true for maps you reach through a door; they're left off the world map
+//   npcs        characters who wander a box of tiles and talk when you press A (see scenes/npcs.js)
 //
 // Coordinates are (x, y) in tiles, counted from the top-left, starting at 0.
 

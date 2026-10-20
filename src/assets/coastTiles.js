@@ -6,7 +6,7 @@
 // Buildings come in three plaster colors. Their art uses 'x' for the plaster
 // and 'z' for its shade, and the loop at the bottom makes every feature in
 // every color: ochreShutters, peachDoor, roseArch and so on.
-import { recolor, stamp, shiftX, flipY } from '../gfx/sprite.js';
+import { recolor, stamp, shiftX, flipY, mirror } from '../gfx/sprite.js';
 
 // ---------- buildings ----------
 
@@ -523,6 +523,59 @@ const BOAT = [
   '................',
 ];
 
+// The bird tour ship moored by Hannahville's pier: 4x3 tiles, a white cabin
+// with a red funnel, a blue hull and a flag. Cut into tiles by bigProp() below.
+const TOUR_SHIP = [
+  '..........................qq....................................',
+  '.......................kqq....................f.................',
+  '.................kkkkkkk.qq...................N.................',
+  '................kkkkkkkk......................Npp...............',
+  '................kkkkkkkkk....................kNpppppkkk.........',
+  '................kpppppPPk....................kNffffffffk........',
+  '................kpppppPPk...................kkNpppppkkk.........',
+  '................kpppppPPk..................kwfNppkkk............',
+  '................kpppppPPk.................kwwkNkkk..............',
+  '.........kkkkkkkkpppppPPkkkkkkkkkkkkkkkk..kNNNNNNNk.............',
+  '........kucccccccccccccccccccccccccccccuk..kkkNkkk..............',
+  '........kuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuk....kNk................',
+  '........kuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuk....kNk................',
+  '........kUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUk....kNk................',
+  '........kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk....kNk................',
+  '.........kwyyyyyyyyyyyyyyyyyyyyyyyyyyywk.....kNk................',
+  '.........kwwwwwwwwwwwwwwwwwwwwwwwwwwwwwk.....kNk................',
+  '.........kwwwwwwwwwwwwwwwwwwwwwwwwwwwwwk.....kNk................',
+  '.........kwwwkkkkkwwkkkkkwwwkkkkkkwwwwwk.....kNk................',
+  '.........kwwwkwcckwwkwcckwwwkNNNNkwwwwwk.....kNk................',
+  '.........kwwwkccckwwkccckwwwknnnnkwwwwwk.....kNk................',
+  '...kkkkkkkwwwkccckwwkccckwwwknnnnkwwwwwkkkkkkkNkkkkkkkk.........',
+  '..kwwwwwwwwwwkkkkkwwkkkkkwwwknnnnkwwwwwwwwwwwwNwwwwwwwwk........',
+  '..kqoooqOowwwwwwwwwwwwwwwwwwknnfnkwwwwwqoooqOoNqoooqoOoqk.......',
+  '..kOoooooowwwwwwwwwwwwwwwwwwknnnnkwwwwwOooooooNoOooooooook......',
+  '..kOoooooowwwwwwwwwwwwwwwwwwknnnnkwwwwwOooooooNoOooooooooOk.....',
+  '..kooooOooqqqqqqqqqqqqqqqqqqknnnnkqqqqqooooOooNoooooOooooook....',
+  '..kooooOooqqqqqqqqqqqqqqqqqqknnnnkqqqqqooooOooNoooooOooooook....',
+  '..kooooooooOooooooooOooooooooOooooooooOooooooooOooooooooOoook...',
+  '..kooooooooOooooooooOooooooooOooooooooOooooooooOooooooooOooook..',
+  '.kcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccck.',
+  '.kwwwppwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwk..',
+  '.kwwpwwpwwcBwwwwwwcBwwwwwwcBwwwwwwcBwwwwwwcBwwwwwwcBwwwwwwwwwk..',
+  '.kwwpwwpwwBBwwwwwwBBwwwwwwBBwwwwwwBBwwwwwwBBwwwwwwBBwwwwwwwwk...',
+  '.kqqwppwqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqk...',
+  '.kuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuk....',
+  '.kuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuufufufuuuuuuuk....',
+  '.kUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUk.....',
+  '.kUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUk.....',
+  '.kUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUkw.....',
+  '..kUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUk..w....',
+  '...kppppppppppppppppppppppppppppppppppppppppppppppppppppk.......',
+  '....kPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPk..w.....',
+  '.....kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk.....w...',
+  '.wc.wc.wc.wc.wc.wc.wc.wc.wc.wc.wc.wc.wc.wc.wc.wc.wc.wc.wc.wc....',
+  '................................................................',
+  '................................................................',
+  '................................................................',
+];
+
 // ---------- the boutique ----------
 // White plaster, a pink roof with a pediment, a signboard, and a striped
 // awning over display windows. It's the town's centerpiece, so it gets its
@@ -687,6 +740,176 @@ const BOUTIQUE_DEFS = {
   topiary: { art: recolor(LEMON_TREE, { f: 'G', e: 'w', E: 'q' }), base: 'paving', solid: true },
 };
 
+// ---------- Hannah's house ----------
+// A one-story ranch house by the beach: a long, low hipped roof of teal
+// shingles, white siding, blue shutters with flower boxes, and a front porch.
+
+const SHINGLES = [
+  'TTTTTTTTTTTTTTTT',
+  'tttTttttttTttttt',
+  'tttTttttttTttttt',
+  'TTTTTTTTTTTTTTTT',
+  'ttttttTttttttTtt',
+  'ttttttTttttttTtt',
+  'TTTTTTTTTTTTTTTT',
+  'tttTttttttTttttt',
+  'tttTttttttTttttt',
+  'TTTTTTTTTTTTTTTT',
+  'ttttttTttttttTtt',
+  'ttttttTttttttTtt',
+  'TTTTTTTTTTTTTTTT',
+  'tttTttttttTttttt',
+  'tttTttttttTttttt',
+  'TTTTTTTTTTTTTTTT',
+];
+
+// The top row of the roof, with the ridge cap.
+const RANCH_RIDGE = ['kkkkkkkkkkkkkkkk', 'qqqqqqqqqqqqqqqq', 'QQQQQQQQQQQQQQQQ', ...SHINGLES.slice(3)];
+// The bottom row, with white fascia along the edge.
+const RANCH_EAVE = [...SHINGLES.slice(0, 13), 'kkkkkkkkkkkkkkkk', 'wwwwwwwwwwwwwwww', 'qqqqqqqqqqqqqqqq'];
+
+/** Cut the top-left corner off a roof tile diagonally, for the hipped ends. */
+const hipLeft = (art) => art.map((r, y) => [...r].map((c, x) => (x < 15 - y ? '.' : x === 15 - y ? 'k' : c)).join(''));
+const hipRight = (art) => mirror(hipLeft(mirror(art)));
+
+const SIDING = [
+  'QQQQQQQQQQQQQQQQ',
+  'wwwwwwwwwwwwwwww',
+  'wwwwwwwwwwwwwwww',
+  'qqqqqqqqqqqqqqqq',
+  'wwwwwwwwwwwwwwww',
+  'wwwwwwwwwwwwwwww',
+  'qqqqqqqqqqqqqqqq',
+  'wwwwwwwwwwwwwwww',
+  'wwwwwwwwwwwwwwww',
+  'qqqqqqqqqqqqqqqq',
+  'wwwwwwwwwwwwwwww',
+  'wwwwwwwwwwwwwwww',
+  'qqqqqqqqqqqqqqqq',
+  'wwwwwwwwwwwwwwww',
+  'QQQQQQQQQQQQQQQQ',
+  'NNNNNNNNNNNNNNNN',
+];
+
+const RANCH_WINDOW = [
+  ...recolor(SHUTTERS.slice(0, 12), { t: 'u', T: 'U' }),
+  '..kiivfiivfiik..',
+  '..keeeeeeeeeek..',
+  '...kEEEEEEEEk...',
+  '................',
+];
+
+// A teal Dutch door with a window.
+const RANCH_DOOR = [
+  '................',
+  '....kkkkkkkk....',
+  '....kttttttk....',
+  '....ktccbbtk....',
+  '....ktcbbbtk....',
+  '....ktkkkktk....',
+  '....kttttttk....',
+  '....kTTTTTTk....',
+  '....kttttftk....',
+  '....kttttttk....',
+  '....ktTttTtk....',
+  '....kttttttk....',
+  '....kttttttk....',
+  '....kkkkkkkk....',
+  '...oooooooooo...',
+  '...OOOOOOOOOO...',
+];
+
+// The porch: a plank deck, and a white railing for its ends.
+const DECK = [
+  'OOOOOOOOOOOOOOOO',
+  'oooooooOoooooooo',
+  'oooooooOoooooooo',
+  'OOOOOOOOOOOOOOOO',
+  'oooOooooooooOooo',
+  'oooOooooooooOooo',
+  'OOOOOOOOOOOOOOOO',
+  'oooooooOoooooooo',
+  'oooooooOoooooooo',
+  'OOOOOOOOOOOOOOOO',
+  'oooOooooooooOooo',
+  'oooOooooooooOooo',
+  'OOOOOOOOOOOOOOOO',
+  'oooooooOoooooooo',
+  'oooooooOoooooooo',
+  'NNNNNNNNNNNNNNNN',
+];
+
+const RAILING = [
+  '................',
+  '................',
+  '................',
+  '................',
+  'kkkkkkkkkkkkkkkk',
+  'wwwwwwwwwwwwwwww',
+  'kkkkkkkkkkkkkkkk',
+  '.kw.kw.kw.kw.kw.',
+  '.kw.kw.kw.kw.kw.',
+  '.kw.kw.kw.kw.kw.',
+  '.kw.kw.kw.kw.kw.',
+  '.kw.kw.kw.kw.kw.',
+  'kkkkkkkkkkkkkkkk',
+  'wwwwwwwwwwwwwwww',
+  'kkkkkkkkkkkkkkkk',
+  '................',
+];
+
+const MAILBOX = [
+  '................',
+  '................',
+  '................',
+  '.....kkkkk......',
+  '....kuuuuuk.p...',
+  '....kuuuuuk.pp..',
+  '....kuuuuuk.k...',
+  '....kUUUUUkkk...',
+  '....kkkkkkk.....',
+  '......kNNk......',
+  '......kNNk......',
+  '......kNNk......',
+  '......kNNk......',
+  '......kNNk......',
+  '.....kkkkkk.....',
+  '................',
+];
+
+const DOGHOUSE = [
+  '................',
+  '.......kk.......',
+  '......kppk......',
+  '.....kppppk.....',
+  '....kppPPppk....',
+  '...kppPkkPppk...',
+  '..kppPk..kPppk..',
+  '.kkkkkkkkkkkkkk.',
+  '..knnnkkkknnnk..',
+  '..knnkkkkkknnk..',
+  '..knnkkkkkknnk..',
+  '..kNNkkkkkkNNk..',
+  '..kNNkkkkkkNNk..',
+  '..kkkkkkkkkkkk..',
+  '................',
+  '................',
+];
+
+const RANCH_DEFS = {
+  ranchRidge: { art: RANCH_RIDGE, solid: true },
+  ranchRidgeLeft: { art: hipLeft(RANCH_RIDGE), base: 'grass', solid: true },
+  ranchRidgeRight: { art: hipRight(RANCH_RIDGE), base: 'grass', solid: true },
+  ranchEave: { art: RANCH_EAVE, solid: true },
+  ranchWall: { art: SIDING, solid: true },
+  ranchWindow: { art: stamp(SIDING, RANCH_WINDOW), solid: true },
+  ranchDoor: { art: stamp(SIDING, RANCH_DOOR) },  // walkable: the map puts a warp on it
+  porch: { art: DECK },
+  porchRailing: { art: stamp(DECK, RAILING), solid: true },
+  mailbox: { art: MAILBOX, base: 'sand', solid: true },
+  doghouse: { art: DOGHOUSE, base: 'grass', solid: true },
+};
+
 // ---------- the tile table (merged into tiles.js) ----------
 
 export const COAST_DEFS = {
@@ -721,7 +944,29 @@ export const COAST_DEFS = {
   boat: { art: BOAT, base: 'water', solid: true },
 
   ...BOUTIQUE_DEFS,
+  ...RANCH_DEFS,
 };
+
+// ---------- big props ----------
+// Art bigger than one tile, cut into 16x16 tiles named `${id}_${col}_${row}`.
+// A map places one with `props: [{ x, y, id }]` (its top-left tile); see maps/index.js.
+// PROPS[id] is the grid of tile ids, rows of columns.
+export const PROPS = {};
+
+function bigProp(id, art, def) {
+  const cols = art[0].length / 16;
+  PROPS[id] = [];
+  for (let row = 0; row < art.length / 16; row++) {
+    PROPS[id].push([]);
+    for (let col = 0; col < cols; col++) {
+      const tileId = `${id}_${col}_${row}`;
+      COAST_DEFS[tileId] = { ...def, art: art.slice(row * 16, row * 16 + 16).map((r) => r.slice(col * 16, col * 16 + 16)) };
+      PROPS[id][row].push(tileId);
+    }
+  }
+}
+
+bigProp('tourShip', TOUR_SHIP, { base: 'water', solid: true });
 
 for (const [color, swaps] of Object.entries(PLASTERS)) {
   for (const [part, { art, walk }] of Object.entries(BUILDING_PARTS)) {
