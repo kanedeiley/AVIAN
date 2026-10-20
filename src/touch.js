@@ -14,6 +14,10 @@ export function setUpTouchControls() {
   for (const button of document.querySelectorAll('[data-action]')) setUpButton(button);
   // Keep the page from scrolling, zooming or bringing up the long-press menu while playing.
   document.getElementById('controls').addEventListener('contextmenu', (e) => e.preventDefault());
+  // iOS Safari ignores user-scalable=no in the viewport meta, so stop pinch zoom here.
+  for (const type of ['gesturestart', 'gesturechange', 'gestureend']) {
+    document.addEventListener(type, (e) => e.preventDefault());
+  }
 }
 
 function setUpPad(pad) {
