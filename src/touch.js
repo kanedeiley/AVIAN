@@ -18,6 +18,15 @@ export function setUpTouchControls() {
   for (const type of ['gesturestart', 'gesturechange', 'gestureend']) {
     document.addEventListener(type, (e) => e.preventDefault());
   }
+  // iOS Safari also double-tap zooms despite touch-action: manipulation, so
+  // cancel the second of two quick taps (except in text fields, to keep the caret working).
+  let lastTap = 0;
+  document.addEventListener('touchend', (e) => {
+    const now = e.timeStamp;
+    if (now - lastTap < 350 && !e.target.closest('input, textarea')) e.preventDefault();
+    lastTap = now;
+  }, { passive: false });
+  document.addEventListener('dblclick', (e) => e.preventDefault());
 }
 
 function setUpPad(pad) {
