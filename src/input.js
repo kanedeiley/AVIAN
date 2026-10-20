@@ -1,0 +1,47 @@
+// Keyboard -> abstract actions. Game code only ever asks about actions
+// ('up', 'a', ...), never raw keys, so remapping happens in one place.
+const KEYMAP = {
+  ArrowUp: 'up', KeyW: 'up',
+  ArrowDown: 'down', KeyS: 'down',
+  ArrowLeft: 'left', KeyA: 'left',
+  ArrowRight: 'right', KeyD: 'right',
+  KeyZ: 'a', Enter: 'a', Space: 'a',
+  KeyX: 'b', Escape: 'b',
+};
+const DIRECTIONS = ['up', 'down', 'left', 'right'];
+
+const held = new Set();
+const pressed = new Set();
+const dirStack = []; // most recently pressed direction wins
+
+window.addEventListener('keydown', (e) => {
+  const action = KEYMAP[e.code];
+  if (!action) return;
+  e.preventDefault();
+  if (e.repeat) return;
+  held.add(action);
+  pressed.add(action);
+  if (DIRECTIONS.includes(action)) dirStack.push(action);
+});
+
+window.addEventListener('keyup', (e) => {
+  const action = KEYMAP[e.code];
+  if (!action) return;
+  held.delete(action);
+  const i = dirStack.indexOf(action);
+  if (i !== -1) dirStack.splice(i, 1);
+});
+
+window.addEventListener('blur', () => {
+  held.clear();
+  dirStack.length = 0;
+});
+
+export const input = {
+  /** The direction currently held (latest press wins), or null. */
+  dir: () => dirStack[dirStack.length - 1] ?? null,
+  isDown: (action) => held.has(action),
+  /** True only on the frame the key went down. */
+  wasPressed: (action) => pressed.has(action),
+  endFrame: () => pressed.clear(),
+};
