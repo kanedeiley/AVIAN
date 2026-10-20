@@ -25,7 +25,7 @@ Dev shortcut: `http://localhost:8000/?map=house&x=4&y=6` starts you on any map.
 ## Online saves (Supabase)
 
 With Supabase keys in `.env`, the game opens on a sign-in screen (email + password).
-Your journal and money are then saved to a Supabase database as well as the browser,
+Your journal, money, story progress and where you last stood are then saved to a Supabase database as well as the browser,
 so you can carry on from another device. **Play offline** skips it, and the bar under the
 game lets you sign in later. Signing in keeps the best photo of each bird from both
 this browser and your account, so nothing you did offline is lost. Without keys (or with a plain
@@ -34,7 +34,9 @@ web server instead of `serve.py`) the game runs offline as before.
 One-time setup in the Supabase dashboard:
 
 1. **SQL Editor** → New query → paste `supabase/schema.sql` → Run. This makes the `saves`
-   table and the security rules that keep each player's save private.
+   table and the security rules that keep each player's save private. It's safe to run
+   again, and you need to when the game starts saving something new (like the `progress`
+   column for nemesis birds): until then, signing in fails and the game plays offline.
 2. **Authentication → Sign In / Providers → Email**: turn **Confirm email** off, so new
    accounts can play right away without a confirmation link.
 3. **Project Settings → API**: copy the Project URL and the anon (or publishable) key into
@@ -42,6 +44,11 @@ One-time setup in the Supabase dashboard:
    site, add the same two names, `SUPABASE_URL` and `SUPABASE_KEY`, on GitHub under
    **Settings → Secrets and variables → Actions → Variables**. Both values are safe to
    publish. Never use the `service_role` / secret key.
+
+Your location is saved in the browser on every step, but it's a *lazy* save online: it
+goes out at most once a minute while you walk around (or along with the next real save,
+like a photo, which goes out within 1.5s), and right away when you hide or close the tab.
+Next visit, you start where you left off; `?map=...` still overrides it.
 
 How it fits together: `cloud.js` talks to Supabase (the library is loaded from a CDN only
 when the config is filled in), `signIn.js` is the sign-in form and account bar (the HTML
@@ -73,14 +80,21 @@ src/
   assets/tiles.js    every tile: art + rules (solid, perch, cover, ...)
   assets/coastTiles.js  the Italian seaside town's tiles (houses, terraces, beach)
   assets/caveTiles.js   Echo Cave and Eagle Peak (cave rock, crystals, cliffs, pines, snow)
-  assets/player.js   the player's walk cycle
+  assets/player.js   people's walk cycles: a 'male' body (cap) and a 'female' body (long hair, skirt)
   assets/birds.js    bird body shapes (songbird, seabird, raptor...); species pick one + colors
   maps/              one file per map, plus the registry (index.js)
   data/birds.js      bird species: shape, colors and how they move
   data/voyages.js    boat trips: fare, stops, which seabirds turn up
+  data/regions.js    regions of the world; every map and voyage names one
+  data/nemeses.js    nemesis birds (bosses): where they perch, what they require, how they fight
+  data/flags.js      story flags (e.g. metHannah) and the hint shown while you still need one
+  data/dialogue.js   what story characters say, depending on your progress
+  progress.js        story progress: flags, region photo counts, beaten nemeses
+  assets/people.js   people NPCs (Hannah): a body from assets/player.js plus their colors
   scenes/overworld.js  walking, collisions, warps, bird sightings
   scenes/photo.js      the photo minigame (keep the bird in frame, snap)
   scenes/voyage.js     the bird-watching boat trip (pick one bird per stop)
+  scenes/nemesis.js    a nemesis bird fight: the photo minigame as a boss battle
   gfx/ocean.js         the sea backdrop shared by the voyage and the photo minigame
 ```
 
@@ -210,3 +224,32 @@ Art bigger than one tile (like the tour ship) is drawn as one piece in
 `assets/coastTiles.js` and cut into 16x16 tiles by `bigProp()`. A map places it with
 `props: [{ x, y, id }]`, where (x, y) is its top-left tile. This saves using up map
 characters, and the loader checks that the prop fits on the map.
+
+## Regions and nemesis birds
+
+The world is split into **regions** (`data/regions.js`). Every map and voyage has a
+`region` field, and a region's birds are every species on its maps' `birds` tables and its
+voyages. Right now everything is in one region, **WILLOW VALLEY**. A new region is a new
+`REGIONS` entry plus maps that say `region: 'whatever'`.
+
+Each region has a **nemesis bird**: a birding term for the bird that always gets away, and
+here, the boss. It perches on its map (drawn twice the size of other birds) and blocks
+the tile. Face it and press A:
+
+- If you don't meet its `requires` yet, it tells you what's missing. The first one, the
+  **BALD EAGLE** on the summit of Eagle Peak, wants you to have talked to **HANNAH** (in her
+  house in Hannahville) and photographed 8 kinds of Willow Valley birds.
+- Once you do, it asks if you're ready. The fight is the photo minigame with a boss bar:
+  land `hits` photos of at least `hitStars` stars before it runs out of patience or you run
+  out of film. Every hit makes it faster (`rage`). Lose and it's back on its perch; win and
+  it goes in your journal and leaves its perch for good.
+
+Progress lives in `game.progress` (`{ flags, nemeses }`), saved next to the journal in the
+browser and online. **Story flags** (`data/flags.js`) are set by talking to an NPC with
+`sets: 'flagName'`. An NPC with `talk: 'name'` gets its lines from `DIALOGUE.name(game)` in
+`data/dialogue.js`, so what Hannah says follows your progress.
+
+**Adding a nemesis:** add the species to `data/birds.js` (leave it off every map's `birds`
+table), add an entry to `data/nemeses.js` with its perch, requirements and lines, and add
+any new flags to `data/flags.js`. The map loader checks that the perch is on the map and
+not solid, and that its region and flags exist.

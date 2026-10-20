@@ -25,4 +25,6 @@ export const BIRDS = {
   raven:     { name: 'RAVEN',     shape: 'corvid',   colors: { body: '#404058', wing: '#2a2a3c', belly: '#5a5a74', bill: '#202028' }, speed: 65,  hop: 70, pause: [0.5, 1.4], patience: 10, focusTime: 1.2, skittish: 1.1 },
   ptarmigan: { name: 'PTARMIGAN', shape: 'grouse',   colors: { body: '#f0f0f0', wing: '#c8c0b0', belly: '#f8f8f8', face: '#e04040', bill: '#202028' }, speed: 40,  hop: 40, pause: [0.8, 2.0], patience: 13, focusTime: 1.0, skittish: 0.7 },
   eagle:     { name: 'EAGLE',     shape: 'upright',  colors: { body: '#7a5028', wing: '#4a3018', belly: '#a87838', head: '#c09040', bill: '#f0c030' }, speed: 120, hop: 100, pause: [0.2, 0.6], patience: 7, focusTime: 1.6, skittish: 1.5 },
+  // Nemesis birds: never out on the map, only fought at their perch (data/nemeses.js).
+  baldEagle: { name: 'BALD EAGLE', shape: 'upright', colors: { body: '#4a3020', wing: '#302014', belly: '#5a3a24', head: '#f8f8f8', bill: '#f0c030' }, speed: 70, hop: 90, pause: [0.6, 1.4], patience: 40, focusTime: 1.4, skittish: 1 },
 };

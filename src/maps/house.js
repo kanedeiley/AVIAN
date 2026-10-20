@@ -1,6 +1,7 @@
 // Interiors are just smaller maps. Anything outside the grid draws as black.
 export default {
   name: 'YOUR HOUSE',
+  region: 'valley',
   indoor: true, // left off the world map
   rows: [
     '#########',

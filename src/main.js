@@ -6,7 +6,8 @@
 import { VIEW_W, VIEW_H, FADE_TIME } from './config.js';
 import { input } from './input.js';
 import { Overworld } from './scenes/overworld.js';
-import { loadJournal, loadMoney, saveJournal, saveMoney, whenSaved, clearSave } from './save.js';
+import { loadJournal, loadMoney, loadProgress, loadLocation, saveJournal, saveMoney, saveProgress, saveLocation, whenSaved, clearSave } from './save.js';
+import { canStand } from './maps/index.js';
 import { cloud } from './cloud.js';
 import { askToSignIn, showAccount } from './signIn.js';
 import { setUpTouchControls } from './touch.js';
@@ -37,6 +38,8 @@ const game = {
   onBlack: null,
   journal: loadJournal(), // bird id -> best photo (1-3 stars); saved in the browser
   money: loadMoney(),     // dollars, for boat fares; there's no way to earn any yet
+  progress: loadProgress(), // story flags and beaten nemesis birds (see progress.js)
+  location: loadLocation(), // where you last stood, to carry on from there; the Overworld keeps it up to date
 
   setScene(scene) {
     this.scene = scene;
@@ -54,7 +57,9 @@ const game = {
 // starts so your online journal is loaded first. Without it, or if it can't
 // be reached, the game just saves in this browser.
 if (cloud.enabled) {
-  whenSaved(() => cloud.queueSave({ journal: game.journal, money: game.money }));
+  whenSaved((lazy) => cloud.queueSave({ journal: game.journal, money: game.money, progress: game.progress, location: game.location }, lazy));
+  // Send anything still waiting (like a lazy location save) when the tab is hidden or closed.
+  document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && cloud.flush());
   try {
     if (!(await cloud.connect())) await askToSignIn();
     if (cloud.user) await mergeOnlineSave();
@@ -66,7 +71,8 @@ if (cloud.enabled) {
 
 /**
  * Combine this browser's save with the online one: keep the best photo of
- * each bird from either, and the online money. Then save the result to both,
+ * each bird from either, every story flag and beaten nemesis from either,
+ * the online money, and whichever location is newer. Then save the result to both,
  * so progress made offline (or before signing in) isn't lost.
  */
 async function mergeOnlineSave() {
@@ -76,8 +82,16 @@ async function mergeOnlineSave() {
       game.journal[id] = Math.max(game.journal[id] ?? 0, stars);
     }
     game.money = online.money;
+    const { flags = {}, nemeses = {} } = online.progress ?? {};
+    Object.assign(game.progress.flags, flags);
+    for (const [id, stars] of Object.entries(nemeses)) {
+      game.progress.nemeses[id] = Math.max(game.progress.nemeses[id] ?? 0, stars);
+    }
+    if (online.location && !(game.location?.at >= online.location.at)) game.location = online.location;
   }
+  if (game.location) saveLocation(game.location);
   saveMoney(game.money);
+  saveProgress(game.progress);
   saveJournal(game.journal);
 }
 
@@ -96,14 +110,14 @@ function updateAccount() {
   });
 }
 
+// Carry on where you last stood, if that's still a place you can stand (maps change).
 // Dev shortcut: index.html?map=house&x=4&y=6 starts you anywhere.
 const params = new URLSearchParams(location.search);
-const start = {
-  map: params.get('map') ?? 'village',
-  x: Number(params.get('x') ?? 5),
-  y: Number(params.get('y') ?? 5),
-};
-game.setScene(new Overworld(game, start.map, start.x, start.y, 'down'));
+const saved = game.location && canStand(game.location.map, game.location.x, game.location.y) ? game.location : null;
+const start = params.has('map')
+  ? { map: params.get('map'), x: Number(params.get('x') ?? 5), y: Number(params.get('y') ?? 5) }
+  : saved ?? { map: 'village', x: 5, y: 5 };
+game.setScene(new Overworld(game, start.map, start.x, start.y, start.facing ?? 'down'));
 
 
 let last = performance.now();

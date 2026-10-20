@@ -4,6 +4,7 @@
 // Eagle Peak at the top.
 export default {
   name: 'ECHO CAVE',
+  region: 'valley',
   dark: true,
   legend: {
     '#': 'caveRock',
