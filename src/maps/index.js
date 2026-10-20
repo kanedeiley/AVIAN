@@ -4,11 +4,13 @@ import house from './house.js';
 import shrine from './shrine.js';
 import hannahville from './hannahville.js';
 import hannahHouse from './hannahHouse.js';
+import cave from './cave.js';
+import mountain from './mountain.js';
 import { TILES, LEGEND } from '../assets/tiles.js';
 import { PROPS } from '../assets/coastTiles.js';
 import { VOYAGES } from '../data/voyages.js';
 
-const MAPS = { village, house, shrine, hannahville, hannahHouse };
+const MAPS = { village, house, shrine, hannahville, hannahHouse, cave, mountain };
 export const MAP_IDS = Object.keys(MAPS);
 const cache = {};
 

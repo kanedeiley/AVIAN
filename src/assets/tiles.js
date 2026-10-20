@@ -9,6 +9,7 @@
 //   perch       birds can land and hop around here (if the map has birds)
 //   cover       birds barely notice you walking here
 //   coversFeet  redraw the bottom of the tile over the player (tall grass)
+//   glow        lights up this many tiles around it on a `dark` map (cave crystals, daylight)
 //
 // Maps refer to tiles by a single character, set in LEGEND at the bottom.
 
@@ -16,6 +17,7 @@ import { PALETTE } from './palette.js';
 import { makeSprite, shiftX, layer, recolor, stamp } from '../gfx/sprite.js';
 import { COAST_DEFS } from './coastTiles.js';
 import { HOUSE_DEFS } from './houseTiles.js';
+import { CAVE_DEFS } from './caveTiles.js';
 
 // ---------- outdoor ----------
 
@@ -681,6 +683,7 @@ const DEFS = {
 
   ...COAST_DEFS, // the Italian seaside town: see coastTiles.js
   ...HOUSE_DEFS, // inside Hannah's house: see houseTiles.js
+  ...CAVE_DEFS,  // Echo Cave and Eagle Peak: see caveTiles.js
 
   floor:     { art: FLOOR },
   innerWall: { art: INNER_WALL, solid: true },

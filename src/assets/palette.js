@@ -52,4 +52,9 @@ export const PALETTE = {
   T: '#286060',    // teal shade
   j: '#f4e4b0',    // sand
   J: '#dcc488',    // sand shade / wet sand
+  C: '#4a4658',    // cave rock
+  K: '#686478',    // cave rock highlight
+  F: '#363244',    // cave floor
+  H: '#2a2636',    // cave floor shade
+  W: '#d0d8ec',    // snow shade
 };
