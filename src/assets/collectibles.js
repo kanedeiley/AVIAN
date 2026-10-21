@@ -62,6 +62,25 @@ const ART = {
     '................',
     '................',
   ],
+  // A cheeseburger: sesame bun, lettuce, melty cheese dripping over the patty.
+  davidsCheeseburger: [
+    '................',
+    '................',
+    '....kkkkkkkk....',
+    '...kaaawaaaak...',
+    '..kawaaaaawaak..',
+    '..kaaaaawaaaak..',
+    '..kAAAAAAAAAAk..',
+    '.kgGgGgGgGgGgGk.',
+    '.kffffffffffffk.',
+    '..kfNffNNNfNNk..',
+    '.knnnnnnnnnnnnk.',
+    '.kNNNNNNNNNNNNk.',
+    '..kAAAAAAAAAAk..',
+    '...kaaaaaaaak...',
+    '....kkkkkkkk....',
+    '................',
+  ],
 };
 
 export const COLLECTIBLE_SPRITES = Object.fromEntries(Object.entries(ART).map(([id, art]) => [id, {
@@ -129,5 +148,26 @@ export const drawMusic = drifting(NOTE, ['248,144,184', '248,224,80', '184,224,2
 /** Feathers: a cardinal's red, a jay's blue, a goldfinch's yellow. */
 export const drawFeathers = drifting(FEATHER, ['224,64,64', '72,144,232', '248,224,80']);
 
+const SMOKE = '200,200,208';     // light grey
+const SMOKE_EDGE = '96,96,112'; // darker down its right side, so it shows up over pale grass
+
+/** Three puffs of smoke rising off a tile (x, y in screen px), growing, drifting east with the wind and fading. */
+export function drawSmoke(ctx, x, y, time) {
+  for (let i = 0; i < 3; i++) {
+    const t = (time * 0.45 + i / 3) % 1;
+    const r = 2 + t * 4;
+    const cx = Math.round(x + 7 + t * 6 + Math.sin(t * 6 + i * 2) * 1.5);
+    const cy = Math.round(y + 2 - t * 22);
+    const alpha = Math.min(1, (1 - t) * 1.6);
+    for (const [color, off] of [[`rgba(${SMOKE_EDGE},${alpha * 0.6})`, 1], [`rgba(${SMOKE},${alpha})`, 0]]) {
+      ctx.fillStyle = color;
+      for (let dy = -Math.floor(r); dy <= r; dy++) {
+        const w = Math.floor(Math.sqrt(r * r - dy * dy));
+        ctx.fillRect(cx - w + off, cy + dy + off, w * 2 + 1, 1);
+      }
+    }
+  }
+}
+
 /** What gives each kind of collectible away on the map: data/collectibles.js picks one with `tell`. */
-export const TELLS = { stench: drawStench, music: drawMusic, feathers: drawFeathers };
+export const TELLS = { stench: drawStench, music: drawMusic, feathers: drawFeathers, smoke: drawSmoke };

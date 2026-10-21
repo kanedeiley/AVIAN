@@ -5,4 +5,5 @@
 //   name   shown in dialog, e.g. "Photograph 8 kinds of WILLOW VALLEY birds"
 export const REGIONS = {
   valley: { name: 'WILLOW VALLEY' },
+  plains: { name: 'OPEN PLAINS' },
 };

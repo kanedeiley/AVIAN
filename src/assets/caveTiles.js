@@ -260,6 +260,26 @@ const CAIRN = [
   '................',
 ];
 
+// Loose rock piled up in a passage, with a little daylight leaking through.
+const ROCKFALL = [
+  '..kkkk....kkkk..',
+  '.kKCCHk..kKCCHk.',
+  'kKCCCCHkkKCCCCHk',
+  'kCCCCCHkKCCCCCHk',
+  '.kHHHHkyykHHHHk.',
+  'kkkkKkkdyykkKkkk',
+  'kKCCCCHkkKCCCCHk',
+  'kCCCCCCHKCCCCCHk',
+  'kCCCCCCHkCCCCCHk',
+  '.kHHCCHkykHHHHkk',
+  'kkKkkkkdykKCCCHk',
+  'kKCCCHkkkCCCCCCk',
+  'kCCCCCHkKCCCCCHk',
+  'kCCCCCHkCCCCCCHk',
+  '.kHHHHk.kHHHHHk.',
+  '..kkkk...kkkkk..',
+];
+
 export const CAVE_DEFS = {
   caveFloor:  { art: CAVE_FLOOR },
   caveRock:   { art: CAVE_ROCK, solid: true },
@@ -268,6 +288,7 @@ export const CAVE_DEFS = {
   crystals:   { frames: [CRYSTALS, recolor(CRYSTALS, { c: 'w', u: 'c' })], frameTime: 0.5, base: 'caveFloor', solid: true, glow: 1.5 },
   cavePool:   { frames: [POOL, shiftX(POOL, 3)], frameTime: 0.7, solid: true },
   daylight:   { art: DAYLIGHT, glow: 3 },
+  rockfall:   { art: ROCKFALL, base: 'caveFloor', solid: true },  // blocks a locked warp (see maps/index.js)
 
   cliff:      { art: CLIFF, solid: true },
   caveMouth:  { art: CAVE_MOUTH },

@@ -37,6 +37,7 @@ export const NEMESES = {
     won: [
       'You photographed your NEMESIS BIRD, the BALD EAGLE!',
       'It soars off over the valley. HANNAH will want to hear about this!',
+      'Its last screech booms down through the mountain. Deep in ECHO CAVE, loose rock rumbles and falls away...',
     ],
     lost: [
       'The BALD EAGLE soared away into the clouds.',
