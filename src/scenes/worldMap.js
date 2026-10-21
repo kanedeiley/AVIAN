@@ -3,19 +3,21 @@
 // warp on the bottom row of one map puts the map it leads to directly below
 // it), so a new map shows up here as soon as it's connected to the others.
 // Maps marked `indoor` are left off; inside one, the marker sits on its door.
+// Maps you can only reach through a `locked` warp that's still shut stay off too.
 import { VIEW_W, VIEW_H } from '../config.js';
 import { MAP_IDS, getMap } from '../maps/index.js';
 import { TILES } from '../assets/tiles.js';
 import { input } from '../input.js';
 import { drawBox, drawText } from '../gfx/ui.js';
+import { warpOpen } from '../progress.js';
 
 const CELL = 4;        // screen px per map tile; each tile is shown as 2x2 colors
 const PAN_SPEED = 120; // px/s
 const TOP = 24;        // the title bar's height
 const INK = '#283050';
 
-/** Each outdoor map's top-left corner in world tiles, found by walking edge warps. */
-export function layoutWorld() {
+/** Each outdoor map's top-left corner in world tiles, found by walking the open edge warps. */
+export function layoutWorld(game) {
   const root = MAP_IDS.find((id) => !getMap(id).indoor);
   const placed = { [root]: { x: 0, y: 0 } };
   const queue = [root];
@@ -25,7 +27,7 @@ export function layoutWorld() {
     const at = placed[id];
     for (const w of a.warps) {
       const b = getMap(w.to);
-      if (placed[w.to] || b.indoor) continue;
+      if (placed[w.to] || b.indoor || !warpOpen(game, w)) continue;
       let pos = null;
       if (w.y === a.height - 1) pos = { x: at.x + w.x - w.toX, y: at.y + a.height };
       else if (w.y === 0) pos = { x: at.x + w.x - w.toX, y: at.y - b.height };
@@ -60,8 +62,13 @@ function colorsOf(id) {
   return (tileColors[id] = quarters);
 }
 
-/** Draw the whole world once into a canvas, CELL px per tile. */
-function renderWorld(layout) {
+/** Which locked warps are open, as a string to tell when the world needs drawing again. */
+function openLocks(game) {
+  return MAP_IDS.flatMap((id) => getMap(id).warps.filter((w) => w.locked && warpOpen(game, w)).map((w) => `${id}:${w.x},${w.y}`)).join(' ');
+}
+
+/** Draw the whole world once into a canvas, CELL px per tile (a shut locked warp as its `tile`). */
+function renderWorld(layout, game) {
   const ids = Object.keys(layout);
   const minX = Math.min(...ids.map((id) => layout[id].x));
   const minY = Math.min(...ids.map((id) => layout[id].y));
@@ -76,9 +83,11 @@ function renderWorld(layout) {
     const map = getMap(id);
     const ox = layout[id].x - minX;
     const oy = layout[id].y - minY;
+    const locks = map.warps.filter((w) => w.locked && !warpOpen(game, w));
     for (let y = 0; y < map.height; y++) {
       for (let x = 0; x < map.width; x++) {
-        colorsOf(map.grid[y][x]).forEach((color, q) => {
+        const lock = locks.find((w) => w.x === x && w.y === y);
+        colorsOf(lock ? lock.locked.tile : map.grid[y][x]).forEach((color, q) => {
           ctx.fillStyle = color;
           ctx.fillRect((ox + x) * CELL + (q % 2) * half, (oy + y) * CELL + (q >> 1) * half, half, half);
         });
@@ -88,16 +97,18 @@ function renderWorld(layout) {
   return { canvas, minX, minY };
 }
 
-let world = null; // maps don't change while playing, so build it once
+// Maps don't change while playing, so build it once, and again only when a locked warp opens.
+let world = null;
 
 export class WorldMapScene {
   constructor(game, returnTo) {
     this.game = game;
     this.returnTo = returnTo;
     this.time = 0;
-    if (!world) {
-      const layout = layoutWorld();
-      world = { layout, ...renderWorld(layout) };
+    const open = openLocks(game);
+    if (world?.open !== open) {
+      const layout = layoutWorld(game);
+      world = { open, layout, ...renderWorld(layout, game) };
     }
 
     // Where the player is in world tiles. Indoors, that's the door that leads in.

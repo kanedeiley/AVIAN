@@ -10,6 +10,8 @@ import van from './van.js';
 import farm from './farm.js';
 import leisterHouse from './leisterHouse.js';
 import grandparentsHouse from './grandparentsHouse.js';
+import pasture from './pasture.js';
+import airport from './airport.js';
 import { TILES, LEGEND } from '../assets/tiles.js';
 import { PROPS } from '../assets/coastTiles.js';
 import { VOYAGES } from '../data/voyages.js';
@@ -20,7 +22,7 @@ import { BIRDS } from '../data/birds.js';
 import { COLLECTIBLES } from '../data/collectibles.js';
 import { COLLECTIBLE_SPRITES, TELLS } from '../assets/collectibles.js';
 
-const MAPS = { village, house, shrine, hannahville, hannahHouse, cave, mountain, van, farm, leisterHouse, grandparentsHouse };
+const MAPS = { village, house, shrine, hannahville, hannahHouse, cave, mountain, van, farm, leisterHouse, grandparentsHouse, pasture, airport };
 export const MAP_IDS = Object.keys(MAPS);
 const cache = {};
 
@@ -72,6 +74,8 @@ export function getMap(id) {
     if (!dest) throw new Error(`${at} goes to unknown map "${w.to}"`);
     const row = dest.rows[w.toY];
     if (!row || w.toX < 0 || w.toX >= row.length) throw new Error(`${at} lands outside map "${w.to}" at ${w.toX},${w.toY}`);
+    if (w.locked && !NEMESES[w.locked.nemesis]) throw new Error(`${at} is locked by unknown nemesis "${w.locked.nemesis}" (see data/nemeses.js)`);
+    if (w.locked && !TILES[w.locked.tile]) throw new Error(`${at} is locked with unknown tile "${w.locked.tile}"`);
   }
 
   for (const s of raw.signs ?? []) {

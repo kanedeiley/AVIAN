@@ -3,7 +3,9 @@
 //   region      which part of the world it's in (data/regions.js); its birds count toward that region
 //   rows        one string per row, one character per tile (see LEGEND in tiles.js)
 //   legend      optional extra/overridden characters for this map only
-//   warps       tiles that move you somewhere else when you step on them
+//   warps       tiles that move you somewhere else when you step on them; a `locked` warp
+//               ({ nemesis, tile, text }) is covered by `tile` (solid, `text` when you face it)
+//               and left off the world map until you've beaten that nemesis bird
 //   signs       text shown when you face a tile and press A
 //   birds       how many birds are out on the map at once, and which species (`table`), plus
 //               optional `rare` ones picked `rareChance` of the time (doubled at dawn and dusk)

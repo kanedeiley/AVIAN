@@ -46,6 +46,11 @@ export function nemesisOn(game, mapId) {
   return found ? { id: found[0], ...found[1] } : null;
 }
 
+/** False while a `locked` warp is still shut (see maps/village.js). */
+export function warpOpen(game, warp) {
+  return !warp.locked || beatNemesis(game, warp.locked.nemesis);
+}
+
 export function setFlag(game, flag) {
   if (game.progress.flags[flag]) return;
   game.progress.flags[flag] = true;

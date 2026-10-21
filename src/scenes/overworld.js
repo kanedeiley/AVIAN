@@ -22,7 +22,7 @@ import { NemesisScene } from './nemesis.js';
 import { VOYAGES } from '../data/voyages.js';
 import { DIALOGUE } from '../data/dialogue.js';
 import { saveMoney, saveLocation } from '../save.js';
-import { nemesisNeeds, nemesisOn, setFlag, collectiblesOn, collect } from '../progress.js';
+import { nemesisNeeds, nemesisOn, setFlag, collectiblesOn, collect, warpOpen } from '../progress.js';
 import { timeUntil } from '../time.js';
 import { drawLighting, tintPanes, drawClock } from '../gfx/lighting.js';
 
@@ -66,7 +66,14 @@ export class Overworld {
 
   tileAt(x, y) {
     if (x < 0 || y < 0 || x >= this.map.width || y >= this.map.height) return null;
-    return TILES[this.map.grid[y][x]];
+    const lock = this.lockAt(x, y);
+    return TILES[lock ? lock.tile : this.map.grid[y][x]];
+  }
+
+  /** The `locked` part of a warp on this tile that's still shut, if any. */
+  lockAt(x, y) {
+    const warp = this.map.warps.find((w) => w.locked && w.x === x && w.y === y);
+    return warp && !warpOpen(this.game, warp) ? warp.locked : null;
   }
 
   isBlocked(x, y) {
@@ -128,7 +135,7 @@ export class Overworld {
     // A: read the sign in front of you, or photograph the bird in front of you.
     if (input.wasPressed('a')) {
       const [dx, dy] = DIRS[p.facing];
-      const sign = this.map.signs.find((s) => s.x === p.x + dx && s.y === p.y + dy);
+      const sign = this.map.signs.find((s) => s.x === p.x + dx && s.y === p.y + dy) ?? this.lockAt(p.x + dx, p.y + dy);
       if (sign) {
         this.dialog = { pages: paginate(sign.text), page: 0 };
         p.walking = false;
@@ -339,7 +346,7 @@ export class Overworld {
     const y1 = Math.min(this.map.height, Math.ceil((camY + VIEW_H) / TILE));
     for (let y = y0; y < y1; y++) {
       for (let x = x0; x < x1; x++) {
-        ctx.drawImage(this.frameOf(TILES[this.map.grid[y][x]]), x * TILE - camX, y * TILE - camY);
+        ctx.drawImage(this.frameOf(this.tileAt(x, y)), x * TILE - camX, y * TILE - camY);
       }
     }
     const { phase, weather } = this.game;
