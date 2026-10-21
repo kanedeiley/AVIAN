@@ -9,7 +9,7 @@ import { getMap } from '../maps/index.js';
 import { TILES } from '../assets/tiles.js';
 import { PLAYER } from '../assets/player.js';
 import { BIRD_SPRITES } from '../assets/birds.js';
-import { drawStench } from '../assets/collectibles.js';
+import { TELLS } from '../assets/collectibles.js';
 import { input } from '../input.js';
 import { drawBox, drawText, drawTinyText, drawDialog, paginate } from '../gfx/ui.js';
 import { PhotoScene } from './photo.js';
@@ -367,8 +367,8 @@ export class Overworld {
     this.npcs.draw(ctx, camX, camY, true, this.time);
     this.birds.draw(ctx, camX, camY, true, this.time);
     this.drawNemesis(ctx, camX, camY, true);
-    // Collectibles stay hidden: all you see is the stink rising off them, over whatever's in front.
-    for (const c of this.collectibles) drawStench(ctx, c.x * TILE - camX, c.y * TILE - camY, this.time);
+    // Collectibles stay hidden: all you see is their tell (stink, music) rising off them, over whatever's in front.
+    for (const c of this.collectibles) TELLS[c.tell ?? 'stench'](ctx, c.x * TILE - camX, c.y * TILE - camY, this.time);
 
     if (this.map.dark) {
       // The lantern flickers a little.
