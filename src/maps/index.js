@@ -18,7 +18,7 @@ import { NEMESES } from '../data/nemeses.js';
 import { FLAGS } from '../data/flags.js';
 import { BIRDS } from '../data/birds.js';
 import { COLLECTIBLES } from '../data/collectibles.js';
-import { COLLECTIBLE_SPRITES } from '../assets/collectibles.js';
+import { COLLECTIBLE_SPRITES, TELLS } from '../assets/collectibles.js';
 
 const MAPS = { village, house, shrine, hannahville, hannahHouse, cave, mountain, van, farm, leisterHouse, grandparentsHouse };
 export const MAP_IDS = Object.keys(MAPS);
@@ -99,6 +99,7 @@ export function getMap(id) {
     const at = `Map "${id}": collectible "${cid}" at ${c.x},${c.y}`;
     if (!inside(c.x, c.y)) throw new Error(`${at} is outside the map`);
     if (!COLLECTIBLE_SPRITES[cid]) throw new Error(`${at} has no art in assets/collectibles.js`);
+    if (c.tell && !TELLS[c.tell]) throw new Error(`${at} has unknown tell "${c.tell}" (see TELLS in assets/collectibles.js)`);
   }
 
   return (cache[id] = {
