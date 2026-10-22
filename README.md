@@ -60,8 +60,8 @@ when the config is filled in), `signIn.js` is the sign-in form and account bar (
 is in `index.html`), and `save.js` calls a hook after every save that sends it online.
 
 Note: the database trusts what the game sends, so a player could edit their own money in
-the browser. That's fine while fares are $0. Once money matters, move fares and rewards
-into a Supabase database function.
+the browser and skip saving up for the Bay Tour. To stop that, move fares and rewards into a
+Supabase database function.
 
 ## Deploying
 
@@ -248,8 +248,10 @@ Seabirds (tern, puffin, cormorant, pelican and the rare albatross) only turn up 
 voyages, and the journal lists the voyage as where they live.
 
 **Money:** `game.money` is saved in the browser next to the journal. Boarding checks it
-against the voyage's `price` and takes the fare. The Bay Tour costs $0 for now, and
-there's no way to earn money yet. To charge for a trip, set its `price` in `data/voyages.js`.
+against the voyage's `price` and takes the fare. The Bay Tour costs $100, so you have to
+save up for it: photos pay $5/$10/$20 for 1-3 stars, plus $25 for a new species or $10 for
+beating your best photo, and half again at dawn and dusk (`scenes/photo.js`). Short of the
+fare, the captain sends you off to take more photos. A trip's `price` is in `data/voyages.js`.
 
 **Adding a voyage:** add an entry to `data/voyages.js`, then give a prop on a map a
 `voyage` field: `props: [{ x: 21, y: 31, id: 'tourShip', voyage: 'bay' }]`.

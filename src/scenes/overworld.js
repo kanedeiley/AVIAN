@@ -220,7 +220,7 @@ export class Overworld {
     const { money } = this.game;
     const fare = voyage.price > 0 ? `The fare is $${voyage.price}. You have $${money}.` : 'The fare is $0 today!';
     if (money < voyage.price) {
-      this.dialog = { pages: paginate([...voyage.pitch, fare, 'Come back when you have enough money.']), page: 0 };
+      this.dialog = { pages: paginate([...voyage.pitch, fare, 'Good bird photos pay! Come back when you\'ve saved up.']), page: 0 };
       return;
     }
     const pages = paginate([...voyage.pitch, fare]);

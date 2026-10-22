@@ -2,6 +2,7 @@
 // DIALOGUE.hannah(game) each time you talk to it, so the lines can follow your
 // progress. Each string is a page or two in the text box.
 import { NEMESES } from './nemeses.js';
+import { VOYAGES } from './voyages.js';
 import { REGIONS } from './regions.js';
 import { beatNemesis, regionPhotos, playerName } from '../progress.js';
 
@@ -35,7 +36,8 @@ export const DIALOGUE = {
     if (have < need) {
       return [
         `HANNAH: ${have} of ${need} kinds of ${region} birds, ${name}. Keep going!`,
-        'Seabirds count too. The BAY TOUR leaves from the end of the pier.',
+        `Seabirds count too. The BAY TOUR leaves from the end of the pier, but the fare is $${VOYAGES.bay.price}.`,
+        'Every photo you take earns a little money, so save up! Dawn and dusk pay best.',
       ];
     }
     return [
