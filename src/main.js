@@ -13,6 +13,7 @@ import { cloud } from './cloud.js';
 import { askToSignIn, showAccount } from './signIn.js';
 import { setUpTouchControls } from './touch.js';
 import { currentPhase, currentWeather } from './time.js';
+import { setUpLogo } from './assets/logo.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -32,6 +33,7 @@ function resize() {
 }
 new ResizeObserver(resize).observe(screenBox);
 setUpTouchControls();
+setUpLogo();
 
 const game = {
   scene: null,
