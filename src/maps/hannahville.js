@@ -11,6 +11,9 @@
 //               a PROPS id from assets/coastTiles.js. Add `voyage` to book that trip by facing it (data/voyages.js).
 //   npcs        characters who wander a box of tiles and talk when you press A (see scenes/npcs.js)
 //
+// An npc or sign can have `after: <nemesis id>` to only be there once you've beaten
+// that nemesis, or `until: <nemesis id>` to be gone once you have (see progress.js shown()).
+//
 // Coordinates are (x, y) in tiles, counted from the top-left, starting at 0.
 
 // An Italian seaside town on a hill. The houses, terrace walls, stairs and

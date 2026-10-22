@@ -28,6 +28,7 @@ import { VAN_DEFS } from './vanTiles.js';
 import { FARM_DEFS } from './farmTiles.js';
 import { AIRPORT_DEFS } from './airportTiles.js';
 import { STORE_DEFS } from './storeTiles.js';
+import { CANAL_DEFS } from './canalTiles.js';
 
 // ---------- outdoor ----------
 
@@ -700,6 +701,7 @@ const DEFS = {
   ...FARM_DEFS,  // the Leister family farm and its farmhouses: see farmTiles.js
   ...AIRPORT_DEFS, // Van Sant Airport: see airportTiles.js
   ...STORE_DEFS,   // shop fronts and the inside of the general store: see storeTiles.js
+  ...CANAL_DEFS,   // Erwinna, the canal town: see canalTiles.js
   hillTree:  { art: TREE, base: 'hill', solid: true },
 
   floor:     { art: FLOOR },

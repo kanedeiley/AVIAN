@@ -1,5 +1,5 @@
-// Van Sant Airport, a grass airstrip out on the Open Plains, east of Lark
-// Meadow. The gravel driveway comes in from the meadow (west) past the office
+// Van Sant Airport, a grass airstrip out on the Open Plains, between Lark
+// Meadow (west) and Erwinna (east). The gravel driveway comes in from the meadow (west) past the office
 // to the taxiway, which runs up the east side and along the fronts of the
 // three hangars. The mown runway crosses the whole field below the driveway,
 // with tall grass on both sides, and grassy hills close it in north and south.
@@ -57,8 +57,8 @@ export default {
     'T,,,,,*,,,,,,,,,.....x....EEEEEE....#|##T',
     'T,,,,,,,,,,,*,,,.......*..WHWWHW.B*.#|##T',
     'T,S,,,,,,,,,,,,,.*.......*WHOHWW*...#|##T',
-    'ggggggggggggggggggggggggggggggggggggggggT',
-    'ggggggggggggggggggggggggggggggggggggggggT',
+    'ggggggggggggggggggggggggggggggggggggggggg',
+    'ggggggggggggggggggggggggggggggggggggggggg',
     'T..............*...............*........T',
     'Tu[uumuuuumuuuumuuuumuuuumuuuumuuuumuu[uT',
     'Tu[uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu[uT',
@@ -76,11 +76,14 @@ export default {
     // The driveway west, back to the gate of Lark Meadow.
     { x: 0, y: 13, to: 'pasture', toX: 22, toY: 9, facing: 'left' },
     { x: 0, y: 14, to: 'pasture', toX: 22, toY: 9, facing: 'left' },
+    // The driveway east, on down the road to Erwinna.
+    { x: 40, y: 13, to: 'erwinna', toX: 1, toY: 13, facing: 'right' },
+    { x: 40, y: 14, to: 'erwinna', toX: 1, toY: 14, facing: 'right' },
   ],
   // Parked on the taxiway in front of Hangar 2.
   props: [{ id: 'biplane', x: 27, y: 5 }],
   signs: [
-    { x: 2, y: 12, text: ['VAN SANT AIRPORT', 'Grass runway. Gliders, biplanes, and lots of birds.', 'West: LARK MEADOW.'] },
+    { x: 2, y: 12, text: ['VAN SANT AIRPORT', 'Grass runway. Gliders, biplanes, and lots of birds.', 'West: LARK MEADOW. East: ERWINNA.'] },
     { x: 20, y: 4, text: ['HANGAR 1', 'The big doors are locked. Through the windows: the long white wing of a glider.'] },
     { x: 29, y: 4, text: ['HANGAR 2', 'Locked. It smells like engine oil and fresh paint in there.'] },
     { x: 37, y: 4, text: ['HANGAR 3', 'The doors are rolled open. Nothing inside but a toolbox, and a mud nest up in the rafters.'] },
@@ -97,6 +100,7 @@ export default {
       'The kestrels hover over the runway all day, hunting mice in the tall grass.',
       'And the killdeer nest right on the gravel. If one fakes a broken wing at you, it has eggs nearby!',
       'Someday I\'ll take you up in the biplane. Birds look different from up there.',
+      'Your friend HANNAH came through this morning, headed east to ERWINNA with her paints. Said something about a heron.',
     ] },
   ],
   birds: { count: 8, table: ['killdeer', 'killdeer', 'meadowlark', 'barnSwallow', 'barnSwallow', 'bobolink', 'goldfinch'], rare: ['kestrel'], rareChance: 0.2 },

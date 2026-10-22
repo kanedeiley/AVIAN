@@ -4,4 +4,5 @@
 // while you still need it.
 export const FLAGS = {
   metHannah: 'Talk to HANNAH at her house in HANNAHVILLE.',
+  metHannahErwinna: 'Find HANNAH by the canal in ERWINNA, east of VAN SANT AIRPORT.',
 };

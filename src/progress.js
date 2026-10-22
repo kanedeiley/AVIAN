@@ -36,6 +36,11 @@ export function beatNemesis(game, id) {
   return Boolean(game.progress.nemeses[id]);
 }
 
+/** False for a map's npc or sign that's only there `after` (or `until`) you've beaten a nemesis. */
+export function shown(game, thing) {
+  return (!thing.after || beatNemesis(game, thing.after)) && (!thing.until || !beatNemesis(game, thing.until));
+}
+
 /** Hints for each requirement of a nemesis you haven't met yet; empty when you're ready. */
 export function nemesisNeeds(game, id) {
   const { requires, region } = NEMESES[id];
