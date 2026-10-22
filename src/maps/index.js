@@ -12,17 +12,19 @@ import leisterHouse from './leisterHouse.js';
 import grandparentsHouse from './grandparentsHouse.js';
 import pasture from './pasture.js';
 import airport from './airport.js';
+import generalStore from './generalStore.js';
 import { TILES, LEGEND } from '../assets/tiles.js';
-import { PROPS } from '../assets/coastTiles.js';
+import { PROPS } from '../assets/coastTiles.js'; // storefronts too (storeTiles.js)
 import { VOYAGES } from '../data/voyages.js';
 import { REGIONS } from '../data/regions.js';
 import { NEMESES } from '../data/nemeses.js';
 import { FLAGS } from '../data/flags.js';
 import { BIRDS } from '../data/birds.js';
 import { COLLECTIBLES } from '../data/collectibles.js';
+import { ITEMS } from '../data/items.js';
 import { COLLECTIBLE_SPRITES, TELLS } from '../assets/collectibles.js';
 
-const MAPS = { village, house, shrine, hannahville, hannahHouse, cave, mountain, van, farm, leisterHouse, grandparentsHouse, pasture, airport };
+const MAPS = { village, house, shrine, hannahville, hannahHouse, cave, mountain, van, farm, leisterHouse, grandparentsHouse, pasture, airport, generalStore };
 export const MAP_IDS = Object.keys(MAPS);
 const cache = {};
 
@@ -31,6 +33,16 @@ export function canStand(id, x, y) {
   if (!MAPS[id]) return false;
   const map = getMap(id);
   return x >= 0 && y >= 0 && x < map.width && y < map.height && !TILES[map.grid[y][x]].solid;
+}
+
+/** The first door on an outdoor map that leads into map `id`, as { map, x, y }, or null. */
+export function doorTo(id) {
+  for (const mapId of MAP_IDS) {
+    const map = getMap(mapId);
+    const door = !map.indoor && map.warps.find((w) => w.to === id);
+    if (door) return { map: mapId, x: door.x, y: door.y };
+  }
+  return null;
 }
 
 /** Load a map by id, turning its character rows into a grid of tile ids. */
@@ -70,10 +82,15 @@ export function getMap(id) {
     const at = `Map "${id}": warp at ${w.x},${w.y}`;
     if (!inside(w.x, w.y)) throw new Error(`${at} is outside the map (${width}x${grid.length})`);
     if (TILES[grid[w.y][w.x]].solid) throw new Error(`${at} is on a solid tile, so it can never be stepped on`);
-    const dest = MAPS[w.to];
-    if (!dest) throw new Error(`${at} goes to unknown map "${w.to}"`);
-    const row = dest.rows[w.toY];
-    if (!row || w.toX < 0 || w.toX >= row.length) throw new Error(`${at} lands outside map "${w.to}" at ${w.toX},${w.toY}`);
+    if (w.to === 'back') {
+      // Goes back out the way you came in (see Overworld.onStep), so any number of doors can share this map.
+      if (!raw.indoor) throw new Error(`${at} goes 'back', but only indoor maps can have a way back out`);
+    } else {
+      const dest = MAPS[w.to];
+      if (!dest) throw new Error(`${at} goes to unknown map "${w.to}"`);
+      const row = dest.rows[w.toY];
+      if (!row || w.toX < 0 || w.toX >= row.length) throw new Error(`${at} lands outside map "${w.to}" at ${w.toX},${w.toY}`);
+    }
     if (w.locked && !NEMESES[w.locked.nemesis]) throw new Error(`${at} is locked by unknown nemesis "${w.locked.nemesis}" (see data/nemeses.js)`);
     if (w.locked && !TILES[w.locked.tile]) throw new Error(`${at} is locked with unknown tile "${w.locked.tile}"`);
   }
@@ -86,6 +103,7 @@ export function getMap(id) {
     const at = `Map "${id}": npc "${n.id}" at ${n.x},${n.y}`;
     if (!inside(n.x, n.y)) throw new Error(`${at} is outside the map`);
     if (TILES[grid[n.y][n.x]].solid) throw new Error(`${at} starts on a solid tile`);
+    for (const item of n.shop ?? []) if (!ITEMS[item]) throw new Error(`${at} sells unknown item "${item}" (see data/items.js)`);
   }
 
   for (const [nid, n] of Object.entries(NEMESES)) {

@@ -3,9 +3,10 @@
 // the nemesis bird guarding its perch (see nemesis.js), and the collectibles
 // hidden around (see data/collectibles.js). Outdoors the light follows the
 // real time of day and weather (time.js, gfx/lighting.js), and beds and
-// benches let you rest until it's another time of day.
+// benches let you rest until it's another time of day. Shopkeepers sell
+// gear (scenes/shop.js), which you use from your bag: see useItem().
 import { TILE, VIEW_W, VIEW_H, STEP_TIME } from '../config.js';
-import { getMap } from '../maps/index.js';
+import { getMap, doorTo } from '../maps/index.js';
 import { TILES } from '../assets/tiles.js';
 import { lookSprites } from '../assets/player.js';
 import { BIRD_SPRITES } from '../assets/birds.js';
@@ -19,10 +20,13 @@ import { WorldMapScene } from './worldMap.js';
 import { JournalScene } from './journal.js';
 import { VoyageScene } from './voyage.js';
 import { NemesisScene } from './nemesis.js';
+import { ShopScene, BagScene } from './shop.js';
 import { VOYAGES } from '../data/voyages.js';
 import { DIALOGUE } from '../data/dialogue.js';
+import { ITEMS } from '../data/items.js';
+import { ITEM_SPRITES, BIKE_SPRITES } from '../assets/items.js';
 import { saveMoney, saveLocation } from '../save.js';
-import { nemesisNeeds, nemesisOn, setFlag, collectiblesOn, collect, warpOpen } from '../progress.js';
+import { nemesisNeeds, nemesisOn, setFlag, collectiblesOn, collect, warpOpen, spendItem } from '../progress.js';
 import { timeUntil } from '../time.js';
 import { drawLighting, tintPanes, drawClock } from '../gfx/lighting.js';
 
@@ -35,15 +39,19 @@ const REST_UNTIL = ['dawn', 'dusk', 'night']; // what a bed or bench lets you re
 const REST_DARK = 0.85;        // how dark the screen gets while you rest
 
 export class Overworld {
-  constructor(game, mapId, x, y, facing = 'down') {
+  constructor(game, mapId, x, y, facing = 'down', back = null) {
     this.game = game;
     this.time = 0;
+    this.back = back; // where a `back` warp takes you: the tile you took your last warp from
+    this.riding = false; // on your bike
+    this.inUse = {};     // item id -> seconds until it wears off (binoculars)
     this.player = { x, y, facing, moving: false, progress: 0, dx: 0, dy: 0, steps: 0, walking: false, turnTimer: 0 };
     this.loadMap(mapId, x, y, facing);
   }
 
   loadMap(id, x, y, facing) {
     this.map = getMap(id);
+    if (this.map.indoor) this.riding = false; // you leave your bike at the door
     Object.assign(this.player, { x, y, facing, moving: false, progress: 0 });
     this.nemesis = nemesisOn(this.game, id);
     this.collectibles = collectiblesOn(this.game, id);
@@ -90,6 +98,7 @@ export class Overworld {
   update(dt) {
     this.time += dt;
     this.bannerTime = Math.max(0, this.bannerTime - dt);
+    this.tickItems(dt);
     const p = this.player;
     if (this.rest) return this.updateRest(dt);
     this.birds.update(dt);
@@ -113,7 +122,7 @@ export class Overworld {
     }
 
     if (p.moving) {
-      p.progress += dt / STEP_TIME;
+      p.progress += (dt / STEP_TIME) * (this.riding ? ITEMS.bike.speed : 1);
       if (p.progress < 1) return;
       p.x += p.dx;
       p.y += p.dy;
@@ -122,6 +131,13 @@ export class Overworld {
       p.steps++;
       if (this.onStep()) return;
       // otherwise fall through so held keys keep walking without a hitch
+    }
+
+    // I: your bag (no fade: it opens over the map).
+    if (input.wasPressed('bag')) {
+      p.walking = false;
+      this.game.setScene(new BagScene(this.game, this));
+      return;
     }
 
     // M: the world map. J: the journal.
@@ -155,7 +171,14 @@ export class Overworld {
         p.walking = false;
         return;
       }
-      const npc = this.npcs.at(p.x + dx, p.y + dy);
+      // Shopkeepers stand behind a `counter`: you talk to them across it.
+      const npc = this.npcs.at(p.x + dx, p.y + dy) ?? (this.tileAt(p.x + dx, p.y + dy)?.counter ? this.npcs.at(p.x + 2 * dx, p.y + 2 * dy) : null);
+      if (npc?.shop) {
+        this.npcs.listen(npc);
+        p.walking = false;
+        this.game.setScene(new ShopScene(this.game, this, npc.shop, npc.text));
+        return;
+      }
       if (npc) {
         this.npcs.listen(npc);
         // Pick the lines before setting the flag, so a first meeting says hello.
@@ -176,7 +199,7 @@ export class Overworld {
         p.walking = false;
         return;
       }
-      const bird = this.birds.target(dx, dy);
+      const bird = this.birds.target(dx, dy, this.photoRange());
       if (bird) {
         p.walking = false;
         this.game.transition(() => {
@@ -207,6 +230,43 @@ export class Overworld {
     const [dx, dy] = DIRS[dir];
     if (this.isBlocked(p.x + dx, p.y + dy)) return;
     Object.assign(p, { moving: true, dx, dy, progress: 0 });
+  }
+
+  /** How far away (in tiles) you can photograph a bird: farther with binoculars. */
+  photoRange() {
+    return this.inUse.binoculars ? ITEMS.binoculars.range : undefined;
+  }
+
+  /** Count down items in use; say so when one wears off. */
+  tickItems(dt) {
+    for (const [id, left] of Object.entries(this.inUse)) {
+      if ((this.inUse[id] = left - dt) > 0) continue;
+      delete this.inUse[id];
+      if (ITEMS[id].wornOff && !this.dialog) this.dialog = { pages: paginate(ITEMS[id].wornOff), page: 0 };
+    }
+  }
+
+  /** Use an item from your bag (scenes/shop.js); returns what to tell you about it. */
+  useItem(id) {
+    const item = ITEMS[id];
+    const p = this.player;
+    if (item.ride) {
+      if (this.map.indoor) return ['No riding indoors!'];
+      this.riding = !this.riding;
+      return [this.riding ? `You hop on your ${item.name}. Birds will hear you coming!` : `You get off your ${item.name}.`];
+    }
+    if (this.inUse[id] || (item.feeds && this.birds.seed)) return [item.busy];
+    if (item.feeds) {
+      if (!this.map.birds) return ['There are no birds around here to feed.'];
+      // On the ground in front of you, where you can see it (or at your feet, if that's blocked).
+      const [dx, dy] = DIRS[p.facing];
+      const open = !this.isBlocked(p.x + dx, p.y + dy);
+      this.birds.scatterSeed(open ? p.x + dx : p.x, open ? p.y + dy : p.y, item.lasts);
+    } else {
+      this.inUse[id] = item.lasts;
+    }
+    if (item.kind === 'supply') spendItem(this.game, id);
+    return item.used;
   }
 
   /** The big prop (see maps/index.js) covering this tile, if any. */
@@ -277,6 +337,17 @@ export class Overworld {
     }
   }
 
+  /** Under the clock: each item in use, with the seconds it has left. */
+  drawItemTimers(ctx) {
+    Object.entries(this.inUse).forEach(([id, left], i) => {
+      const x = VIEW_W - 48, y = 28 + i * 24;
+      drawBox(ctx, x, y, 44, 20);
+      ctx.drawImage(ITEM_SPRITES[id], x + 2, y + 2);
+      const secs = String(Math.ceil(left));
+      drawText(ctx, secs, x + 40 - secs.length * 8, y + 6, left < 10 && Math.floor(this.time * 4) % 2 ? '#c03030' : undefined);
+    });
+  }
+
   drawRest(ctx) {
     const { target, time } = this.rest;
     ctx.fillStyle = `rgba(8,8,24,${Math.min(REST_DARK, time)})`;
@@ -308,17 +379,33 @@ export class Overworld {
     const p = this.player;
     const warp = this.map.warps.find((w) => w.x === p.x && w.y === p.y);
     if (warp) {
-      this.game.transition(() => this.loadMap(warp.to, warp.toX, warp.toY, warp.facing ?? p.facing));
+      const facing = warp.facing ?? p.facing;
+      const to = warp.to === 'back' ? this.wayBack(facing) : { map: warp.to, x: warp.toX, y: warp.toY };
+      // Remember the tile you stepped onto the warp from, so a shared interior can send you back out the right door.
+      if (warp.to !== 'back') this.back = { map: this.map.id, x: p.x - p.dx, y: p.y - p.dy };
+      this.game.transition(() => this.loadMap(to.map, to.x, to.y, facing));
       return true;
     }
     this.rememberLocation();
     return false;
   }
 
+  /**
+   * Where a `back` warp lands: the tile you came in from. Without one (an old
+   * save, or a ?map= dev start), one step out of the first door into this map.
+   */
+  wayBack(facing) {
+    if (this.back) return this.back;
+    const door = doorTo(this.map.id);
+    if (!door) throw new Error(`Map "${this.map.id}" has a 'back' warp, but no door leads into it`);
+    const [dx, dy] = DIRS[facing];
+    return { map: door.map, x: door.x + dx, y: door.y + dy };
+  }
+
   /** Save where you're standing, so the next visit starts here (never on a warp: loadMap saves where it lands). */
   rememberLocation() {
     const p = this.player;
-    this.game.location = { map: this.map.id, x: p.x, y: p.y, facing: p.facing, at: Date.now() };
+    this.game.location = { map: this.map.id, x: p.x, y: p.y, facing: p.facing, back: this.back, at: Date.now() };
     saveLocation(this.game.location);
   }
 
@@ -369,9 +456,10 @@ export class Overworld {
     // Player
     const frames = this.playerSprites()[p.facing];
     let sprite = frames.stand;
-    if (p.moving && p.progress < 0.5) sprite = p.steps % 2 ? frames.stepB : frames.stepA;
+    if (p.moving && p.progress < 0.5 && !this.riding) sprite = p.steps % 2 ? frames.stepB : frames.stepA;
     // People are taller than a tile: feet on the tile, head over the one above.
     ctx.drawImage(sprite, Math.round(px - camX), Math.round(py - camY) - (sprite.height - TILE));
+    if (this.riding) ctx.drawImage(BIKE_SPRITES[p.facing], Math.round(px - camX), Math.round(py - camY));
 
     // Tall grass hides the player's feet
     const onNext = p.moving && p.progress > 0.5;
@@ -399,7 +487,7 @@ export class Overworld {
       drawLighting(ctx, phase, { weather, time: this.time, lights, camX, camY });
     }
 
-    const target = !this.dialog && !this.rest && this.birds.target(...DIRS[p.facing]);
+    const target = !this.dialog && !this.rest && this.birds.target(...DIRS[p.facing], this.photoRange());
     if (target) {
       this.birds.drawTarget(ctx, target, camX, camY);
       drawBox(ctx, 4, VIEW_H - 22, 80, 18);
@@ -415,6 +503,7 @@ export class Overworld {
       drawTinyText(ctx, when, 12, 20);
     }
     drawClock(ctx, phase);
+    this.drawItemTimers(ctx);
 
     if (this.rest) return this.drawRest(ctx);
     if (this.dialog) {

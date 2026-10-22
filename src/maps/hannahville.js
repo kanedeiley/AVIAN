@@ -146,6 +146,8 @@ export default {
     { x: 7, y: 27, to: 'hannahHouse', toX: 7, toY: 7, facing: 'up' },
     // The van's open side door. Arrive inside, in the gap between the cabinets.
     { x: 37, y: 29, to: 'van', toX: 5, toY: 3, facing: 'up' },
+    // The general store's door. Arrive inside just above the doormat, facing up.
+    { x: 24, y: 5, to: 'generalStore', toX: 5, toY: 8, facing: 'up' },
   ],
   signs: [
     { x: 20, y: 15, text: ['HANNAHVILLE BOUTIQUE', 'Sun hats, sandals and binocular straps.', 'A note on the door: OUT BIRDWATCHING! Back by sundown.'] },
@@ -154,7 +156,6 @@ export default {
     { x: 25, y: 9, text: ['HANNAHVILLE BOUTIQUE', 'Down the stairs!'] },
     { x: 1, y: 28, text: ['HANNAH', 'Beware of extremely friendly dogs.'] },
     { x: 8, y: 5, text: ['CASA ROMANO', 'Someone is practicing the accordion.'] },
-    { x: 24, y: 5, text: ['The door is locked.', 'CLOSED for the afternoon riposo.'] },
     { x: 24, y: 7, text: ['HANNAHVILLE GENERAL STORE', 'Film, binoculars and birdseed.'] },
     { x: 17, y: 7, text: ['FLYER: Have you seen a CARDINAL?', 'A bright red bird has been spotted in the lemon grove. Approach slowly!'] },
     { x: 3, y: 5, text: ['CASA ROSSI', 'Someone is singing inside.'] },
@@ -180,7 +181,7 @@ export default {
     ] },
   ],
   // The bird tour ship, moored along the east side of the pier: face it and press A to book a voyage.
-  // Wyatt's van is parked on the beach at the east end.
-  props: [{ x: 21, y: 31, id: 'tourShip', voyage: 'bay' }, { x: 36, y: 28, id: 'sprinterVan' }],
+  // Wyatt's van is parked on the beach at the east end, and the general store is up the hill (storeTiles.js).
+  props: [{ x: 21, y: 31, id: 'tourShip', voyage: 'bay' }, { x: 36, y: 28, id: 'sprinterVan' }, { x: 22, y: 2, id: 'generalStoreFront' }],
   birds: { count: 7, table: ['robin', 'goldfinch', 'cardinal', 'goldfinch', 'gull', 'gull'] },
 };

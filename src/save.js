@@ -73,9 +73,10 @@ export function saveMoney(money) {
  *   nemeses  nemesis birds you've beaten -> stars of the winning photo (see data/nemeses.js)
  *   collectibles  collectibles you've found, e.g. { jacobsDoobie: true } (see data/collectibles.js)
  *   player   your name and look ({ name, look }, see assets/player.js), or null until the intro is done
+ *   items    what's in your bag: item id -> how many (see data/items.js)
  */
 export function loadProgress() {
-  const fresh = { flags: {}, nemeses: {}, collectibles: {}, player: null };
+  const fresh = { flags: {}, nemeses: {}, collectibles: {}, player: null, items: {} };
   try {
     const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY));
     return saved && typeof saved === 'object' ? { ...fresh, ...saved } : fresh;
@@ -93,7 +94,7 @@ export function saveProgress(progress) {
   onSave();
 }
 
-/** Where you last stood ({ map, x, y, facing, at }, `at` in ms since 1970), or null. */
+/** Where you last stood ({ map, x, y, facing, back, at }, `at` in ms since 1970), or null. */
 export function loadLocation() {
   try {
     const saved = JSON.parse(localStorage.getItem(LOCATION_KEY));
