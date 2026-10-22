@@ -1,9 +1,11 @@
-// The field journal, in two pages: LEFT/RIGHT flips between them.
+// The field journal, in three pages: LEFT/RIGHT flips between them.
 //   BIRDS         every species, with your best photo of each. Birds you haven't
 //                 photographed show as a silhouette with "???", but the journal
 //                 still says where they live as a hint.
 //   COLLECTIBLES  the odd things hidden around the world (data/collectibles.js).
 //                 Ones you haven't found say which map they're hidden on.
+//   YOU           you, with your name and how you're doing; A changes your look
+//                 (the LOOK screen from the intro, scenes/lookEditor.js).
 // Up/down picks an entry. J or B closes.
 import { VIEW_W, VIEW_H } from '../config.js';
 import { BIRDS } from '../data/birds.js';
@@ -17,6 +19,10 @@ import { makeSprite } from '../gfx/sprite.js';
 import { MAP_IDS, getMap } from '../maps/index.js';
 import { input } from '../input.js';
 import { drawBox, drawText } from '../gfx/ui.js';
+import { lookSprites } from '../assets/player.js';
+import { LookEditor, drawPerson } from './lookEditor.js';
+import { saveProgress } from '../save.js';
+import { playerName } from '../progress.js';
 
 const TOP = 24;          // title bar height
 const ROW_H = 16;
@@ -105,6 +111,8 @@ const PAGES = [
       }
     },
   },
+  // You: no list, just you and your stats (see drawYou).
+  { title: 'YOU', ids: [], you: true },
 ];
 
 export class JournalScene {
@@ -113,15 +121,21 @@ export class JournalScene {
     this.returnTo = returnTo;
     this.page = 0;
     this.cursors = PAGES.map(() => ({ selected: 0, scroll: 0 })); // each page remembers its place
+    this.editor = null; // the LOOK screen, while you're changing your look
   }
 
-  update() {
+  update(dt) {
+    if (this.editor) return this.editor.update(dt);
     if (input.wasPressed('b') || input.wasPressed('journal')) {
       this.game.transition(() => this.game.setScene(this.returnTo));
       return;
     }
     if (input.wasPressed('left')) this.page = (this.page + PAGES.length - 1) % PAGES.length;
     if (input.wasPressed('right')) this.page = (this.page + 1) % PAGES.length;
+    if (PAGES[this.page].you) {
+      if (input.wasPressed('a')) this.editLook();
+      return;
+    }
 
     const cursor = this.cursors[this.page];
     const n = PAGES[this.page].ids.length;
@@ -130,16 +144,28 @@ export class JournalScene {
     cursor.scroll = Math.min(Math.max(cursor.scroll, cursor.selected - ROWS + 1), cursor.selected);
   }
 
+  /** Open the LOOK screen; DONE saves the new look (the overworld picks it up, see playerSprites()). */
+  editLook() {
+    const { game } = this;
+    this.editor = new LookEditor(game.progress.player?.look, playerName(game), (look) => {
+      game.progress.player = { name: playerName(game), ...game.progress.player, look };
+      saveProgress(game.progress);
+      this.editor = null;
+    });
+  }
+
   draw(ctx) {
     const { game } = this;
     const page = PAGES[this.page];
     const { selected, scroll } = this.cursors[this.page];
     ctx.fillStyle = '#f0e8d0';
     ctx.fillRect(0, 0, VIEW_W, VIEW_H);
+    if (this.editor) return this.editor.draw(ctx);
 
     // Title bar: which page, with arrows to flip, and how many of its entries you have.
     drawBox(ctx, 0, 0, VIEW_W, TOP);
     drawText(ctx, `< ${page.title} >`, 8, 8);
+    if (page.you) return this.drawYou(ctx);
     const count = `${page.ids.filter((id) => page.has(game, id)).length}/${page.ids.length}`;
     drawText(ctx, count, VIEW_W - 8 - count.length * 8, 8);
 
@@ -157,5 +183,34 @@ export class JournalScene {
     const w = VIEW_W - x0 - 4;
     drawBox(ctx, x0, TOP + 4, w, VIEW_H - TOP - 8);
     page.drawDetails(ctx, game, page.ids[selected], x0, w);
+  }
+
+  /** The YOU page: you, big, next to your name and how far you've got. */
+  drawYou(ctx) {
+    const { game } = this;
+    drawBox(ctx, 0, TOP, VIEW_W, VIEW_H - TOP);
+    const look = game.progress.player?.look;
+    if (!this.you || this.you.look !== look) this.you = { look, sprites: lookSprites(look) };
+    drawPerson(ctx, this.you.sprites.down.stand, 56, VIEW_H - 16, 4);
+
+    const x = 112;
+    drawText(ctx, playerName(game), x, TOP + 12);
+    const birds = PAGES[0], found = PAGES[1];
+    const stats = [
+      ['BIRDS', `${birds.ids.filter((id) => birds.has(game, id)).length}/${birds.ids.length}`],
+      ['FOUND', `${found.ids.filter((id) => found.has(game, id)).length}/${found.ids.length}`],
+      ['NEMESES', `${Object.keys(game.progress.nemeses).length}/${Object.keys(NEMESES).length}`],
+      ['MONEY', `$${game.money}`],
+    ];
+    stats.forEach(([label, value], i) => {
+      const y = TOP + 32 + i * 14;
+      drawText(ctx, label, x, y, MUTED);
+      drawText(ctx, value, VIEW_W - 12 - value.length * 8, y);
+    });
+
+    // The button to change your look.
+    ctx.fillStyle = '#f0b030';
+    ctx.fillRect(x - 4, VIEW_H - 26, 124, 16);
+    drawText(ctx, 'A: EDIT LOOK', x, VIEW_H - 22);
   }
 }

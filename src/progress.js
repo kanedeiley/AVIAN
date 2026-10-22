@@ -1,5 +1,6 @@
-// Story progress: what you've done (flags), which nemesis birds you've beaten,
-// which collectibles you've found, and how many of each region's birds you've photographed. It lives in
+// Story progress: who you are (your name and look, from the intro), what you've
+// done (flags), which nemesis birds you've beaten, which collectibles you've
+// found, and how many of each region's birds you've photographed. It lives in
 // game.progress and is saved with save.js (and online, like the journal).
 import { REGIONS } from './data/regions.js';
 import { FLAGS } from './data/flags.js';
@@ -23,6 +24,11 @@ export function regionSpecies(regionId) {
 export function regionPhotos(game, regionId) {
   const species = [...regionSpecies(regionId)];
   return { have: species.filter((id) => game.journal[id]).length, total: species.length };
+}
+
+/** The name you gave HANNAH in the intro. */
+export function playerName(game) {
+  return game.progress.player?.name || 'BIRDER';
 }
 
 export function beatNemesis(game, id) {

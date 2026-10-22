@@ -20,7 +20,7 @@ screens only; `src/touch.js`). Slide your thumb around the D-pad to change direc
 without lifting it. The game fills the screen in portrait or landscape, scaled by whole
 device pixels so the pixel art stays sharp. Add it to your home screen to play full screen.
 
-Dev shortcut: `http://localhost:8000/?map=house&x=4&y=6` starts you on any map.
+Dev shortcuts: `http://localhost:8000/?map=house&x=4&y=6` starts you on any map, and `?intro` replays the intro.
 
 **Time of day and weather** follow the real clock (`src/time.js`). To test them,
 `?hour=19&weather=rain` starts the clock at that hour with that weather, and
@@ -60,8 +60,8 @@ when the config is filled in), `signIn.js` is the sign-in form and account bar (
 is in `index.html`), and `save.js` calls a hook after every save that sends it online.
 
 Note: the database trusts what the game sends, so a player could edit their own money in
-the browser. That's fine while fares are $0. Once money matters, move fares and rewards
-into a Supabase database function.
+the browser and skip saving up for the Bay Tour. To stop that, move fares and rewards into a
+Supabase database function.
 
 ## Deploying
 
@@ -88,7 +88,7 @@ src/
   assets/vanTiles.js    inside Wyatt's van (cabinets, sink, stove, cab seats, dash, bed)
   assets/farmTiles.js   the Leister family farm (farmhouses, barn, greenhouse, coop, bamboo) and both farmhouse interiors
   assets/farmAnimals.js the farm's horse, goats and chickens, who wander their pens like the puppies
-  assets/player.js   people's walk cycles: a 'male' body (cap) and a 'female' body (long hair, skirt)
+  assets/player.js   people's walk cycles, built from parts (hair, hat, legs), and the player's look options
   assets/birds.js    bird body shapes (songbird, seabird, raptor...); species pick one + colors
   maps/              one file per map, plus the registry (index.js)
   data/birds.js      bird species: shape, colors and how they move
@@ -101,6 +101,8 @@ src/
   data/dialogue.js   what story characters say, depending on your progress
   progress.js        story progress: flags, region photo counts, beaten nemeses, found collectibles
   assets/people.js   people NPCs (Hannah): a body from assets/player.js plus their colors
+  scenes/intro.js      the opening: Hannah welcomes you, asks your name, and you pick your look
+  scenes/lookEditor.js the LOOK screen (hair, hat, clothes, colors), shared by the intro and the journal
   scenes/overworld.js  walking, collisions, warps, bird sightings
   scenes/photo.js      the photo minigame (keep the bird in frame, snap)
   scenes/voyage.js     the bird-watching boat trip (pick one bird per stop)
@@ -194,6 +196,30 @@ fades to black, runs `fn` (change map or scene), then fades back in. The
 overworld hands itself to the photo scene, which returns to it when the
 bird flies off. Later you can add menus, a field journal screen, and so on the same way.
 
+## The intro
+
+A new game opens Professor Oak style: **HANNAH** introduces herself and the valley, and
+says she's your guide, the one to come to whenever you're not sure what to do next. She
+asks your name: pick letters with the D-pad and A (B deletes), or just type it on a
+keyboard (Backspace, Enter). Then you pick your look: hair (short or long), hat (cap,
+beanie, sunhat or none), legs (pants, shorts or skirt), and the colors of each, plus skin
+tone, with a preview of you walking. She ends with your first assignment, to come see her
+at her house in Hannahville, and you wake up in your house.
+
+Your name and look are saved in `game.progress.player` (`{ name, look }`), so they go
+online with the rest of the progress. The intro runs until it's set, so players from before
+the intro get it once too, with a "welcome back" ending that leaves them where they were.
+Hannah's lines (`data/dialogue.js`) use your name via `playerName(game)`.
+
+You can change your look any time: open the journal, flip to the **YOU** page (your name,
+birds, collectibles, nemeses and money) and press A to **EDIT LOOK**. On the LOOK screen,
+B jumps to DONE.
+
+People are 16x20, a bit taller than a tile (their heads overlap the tile above, like the GBA
+games). They're drawn from parts in `assets/player.js`: a hair (head and torso), a hat painted
+over the top of it, and legs. NPCs still pick an outfit by name (`'male'`, `'female'`).
+**Adding a hat or legs:** add its rows for both hairs in `HATS` or `LEGS`, then its name to `LOOK_OPTIONS`.
+
 ## The photo minigame
 
 Stepping in tall grass can start a sighting. A bird lands on a branch and hops
@@ -222,8 +248,10 @@ Seabirds (tern, puffin, cormorant, pelican and the rare albatross) only turn up 
 voyages, and the journal lists the voyage as where they live.
 
 **Money:** `game.money` is saved in the browser next to the journal. Boarding checks it
-against the voyage's `price` and takes the fare. The Bay Tour costs $0 for now, and
-there's no way to earn money yet. To charge for a trip, set its `price` in `data/voyages.js`.
+against the voyage's `price` and takes the fare. The Bay Tour costs $100, so you have to
+save up for it: photos pay $5/$10/$20 for 1-3 stars, plus $25 for a new species or $10 for
+beating your best photo, and half again at dawn and dusk (`scenes/photo.js`). Short of the
+fare, the captain sends you off to take more photos. A trip's `price` is in `data/voyages.js`.
 
 **Adding a voyage:** add an entry to `data/voyages.js`, then give a prop on a map a
 `voyage` field: `props: [{ x: 21, y: 31, id: 'tourShip', voyage: 'bay' }]`.
@@ -256,7 +284,7 @@ the tile. Face it and press A:
   out of film. Every hit makes it faster (`rage`). Lose and it's back on its perch; win and
   it goes in your journal and leaves its perch for good.
 
-Progress lives in `game.progress` (`{ flags, nemeses, collectibles }`), saved next to the journal in the
+Progress lives in `game.progress` (`{ flags, nemeses, collectibles, player }`), saved next to the journal in the
 browser and online. **Story flags** (`data/flags.js`) are set by talking to an NPC with
 `sets: 'flagName'`. An NPC with `talk: 'name'` gets its lines from `DIALOGUE.name(game)` in
 `data/dialogue.js`, so what Hannah says follows your progress.
@@ -272,8 +300,8 @@ Odd things are hidden around the world (`data/collectibles.js`). You can't see o
 map, only the stink lines rising off its tile, which can be a solid one, tucked into bamboo
 or a hedge. Face it and press A to pick it up. Found ones go in
 `game.progress.collectibles`, saved like the rest of the progress, and on the journal's
-**COLLECTIBLES** page (open the journal and press LEFT/RIGHT to flip between BIRDS and
-COLLECTIBLES). Ones you haven't found yet show as `???`, with the map they're hidden on.
+**COLLECTIBLES** page (open the journal and press LEFT/RIGHT to flip between BIRDS,
+COLLECTIBLES and YOU). Ones you haven't found yet show as `???`, with the map they're hidden on.
 
 The first one is **JACOB'S DOOBIE**, somewhere in the bamboo grove on the Leister family farm.
 

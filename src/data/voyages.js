@@ -12,7 +12,7 @@ export const VOYAGES = {
   bay: {
     name: 'BAY TOUR',
     region: 'valley',
-    price: 0, // free for now; raise it once there's a way to earn money
+    price: 100, // about 3 good photos of new birds: something to save up for
     stops: 3,
     flock: 5,
     table: ['gull', 'gull', 'tern', 'tern', 'puffin', 'cormorant', 'pelican'],

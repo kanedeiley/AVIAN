@@ -46,7 +46,7 @@ export class BattleScene {
     ctx.fillRect(ex + 5, 48, 3, 4);
 
     // Player from behind, scaled up 3x
-    ctx.drawImage(PLAYER.up.stand, 36 - slide * 120, 66, 48, 48);
+    ctx.drawImage(PLAYER.up.stand, 36 - slide * 120, 54, 48, 60);
 
     // Wild creature's name + HP
     drawBox(ctx, 8, 8, 104, 30);

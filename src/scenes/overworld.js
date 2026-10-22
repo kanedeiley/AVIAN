@@ -7,7 +7,7 @@
 import { TILE, VIEW_W, VIEW_H, STEP_TIME } from '../config.js';
 import { getMap } from '../maps/index.js';
 import { TILES } from '../assets/tiles.js';
-import { PLAYER } from '../assets/player.js';
+import { lookSprites } from '../assets/player.js';
 import { BIRD_SPRITES } from '../assets/birds.js';
 import { TELLS } from '../assets/collectibles.js';
 import { input } from '../input.js';
@@ -220,7 +220,7 @@ export class Overworld {
     const { money } = this.game;
     const fare = voyage.price > 0 ? `The fare is $${voyage.price}. You have $${money}.` : 'The fare is $0 today!';
     if (money < voyage.price) {
-      this.dialog = { pages: paginate([...voyage.pitch, fare, 'Come back when you have enough money.']), page: 0 };
+      this.dialog = { pages: paginate([...voyage.pitch, fare, 'Good bird photos pay! Come back when you\'ve saved up.']), page: 0 };
       return;
     }
     const pages = paginate([...voyage.pitch, fare]);
@@ -322,6 +322,16 @@ export class Overworld {
     saveLocation(this.game.location);
   }
 
+  /** Your walk cycle in the look you picked in the intro (rebuilt if it changes, e.g. signing in loads another). */
+  playerSprites() {
+    const look = this.game.progress.player?.look;
+    if (!this.sprites || this.spritesLook !== look) {
+      this.sprites = lookSprites(look);
+      this.spritesLook = look;
+    }
+    return this.sprites;
+  }
+
   frameOf(tile) {
     const { sprites, frameTime } = tile;
     return sprites.length === 1 ? sprites[0] : sprites[Math.floor(this.time / frameTime) % sprites.length];
@@ -357,10 +367,11 @@ export class Overworld {
     this.drawNemesis(ctx, camX, camY, false);
 
     // Player
-    const frames = PLAYER[p.facing];
+    const frames = this.playerSprites()[p.facing];
     let sprite = frames.stand;
     if (p.moving && p.progress < 0.5) sprite = p.steps % 2 ? frames.stepB : frames.stepA;
-    ctx.drawImage(sprite, Math.round(px - camX), Math.round(py - camY));
+    // People are taller than a tile: feet on the tile, head over the one above.
+    ctx.drawImage(sprite, Math.round(px - camX), Math.round(py - camY) - (sprite.height - TILE));
 
     // Tall grass hides the player's feet
     const onNext = p.moving && p.progress > 0.5;
