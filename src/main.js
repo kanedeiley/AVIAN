@@ -6,6 +6,7 @@
 import { VIEW_W, VIEW_H, FADE_TIME } from './config.js';
 import { input } from './input.js';
 import { Overworld } from './scenes/overworld.js';
+import { IntroScene } from './scenes/intro.js';
 import { loadJournal, loadMoney, loadProgress, loadLocation, saveJournal, saveMoney, saveProgress, saveLocation, whenSaved, clearSave } from './save.js';
 import { canStand } from './maps/index.js';
 import { cloud } from './cloud.js';
@@ -39,7 +40,7 @@ const game = {
   onBlack: null,
   journal: loadJournal(), // bird id -> best photo (1-3 stars); saved in the browser
   money: loadMoney(),     // dollars, earned for photos (photo.js) and spent on boat fares
-  progress: loadProgress(), // story flags, beaten nemesis birds and found collectibles (see progress.js)
+  progress: loadProgress(), // your name and look, story flags, beaten nemesis birds and found collectibles (see progress.js)
   location: loadLocation(), // where you last stood, to carry on from there; the Overworld keeps it up to date
 
   // The time of day and weather (time.js), read off the real clock: never saved.
@@ -77,7 +78,8 @@ if (cloud.enabled) {
 /**
  * Combine this browser's save with the online one: keep the best photo of
  * each bird from either, every story flag and beaten nemesis from either,
- * every collectible found in either, the online money, and whichever location is newer. Then save the result to both,
+ * every collectible found in either, the online money, your name and look from the
+ * account if it has them, and whichever location is newer. Then save the result to both,
  * so progress made offline (or before signing in) isn't lost.
  */
 async function mergeOnlineSave() {
@@ -87,7 +89,8 @@ async function mergeOnlineSave() {
       game.journal[id] = Math.max(game.journal[id] ?? 0, stars);
     }
     game.money = online.money;
-    const { flags = {}, nemeses = {}, collectibles = {} } = online.progress ?? {};
+    const { flags = {}, nemeses = {}, collectibles = {}, player } = online.progress ?? {};
+    if (player) game.progress.player = player;
     Object.assign(game.progress.flags, flags);
     Object.assign(game.progress.collectibles, collectibles);
     for (const [id, stars] of Object.entries(nemeses)) {
@@ -117,13 +120,16 @@ function updateAccount() {
 }
 
 // Carry on where you last stood, if that's still a place you can stand (maps change).
-// Dev shortcut: index.html?map=house&x=4&y=6 starts you anywhere.
+// A new player wakes up in their house, next to the bed.
+// Dev shortcuts: index.html?map=house&x=4&y=6 starts you anywhere, and ?intro replays the intro.
 const params = new URLSearchParams(location.search);
 const saved = game.location && canStand(game.location.map, game.location.x, game.location.y) ? game.location : null;
 const start = params.has('map')
   ? { map: params.get('map'), x: Number(params.get('x') ?? 5), y: Number(params.get('y') ?? 5) }
-  : saved ?? { map: 'village', x: 5, y: 5 };
-game.setScene(new Overworld(game, start.map, start.x, start.y, start.facing ?? 'down'));
+  : saved ?? { map: 'house', x: 1, y: 2, facing: 'down' };
+const overworld = () => new Overworld(game, start.map, start.x, start.y, start.facing ?? 'down');
+// Until you've told HANNAH your name (the intro), she introduces herself first.
+game.setScene(!game.progress.player || params.has('intro') ? new IntroScene(game, overworld) : overworld());
 
 
 let last = performance.now();
