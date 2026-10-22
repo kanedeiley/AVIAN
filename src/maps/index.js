@@ -13,6 +13,7 @@ import grandparentsHouse from './grandparentsHouse.js';
 import pasture from './pasture.js';
 import airport from './airport.js';
 import generalStore from './generalStore.js';
+import erwinna from './erwinna.js';
 import { TILES, LEGEND } from '../assets/tiles.js';
 import { PROPS } from '../assets/coastTiles.js'; // storefronts too (storeTiles.js)
 import { VOYAGES } from '../data/voyages.js';
@@ -24,7 +25,7 @@ import { COLLECTIBLES } from '../data/collectibles.js';
 import { ITEMS } from '../data/items.js';
 import { COLLECTIBLE_SPRITES, TELLS } from '../assets/collectibles.js';
 
-const MAPS = { village, house, shrine, hannahville, hannahHouse, cave, mountain, van, farm, leisterHouse, grandparentsHouse, pasture, airport, generalStore };
+const MAPS = { village, house, shrine, hannahville, hannahHouse, cave, mountain, van, farm, leisterHouse, grandparentsHouse, pasture, airport, generalStore, erwinna };
 export const MAP_IDS = Object.keys(MAPS);
 const cache = {};
 
@@ -43,6 +44,13 @@ export function doorTo(id) {
     if (door) return { map: mapId, x: door.x, y: door.y };
   }
   return null;
+}
+
+/** An npc or sign that's only there `after` (or `until`) you beat a nemesis has to name a real one. */
+function checkShown(thing, at) {
+  for (const key of ['after', 'until']) {
+    if (thing[key] && !NEMESES[thing[key]]) throw new Error(`${at} is there ${key} unknown nemesis "${thing[key]}" (see data/nemeses.js)`);
+  }
 }
 
 /** Load a map by id, turning its character rows into a grid of tile ids. */
@@ -97,6 +105,7 @@ export function getMap(id) {
 
   for (const s of raw.signs ?? []) {
     if (!inside(s.x, s.y)) throw new Error(`Map "${id}": sign at ${s.x},${s.y} is outside the map`);
+    checkShown(s, `Map "${id}": sign at ${s.x},${s.y}`);
   }
 
   for (const n of raw.npcs ?? []) {
@@ -104,6 +113,7 @@ export function getMap(id) {
     if (!inside(n.x, n.y)) throw new Error(`${at} is outside the map`);
     if (TILES[grid[n.y][n.x]].solid) throw new Error(`${at} starts on a solid tile`);
     for (const item of n.shop ?? []) if (!ITEMS[item]) throw new Error(`${at} sells unknown item "${item}" (see data/items.js)`);
+    checkShown(n, at);
   }
 
   for (const [nid, n] of Object.entries(NEMESES)) {

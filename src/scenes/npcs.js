@@ -4,12 +4,14 @@
 // `id` picks the sprites (assets/dogs.js, assets/people.js or assets/farmAnimals.js) and `area` is the
 // box of tiles they wander in. Instead of `text`, `talk` names a function in
 // data/dialogue.js whose lines change as you progress, and `sets` is a story
-// flag (data/flags.js) you earn by talking to them. They block the player like any solid tile. Face one and press A
+// flag (data/flags.js) you earn by talking to them. `after`/`until` a nemesis is beaten,
+// they're only around some of the time (see progress.js shown()). They block the player like any solid tile. Face one and press A
 // to say hi: it sits and looks at you while you talk.
 import { TILE } from '../config.js';
 import { DOG_SPRITES } from '../assets/dogs.js';
 import { PEOPLE_SPRITES } from '../assets/people.js';
 import { ANIMAL_SPRITES } from '../assets/farmAnimals.js';
+import { shown } from '../progress.js';
 
 const STEP_TIME = 0.3;   // seconds to walk one tile
 const IDLE = [0.8, 3];   // seconds between moves
@@ -24,10 +26,12 @@ const rand = (a, b) => a + Math.random() * (b - a);
 export class Npcs {
   constructor(world) {
     this.world = world;
-    this.list = (world.map.npcs ?? []).map((n) => ({
+    this.list = (world.map.npcs ?? []).filter((n) => shown(world.game, n)).map((n) => ({
       ...n, fromX: n.x, fromY: n.y, step: 1, idle: rand(...IDLE),
       facing: Math.random() < 0.5 ? 'left' : 'right', sitting: true, listening: 0,
     }));
+    // Doorways stay clear: nobody wanders onto a warp, or the tiles right next to one.
+    this.keepClear = new Set(world.map.warps.flatMap((w) => [[0, 0], ...STEPS].map(([dx, dy]) => `${w.x + dx},${w.y + dy}`)));
   }
 
   /** True if an NPC is on this tile or walking onto/off it. */
@@ -71,7 +75,7 @@ export class Npcs {
       const options = STEPS
         .map(([dx, dy]) => ({ x: n.x + dx, y: n.y + dy, dx }))
         .filter(({ x, y }) => x >= x0 && x <= x1 && y >= y0 && y <= y1)
-        .filter(({ x, y }) => world.tileAt(x, y) && !world.tileAt(x, y).solid)
+        .filter(({ x, y }) => world.tileAt(x, y) && !world.tileAt(x, y).solid && !this.keepClear.has(`${x},${y}`))
         .filter(({ x, y }) => !this.occupies(x, y) && !playerOn(x, y));
       if (!options.length) continue;
       const to = options[Math.floor(Math.random() * options.length)];

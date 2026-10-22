@@ -200,6 +200,8 @@ const HEN_FRONT = [
 const ANIMALS = {
   // The grandparents' chestnut horse with a dark mane and a white blaze.
   horse: { walk: [HORSE_WALK, HORSE_STRIDE], sitting: HORSE_FRONT, colors: ['#a0582c', '#784020', '#3a2418', '#2a2024', '#f8f0e0'] },
+  // Erwinna's canal mule: gray-brown with a dark mane and a pale nose.
+  mule: { walk: [HORSE_WALK, HORSE_STRIDE], sitting: HORSE_FRONT, colors: ['#7a6a5a', '#5a4c40', '#2a2420', '#202020', '#d8ccb8'] },
   // A white goat and a brown-and-white one.
   goat: { walk: [GOAT_WALK, GOAT_STRIDE], sitting: GOAT_FRONT, colors: ['#f4f0e4', '#c8bca8', '#d8d0c0', '#686070', '#f0b8b0'] },
   goatBrown: { walk: [GOAT_WALK, GOAT_STRIDE], sitting: GOAT_FRONT, colors: ['#8a5a34', '#f4f0e4', '#5a3818', '#383038', '#d8a888'] },

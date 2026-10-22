@@ -12,6 +12,10 @@ const PEOPLE = {
   // The pilot at Van Sant Airport: a brown leather cap and jacket, and jeans.
   // The shopkeeper at the general store: silver hair and a green apron.
   shopkeeper: personSprites('shopkeeper', 'female', { top: '#3a8a50', topShade: '#28603a', bottoms: '#6a5440', hair: '#d8d4cc', hairShade: '#a8a49c' }),
+  // Erwinna's blacksmith: bare-headed, short gray hair, a leather apron over a white shirt.
+  blacksmith: personSprites('blacksmith', { hair: 'short', hat: 'none', legs: 'pants' }, { top: '#6a4a30', topShade: '#4a3020', bottoms: '#3a3a48', hair: '#888890', hairShade: '#5a5a64' }),
+  // The lock tender: a navy cap and jacket, and canvas trousers.
+  lockTender: personSprites('lockTender', 'male', { hat: '#283c60', hatShade: '#182840', top: '#304878', topShade: '#203058', bottoms: '#b0a078', hair: '#202028', hairShade: '#101018' }),
   pilot: personSprites('pilot', 'male', { hat: '#7a4a28', hatShade: '#4a2c18', top: '#8a5a30', topShade: '#5a3818', bottoms: '#4a68a0', hair: '#c8c8c8', hairShade: '#909098' }),
 };
 

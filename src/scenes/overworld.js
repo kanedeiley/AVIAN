@@ -26,7 +26,7 @@ import { DIALOGUE } from '../data/dialogue.js';
 import { ITEMS } from '../data/items.js';
 import { ITEM_SPRITES, BIKE_SPRITES } from '../assets/items.js';
 import { saveMoney, saveLocation } from '../save.js';
-import { nemesisNeeds, nemesisOn, setFlag, collectiblesOn, collect, warpOpen, spendItem } from '../progress.js';
+import { nemesisNeeds, nemesisOn, setFlag, collectiblesOn, collect, warpOpen, spendItem, shown } from '../progress.js';
 import { timeUntil } from '../time.js';
 import { drawLighting, tintPanes, drawClock } from '../gfx/lighting.js';
 
@@ -151,7 +151,7 @@ export class Overworld {
     // A: read the sign in front of you, or photograph the bird in front of you.
     if (input.wasPressed('a')) {
       const [dx, dy] = DIRS[p.facing];
-      const sign = this.map.signs.find((s) => s.x === p.x + dx && s.y === p.y + dy) ?? this.lockAt(p.x + dx, p.y + dy);
+      const sign = this.map.signs.find((s) => s.x === p.x + dx && s.y === p.y + dy && shown(this.game, s)) ?? this.lockAt(p.x + dx, p.y + dy);
       if (sign) {
         this.dialog = { pages: paginate(sign.text), page: 0 };
         p.walking = false;

@@ -44,4 +44,33 @@ export const NEMESES = {
       'It will be back on its perch soon. Try again!',
     ],
   },
+  // Erwinna's: on the towpath by the canal lock, blocking the way south. HANNAH tells you about it.
+  greatBlueHeron: {
+    bird: 'greatBlueHeron',
+    map: 'erwinna', x: 30, y: 19,
+    region: 'plains',
+    requires: { flags: ['metHannahErwinna'], species: 7 },
+    film: 7,
+    patience: 45,
+    hits: 4,
+    hitStars: 2,
+    rage: 1.25,
+    locked: [
+      'A GREAT BLUE HERON stands on the towpath, tall as a fence post.',
+      'It points its dagger of a bill at you and croaks. It isn\'t budging.',
+    ],
+    challenge: [
+      'Your NEMESIS BIRD, the GREAT BLUE HERON, stares you down...',
+      'Land 4 sharp photos (2 stars or better) before it loses patience. It stands still for ages, then strikes fast!',
+    ],
+    won: [
+      'You photographed the GREAT BLUE HERON, the NEMESIS BIRD of the OPEN PLAINS!',
+      'It unfolds its huge wings and glides off down the canal, croaking.',
+      'The towpath south is clear. HANNAH will want to hear about this!',
+    ],
+    lost: [
+      'The GREAT BLUE HERON lifted off with a deep croak... and landed right back on the towpath.',
+      'It isn\'t going anywhere. Try again!',
+    ],
+  },
 };

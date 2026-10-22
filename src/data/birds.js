@@ -33,6 +33,12 @@ export const BIRDS = {
   killdeer:   { name: 'KILLDEER',   shape: 'tiny',     colors: { body: '#a08058', wing: '#786040', belly: '#f8f8f8', face: '#202028', bill: '#202028' }, speed: 120, hop: 90, pause: [0.3, 1.0], patience: 8, focusTime: 1.3, skittish: 1.3 },
   kestrel:    { name: 'KESTREL',    shape: 'upright',  colors: { body: '#c06838', wing: '#5878a8', belly: '#f0d8b8', head: '#7890c0', face: '#f8f8f8', bill: '#e0c030' }, speed: 110, hop: 100, pause: [0.2, 0.6], patience: 7, focusTime: 1.5, skittish: 1.4, times: ['morning', 'midday', 'afternoon'], weather: ['clear', 'overcast'] },
   barnSwallow: { name: 'BARN SWALLOW', shape: 'songbird', colors: { body: '#2848a0', wing: '#183070', belly: '#f0c8a0', face: '#c05830', bill: '#202028' }, speed: 130, hop: 100, pause: [0.1, 0.4], patience: 7, focusTime: 1.5, skittish: 1.2, times: ['dawn', 'morning', 'midday', 'afternoon', 'dusk'] },
+  // Canal birds: along the water and in the cattails at Erwinna. (REDWING is the red-winged blackbird.)
+  redWingedBlackbird: { name: 'REDWING', shape: 'songbird', colors: { body: '#202028', wing: '#d83828', belly: '#282830', head: '#202028', face: '#202028', bill: '#383840' }, speed: 70, hop: 60, pause: [0.4, 1.2], patience: 10, focusTime: 1.2, skittish: 1.0, times: ['dawn', 'morning', 'midday', 'afternoon', 'dusk'] },
+  phoebe:     { name: 'PHOEBE',     shape: 'songbird', colors: { body: '#6a6658', wing: '#4a463e', belly: '#f0ecd0', head: '#3a3832', bill: '#202028' }, speed: 85, hop: 50, pause: [0.3, 1.0], patience: 9, focusTime: 1.3, skittish: 1.1 },
+  kingfisher: { name: 'KINGFISHER', shape: 'crested',  colors: { body: '#4878a8', wing: '#2c5480', belly: '#f0f0f0', face: '#f8f8f8', bill: '#202028' }, speed: 125, hop: 110, pause: [0.2, 0.6], patience: 7, focusTime: 1.5, skittish: 1.4, times: ['morning', 'midday', 'afternoon'] },
   // Nemesis birds: never out on the map, only fought at their perch (data/nemeses.js).
   baldEagle: { name: 'BALD EAGLE', shape: 'upright', colors: { body: '#4a3020', wing: '#302014', belly: '#5a3a24', head: '#f8f8f8', bill: '#f0c030' }, speed: 70, hop: 90, pause: [0.6, 1.4], patience: 40, focusTime: 1.4, skittish: 1 },
+  // Stands perfectly still for ages, then strikes: long pauses, long hops.
+  greatBlueHeron: { name: 'BLUE HERON', shape: 'heron', colors: { body: '#7888a0', wing: '#566880', belly: '#c8ccd8', head: '#f0f0f0', face: '#202028', bill: '#e8b840' }, speed: 65, hop: 90, pause: [1.0, 2.4], patience: 45, focusTime: 1.6, skittish: 1 },
 };
