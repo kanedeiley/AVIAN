@@ -1,14 +1,15 @@
 // Story progress: who you are (your name and look, from the intro), what you've
 // done (flags), which nemesis birds you've beaten, which collectibles you've
-// found, and how many of each region's birds you've photographed. It lives in
+// found, what's in your bag, and how many of each region's birds you've photographed. It lives in
 // game.progress and is saved with save.js (and online, like the journal).
 import { REGIONS } from './data/regions.js';
 import { FLAGS } from './data/flags.js';
 import { NEMESES } from './data/nemeses.js';
 import { VOYAGES } from './data/voyages.js';
 import { COLLECTIBLES } from './data/collectibles.js';
+import { ITEMS } from './data/items.js';
 import { MAP_IDS, getMap } from './maps/index.js';
-import { saveProgress } from './save.js';
+import { saveProgress, saveMoney } from './save.js';
 
 /** Every species found on the region's maps and voyages. */
 export function regionSpecies(regionId) {
@@ -78,5 +79,34 @@ export function collectiblesOn(game, mapId) {
 
 export function collect(game, id) {
   game.progress.collectibles[id] = true;
+  saveProgress(game.progress);
+}
+
+/** How many of an item (data/items.js) are in your bag. */
+export function itemCount(game, id) {
+  return game.progress.items[id] ?? 0;
+}
+
+/** Why you can't buy one more of an item right now, or null if you can. */
+export function cantBuy(game, id) {
+  const item = ITEMS[id];
+  const have = itemCount(game, id);
+  if (item.kind === 'tool' && have) return `You already have ${item.name}.`;
+  if (item.kind === 'supply' && have >= item.max) return `Your bag can't hold any more ${item.name}.`;
+  if (game.money < item.price) return `You need $${item.price - game.money} more.`;
+  return null;
+}
+
+/** Pay for one of an item and put it in your bag (check cantBuy first). */
+export function buyItem(game, id) {
+  game.money -= ITEMS[id].price;
+  game.progress.items[id] = itemCount(game, id) + 1;
+  saveMoney(game.money);
+  saveProgress(game.progress);
+}
+
+/** Use up one of a supply. */
+export function spendItem(game, id) {
+  game.progress.items[id] = Math.max(0, itemCount(game, id) - 1);
   saveProgress(game.progress);
 }

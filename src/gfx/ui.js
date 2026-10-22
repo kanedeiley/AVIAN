@@ -57,7 +57,8 @@ export function drawDialog(ctx, lines, more = false, time = 0) {
 }
 
 // A tiny 3x5 pixel font (capitals and a comma), for small labels under a big line.
-const TINY = {
+// Shop signs are lettered in it too (storefront() in assets/storeTiles.js).
+export const TINY = {
   A: ['###', '#.#', '###', '#.#', '#.#'], B: ['##.', '#.#', '##.', '#.#', '##.'],
   C: ['###', '#..', '#..', '#..', '###'], D: ['##.', '#.#', '#.#', '#.#', '##.'],
   E: ['###', '#..', '##.', '#..', '###'], F: ['###', '#..', '##.', '#..', '#..'],

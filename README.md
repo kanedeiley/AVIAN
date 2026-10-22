@@ -12,10 +12,10 @@ python3 serve.py
 # then open http://localhost:8000
 ```
 
-**Controls:** arrows / WASD to walk, Z / Enter / Space = A, X / Esc = B, M / Tab = world map, J = journal.
+**Controls:** arrows / WASD to walk, Z / Enter / Space = A, X / Esc = B, M / Tab = world map, J = journal, I = bag.
 Tap a direction to turn in place; hold it to walk.
 
-**On phones and tablets** an on-screen D-pad, A/B and MAP/JOURNAL buttons appear (touch
+**On phones and tablets** an on-screen D-pad, A/B and MAP/JOURNAL/BAG buttons appear (touch
 screens only; `src/touch.js`). Slide your thumb around the D-pad to change direction
 without lifting it. The game fills the screen in portrait or landscape, scaled by whole
 device pixels so the pixel art stays sharp. Add it to your home screen to play full screen.
@@ -78,7 +78,7 @@ src/
   signIn.js          the sign-in form and account bar
   config.js          tile size, screen size, walk speed
   input.js           keys -> actions ('up', 'a', 'b', ...)
-  touch.js           on-screen controls for touch screens (D-pad, A/B, MAP/JOURNAL)
+  touch.js           on-screen controls for touch screens (D-pad, A/B, MAP/JOURNAL/BAG)
   gfx/sprite.js      text pixel art -> images
   gfx/ui.js          text boxes and font
   assets/palette.js  the shared color palette
@@ -87,6 +87,8 @@ src/
   assets/caveTiles.js   Echo Cave and Eagle Peak (cave rock, crystals, cliffs, pines, snow)
   assets/vanTiles.js    inside Wyatt's van (cabinets, sink, stove, cab seats, dash, bed)
   assets/farmTiles.js   the Leister family farm (farmhouses, barn, greenhouse, coop, bamboo) and both farmhouse interiors
+  assets/storeTiles.js  shop fronts (storefront(): roof, lettered sign, awning, windows, door, as one prop) and the general store inside
+  assets/items.js    item icons, and the bike you ride
   assets/farmAnimals.js the farm's horse, goats and chickens, who wander their pens like the puppies
   assets/player.js   people's walk cycles, built from parts (hair, hat, legs), and the player's look options
   assets/birds.js    bird body shapes (songbird, seabird, raptor...); species pick one + colors
@@ -98,12 +100,14 @@ src/
   data/flags.js      story flags (e.g. metHannah) and the hint shown while you still need one
   data/collectibles.js  hidden collectibles: where each one is, its journal note, what you're told when you find it
   assets/collectibles.js  collectibles' journal art, and the stink lines that give them away on the map
+  data/items.js      things you can buy (binoculars, bike, birdseed): price, and what they do
   data/dialogue.js   what story characters say, depending on your progress
   progress.js        story progress: flags, region photo counts, beaten nemeses, found collectibles
   assets/people.js   people NPCs (Hannah): a body from assets/player.js plus their colors
   scenes/intro.js      the opening: Hannah welcomes you, asks your name, and you pick your look
   scenes/lookEditor.js the LOOK screen (hair, hat, clothes, colors), shared by the intro and the journal
   scenes/overworld.js  walking, collisions, warps, bird sightings
+  scenes/shop.js       the shop counter (buy) and your bag (use), drawn over the map
   scenes/photo.js      the photo minigame (keep the bird in frame, snap)
   scenes/voyage.js     the bird-watching boat trip (pick one bird per stop)
   scenes/nemesis.js    a nemesis bird fight: the photo minigame as a boss battle

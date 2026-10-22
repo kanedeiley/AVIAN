@@ -5,7 +5,7 @@
 // Maps marked `indoor` are left off; inside one, the marker sits on its door.
 // Maps you can only reach through a `locked` warp that's still shut stay off too.
 import { VIEW_W, VIEW_H } from '../config.js';
-import { MAP_IDS, getMap } from '../maps/index.js';
+import { MAP_IDS, getMap, doorTo } from '../maps/index.js';
 import { TILES } from '../assets/tiles.js';
 import { input } from '../input.js';
 import { drawBox, drawText } from '../gfx/ui.js';
@@ -115,9 +115,9 @@ export class WorldMapScene {
     const { map, player } = returnTo;
     let at = { mapId: map.id, x: player.x, y: player.y };
     if (!world.layout[map.id]) {
-      const outside = Object.keys(world.layout).find((id) => getMap(id).warps.some((w) => w.to === map.id));
-      const door = outside && getMap(outside).warps.find((w) => w.to === map.id);
-      at = door ? { mapId: outside, x: door.x, y: door.y } : null;
+      // A shared interior (like the general store) has many doors: use the one you came in by.
+      const door = returnTo.back && world.layout[returnTo.back.map] ? returnTo.back : doorTo(map.id);
+      at = door && world.layout[door.map] ? { mapId: door.map, x: door.x, y: door.y } : null;
     }
     this.here = at && {
       name: getMap(at.mapId).name,

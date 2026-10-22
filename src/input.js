@@ -10,6 +10,7 @@ const KEYMAP = {
   KeyX: 'b', Escape: 'b',
   KeyM: 'map', Tab: 'map',
   KeyJ: 'journal',
+  KeyI: 'bag',
 };
 const DIRECTIONS = ['up', 'down', 'left', 'right'];
 

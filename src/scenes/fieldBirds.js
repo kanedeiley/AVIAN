@@ -3,9 +3,12 @@
 // walk close to it (less in `cover` tiles like tall grass) and settles while
 // you stand still. At full alert it flies off. Get within camera range while
 // it's calm, face it and press A to start the photo minigame; a calmer bird
-// sticks around longer there.
+// sticks around longer there. Gear changes things (data/items.js): binoculars
+// reach farther, a bike is noisy, and birds near scattered seed calm down and
+// hop over to eat it.
 import { TILE } from '../config.js';
 import { BIRDS } from '../data/birds.js';
+import { ITEMS } from '../data/items.js';
 import { BIRD_SPRITES } from '../assets/birds.js';
 import { TILES } from '../assets/tiles.js';
 import { drawText } from '../gfx/ui.js';
@@ -22,6 +25,12 @@ const IDLE = [1.5, 4];     // seconds between hops
 const FLY_TIME = 1.2;      // seconds a startled bird takes to fly off screen
 const RESPAWN = [6, 12];   // seconds until a new bird shows up after one leaves
 const SPAWN_DIST = 6;      // new birds never appear closer than this to you
+const SEED_REACH = 4;      // tiles: birds this close to scattered seed notice it
+const SEED_CALM = 0.25;    // ...and are only this alarmed by you while it lasts
+const SEED_COLORS = ['#f8e050', '#5a3818', '#f8f8f8', '#8a5a30'];
+// Where the seeds land on their tile, in pixels: a loose pile, thicker in the middle.
+const SEED_SPOTS = [[3, 6], [6, 5], [9, 6], [12, 7], [2, 9], [5, 8], [7, 9], [10, 9], [13, 10], [4, 11],
+  [6, 11], [8, 10], [11, 12], [3, 13], [8, 13], [12, 14], [6, 14], [9, 7], [1, 12], [14, 12]];
 const STEPS = [[0, -1], [0, 1], [-1, 0], [1, 0]];
 
 const rand = (a, b) => a + Math.random() * (b - a);
@@ -34,6 +43,7 @@ export class FieldBirds {
     this.config = world.map.birds;
     this.birds = [];
     this.respawns = [];
+    this.seed = null; // birdseed you scattered: { x, y, time } (seconds left)
     if (!this.config) return;
 
     const { map } = world;
@@ -77,6 +87,16 @@ export class FieldBirds {
     });
   }
 
+  /** Scatter birdseed on a tile: for `time` seconds it calms the birds around it and draws them in. */
+  scatterSeed(x, y, time) {
+    this.seed = { x, y, time };
+  }
+
+  /** True if this bird is close enough to the seed to be busy with it. */
+  fed(b) {
+    return Boolean(this.seed && Math.hypot(b.x - this.seed.x, b.y - this.seed.y) <= SEED_REACH);
+  }
+
   /** Take a bird off the map (it flew away or was photographed); another comes later. */
   remove(bird) {
     this.birds = this.birds.filter((b) => b !== bird);
@@ -89,10 +109,12 @@ export class FieldBirds {
     this.respawns = this.respawns.map((t) => t - dt);
     for (const t of this.respawns) if (t <= 0) this.spawn();
     this.respawns = this.respawns.filter((t) => t > 0);
+    if (this.seed && (this.seed.time -= dt) <= 0) this.seed = null;
 
     const pos = this.playerPos();
     const p = this.world.player;
     const inCover = this.world.tileAt(p.x, p.y)?.cover;
+    const noise = this.world.riding ? ITEMS.bike.noise : 1;
 
     for (const b of [...this.birds]) {
       if (b.flying) {
@@ -111,7 +133,7 @@ export class FieldBirds {
       const dist = Math.hypot(b.x - pos.x, b.y - pos.y);
       if (p.moving && dist <= NOTICE) {
         const near = 1 + (NOTICE - dist) / NOTICE;
-        b.alert += dt * ALERT_RATE * near * (inCover ? COVER : 1) * b.species.skittish;
+        b.alert += dt * ALERT_RATE * near * (inCover ? COVER : 1) * noise * (this.fed(b) ? SEED_CALM : 1) * b.species.skittish;
         if (dist < 1.5) b.alert = 1; // walking right up to a bird always spooks it
       } else {
         b.alert = Math.max(0, b.alert - dt * CALM_RATE);
@@ -125,34 +147,39 @@ export class FieldBirds {
     }
   }
 
-  /** Hop to a free neighboring perch. Nervous birds only hop away from you. */
+  /** Hop to a free neighboring perch. Nervous birds only hop away from you; birds near seed hop toward it. */
   hop(b, pos) {
     const dist = (x, y) => Math.hypot(x - pos.x, y - pos.y);
     const options = STEPS
       .map(([dx, dy]) => ({ x: b.x + dx, y: b.y + dy }))
       .filter(({ x, y }) => this.world.tileAt(x, y)?.perch && this.isFree(x, y))
       .filter(({ x, y }) => b.alert < NERVOUS || dist(x, y) > dist(b.x, b.y));
+    const seed = this.seed;
+    const toSeed = this.fed(b) && b.alert < NERVOUS
+      ? options.filter(({ x, y }) => Math.hypot(x - seed.x, y - seed.y) < Math.hypot(b.x - seed.x, b.y - seed.y))
+      : [];
     if (!options.length) return;
-    const to = pick(options);
+    const to = pick(toSeed.length ? toSeed : options);
     if (to.x !== b.x) b.facing = Math.sign(to.x - b.x);
     Object.assign(b, { fromX: b.x, fromY: b.y, x: to.x, y: to.y, hop: 0 });
   }
 
-  /** The calm bird the player could photograph right now, if any. */
-  target(dx, dy) {
+  /** The calm bird the player could photograph right now (from up to `range` tiles away), if any. */
+  target(dx, dy, range = RANGE) {
     const p = this.world.player;
     if (p.moving) return null;
     return this.birds.find((b) => {
       if (b.flying || b.hop < 1) return false;
       const along = (b.x - p.x) * dx + (b.y - p.y) * dy;
       const side = Math.abs(dx ? b.y - p.y : b.x - p.x);
-      return along >= 1 && along <= RANGE && side <= 1;
+      return along >= 1 && along <= range && side <= 1;
     }) ?? null;
   }
 
   /** Draw birds in front of (`front`) or behind the player's row. */
   draw(ctx, camX, camY, front, time) {
     const py = this.world.player.y;
+    if (!front && this.seed) this.drawSeed(ctx, camX, camY);
     for (const b of this.birds) {
       if (b.y >= py !== front) continue;
       const { x, y } = this.screenPos(b, camX, camY);
@@ -169,6 +196,15 @@ export class FieldBirds {
       if (b.flying) drawText(ctx, '!', x + 5, y - 6);
       else if (b.alert > NERVOUS) drawText(ctx, '?', x + 5, y - 6);
     }
+  }
+
+  /** A scatter of seeds on the ground. */
+  drawSeed(ctx, camX, camY) {
+    const x0 = this.seed.x * TILE - camX, y0 = this.seed.y * TILE - camY;
+    SEED_SPOTS.forEach(([x, y], i) => {
+      ctx.fillStyle = SEED_COLORS[i % SEED_COLORS.length];
+      ctx.fillRect(x0 + x, y0 + y, i % 3 ? 1 : 2, 1);
+    });
   }
 
   screenPos(b, camX, camY) {

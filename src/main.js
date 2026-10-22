@@ -78,7 +78,7 @@ if (cloud.enabled) {
 /**
  * Combine this browser's save with the online one: keep the best photo of
  * each bird from either, every story flag and beaten nemesis from either,
- * every collectible found in either, the online money, your name and look from the
+ * every collectible found in either, the most of each item in either bag, the online money, your name and look from the
  * account if it has them, and whichever location is newer. Then save the result to both,
  * so progress made offline (or before signing in) isn't lost.
  */
@@ -89,8 +89,11 @@ async function mergeOnlineSave() {
       game.journal[id] = Math.max(game.journal[id] ?? 0, stars);
     }
     game.money = online.money;
-    const { flags = {}, nemeses = {}, collectibles = {}, player } = online.progress ?? {};
+    const { flags = {}, nemeses = {}, collectibles = {}, items = {}, player } = online.progress ?? {};
     if (player) game.progress.player = player;
+    for (const [id, n] of Object.entries(items)) {
+      game.progress.items[id] = Math.max(game.progress.items[id] ?? 0, n);
+    }
     Object.assign(game.progress.flags, flags);
     Object.assign(game.progress.collectibles, collectibles);
     for (const [id, stars] of Object.entries(nemeses)) {
@@ -127,7 +130,7 @@ const saved = game.location && canStand(game.location.map, game.location.x, game
 const start = params.has('map')
   ? { map: params.get('map'), x: Number(params.get('x') ?? 5), y: Number(params.get('y') ?? 5) }
   : saved ?? { map: 'house', x: 1, y: 2, facing: 'down' };
-const overworld = () => new Overworld(game, start.map, start.x, start.y, start.facing ?? 'down');
+const overworld = () => new Overworld(game, start.map, start.x, start.y, start.facing ?? 'down', start.back);
 // Until you've told HANNAH your name (the intro), she introduces herself first.
 game.setScene(!game.progress.player || params.has('intro') ? new IntroScene(game, overworld) : overworld());
 

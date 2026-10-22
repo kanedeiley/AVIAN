@@ -15,6 +15,7 @@
 //   lit         only this fraction of these tiles glow (picked by position), so not every window is lit
 //   rest        face it and press A to rest until another time of day (beds, benches)
 //   pane        a window on an indoor map: tinted with the sky outside
+//   counter     a shop counter: face it and press A to talk to whoever stands behind it
 //
 // Maps refer to tiles by a single character, set in LEGEND at the bottom.
 
@@ -26,6 +27,7 @@ import { CAVE_DEFS } from './caveTiles.js';
 import { VAN_DEFS } from './vanTiles.js';
 import { FARM_DEFS } from './farmTiles.js';
 import { AIRPORT_DEFS } from './airportTiles.js';
+import { STORE_DEFS } from './storeTiles.js';
 
 // ---------- outdoor ----------
 
@@ -697,6 +699,7 @@ const DEFS = {
   ...VAN_DEFS,   // inside the van on Hannahville beach: see vanTiles.js
   ...FARM_DEFS,  // the Leister family farm and its farmhouses: see farmTiles.js
   ...AIRPORT_DEFS, // Van Sant Airport: see airportTiles.js
+  ...STORE_DEFS,   // shop fronts and the inside of the general store: see storeTiles.js
   hillTree:  { art: TREE, base: 'hill', solid: true },
 
   floor:     { art: FLOOR },
