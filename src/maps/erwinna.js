@@ -4,9 +4,10 @@
 // bridge to the towpath. South of the road are the inn and the lock tender's
 // house; the lock is just past it, where HANNAH paints from a bench on the
 // bank. Beyond the red-shale towpath, sycamores line the river. The GREAT BLUE HERON,
-// the Open Plains' nemesis bird (data/nemeses.js), stands on the towpath by
-// the lock, where the path squeezes past a sycamore, and won't let anyone by:
-// the towpath south is the way on.
+// the Open Plains' nemesis bird (data/nemeses.js), stands at the north end of
+// the towpath, past the moored barge, where the path squeezes past a sycamore,
+// and won't let anyone by: the towpath north, to Tinicum Park (maps/tinicum.js),
+// is the way on. South, past the lock, the bank has washed out.
 // Tiles are in assets/canalTiles.js; the rows were painted with a script.
 export default {
   name: 'ERWINNA',
@@ -37,9 +38,9 @@ export default {
     'l': 'lampPostGrass',
   },
   rows: [
-    'TTTTTTTTTTTTTTTTTTTTTTTTTTT~~~TTTT~~~~~~',
+    'TTTTTTTTTTTTTTTTTTTTTTTTTTT~~~ttTT~~~~~~',
     'T,,,,,,,,,,.....,,.........~~~ttTT~~~~~~',
-    'T.AAAACAA.......,,AACAAA.Z.~~~ttTT~~~~~~',
+    'T.AAAACAA.......,,AACAAA.Z.~~~tTTT~~~~~~',
     'TTrrrrrrr..sssss,,rrrrrr..c~~~ttT.~~~~~~',
     'T.EEEEEEE..sssss,,EEEEEE..c~~~ttTT~~~~~~',
     'T.sHsssHs.Tsssss,,sHssHs.Zc~~~ttTT~~~~~~',
@@ -70,6 +71,11 @@ export default {
     { x: 0, y: 14, to: 'airport', toX: 39, toY: 14, facing: 'left' },
     // The general store's door. Arrive inside just above the doormat, facing up.
     { x: 13, y: 6, to: 'generalStore', toX: 5, toY: 8, facing: 'up' },
+    // The towpath north, to Tinicum Park. Shut (and off the world map) until you've beaten the heron.
+    ...[[30, 'sign'], [31, 'tree']].map(([x, tile]) => ({
+      x, y: 0, to: 'tinicum', toX: x - 25, toY: 43, facing: 'up',
+      locked: { nemesis: 'greatBlueHeron', tile, text: ['TOWPATH CLOSED', 'Nobody gets past the GREAT BLUE HERON, so nobody\'s been up this way in years.'] },
+    })),
   ],
   props: [{ x: 11, y: 3, id: 'generalStoreFront' }],
   signs: [
@@ -81,7 +87,7 @@ export default {
     { x: 5, y: 20, text: ['THE ERWINNA INN', 'Rooms for boatmen and birders.', 'It smells like pot pie in there.'] },
     { x: 19, y: 20, text: ['LOCK TENDER', 'Ring the bell for passage. Mules have right of way.'] },
     { x: 29, y: 7, text: ['A long canal barge, painted green and red, tied up to the towpath.', 'The name on its stern: THE OLD SMITH.'] },
-    { x: 32, y: 15, text: ['CANAL TOWPATH', 'South: the lock, and the long way down the river.'] },
+    { x: 32, y: 15, text: ['CANAL TOWPATH', 'North: TINICUM PARK. South: the lock.'] },
     ...[27, 29].flatMap((x) => [17, 22].map((y) => ({ x, y, text: ['The lock gates are shut tight.', 'The water on one side sits a whole foot higher than the other.'] }))),
     { x: 30, y: 25, text: ['TOWPATH CLOSED', 'The bank washed out south of here. Repairs coming soon!'] },
   ],
@@ -90,17 +96,22 @@ export default {
       'BLACKSMITH: Erwinna\'s been a smithing town since the canal came through.',
       'Every mule on that towpath wore my great-great-grandad\'s shoes. Every barge hung on his hinges.',
       'These days it\'s mostly gate latches and birdfeeder hooks. Bird folks come through here all the time now.',
-      'That old heron down by the lock? It\'s stood there so long I could forge you a statue of it from memory.',
+      'That old heron up the towpath? It\'s stood there so long I could forge you a statue of it from memory.',
     ] },
-    { id: 'lockTender', x: 24, y: 18, area: [23, 17, 26, 20], text: [
+    { id: 'lockTender', x: 24, y: 18, area: [23, 17, 26, 20], until: 'greatBlueHeron', text: [
       'LOCK TENDER: See that heron on the towpath? It was there before I took this job, and it\'ll be there after.',
       'It won\'t let anybody by. Not boatmen, not mules, not me.',
       'Your friend with the paintbrush says it\'s the NEMESIS BIRD of the whole OPEN PLAINS. Sounds about right.',
-      'That towpath runs a long way south, once the bank\'s fixed. For now... take it up with the heron.',
+      'That towpath runs north to TINICUM PARK and on up the river. For now... take it up with the heron.',
     ] },
-    { id: 'mule', x: 31, y: 6, area: [30, 1, 31, 11], text: ['The canal mule flicks an ear at you.', 'It has pulled a lot of barges up and down this towpath, and it would like a carrot.'] },
+    { id: 'lockTender', x: 24, y: 18, area: [23, 17, 26, 20], after: 'greatBlueHeron', text: [
+      'LOCK TENDER: Well, I\'ll be. Thirty years, and that heron finally moved.',
+      'The towpath\'s open all the way up to TINICUM PARK. Your friend with the paintbrush went up that way with a ball glove.',
+    ] },
+    { id: 'mule', x: 31, y: 6, area: [30, 5, 31, 11], text: ['The canal mule flicks an ear at you.', 'It has pulled a lot of barges up and down this towpath, and it would like a carrot.'] },
     // Hannah came out here after you beat her nemesis bird (she left a note at home: maps/hannahHouse.js).
-    { id: 'hannah', x: 23, y: 23, area: [22, 21, 25, 24], talk: 'hannahErwinna', sets: 'metHannahErwinna' },
+    // Once you've beaten the heron she's off playing ball at Tinicum Park (maps/tinicum.js).
+    { id: 'hannah', x: 23, y: 23, area: [22, 21, 25, 24], talk: 'hannahErwinna', sets: 'metHannahErwinna', until: 'greatBlueHeron' },
   ],
   // Red-winged blackbirds in the cattails, phoebes under the bridge, swallows over the water, and now and then a kingfisher.
   birds: { count: 8, table: ['redWingedBlackbird', 'redWingedBlackbird', 'phoebe', 'phoebe', 'barnSwallow', 'goldfinch', 'killdeer'], rare: ['kingfisher'], rareChance: 0.25 },

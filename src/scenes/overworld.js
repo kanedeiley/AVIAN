@@ -473,6 +473,17 @@ export class Overworld {
     this.npcs.draw(ctx, camX, camY, true, this.time);
     this.birds.draw(ctx, camX, camY, true, this.time);
     this.drawNemesis(ctx, camX, camY, true);
+
+    // Overhead: things you walk under, like a covered bridge, go over everyone. You can see yourself through them.
+    const overhead = this.tileAt(fx, fy)?.overSprite;
+    if (overhead) ctx.globalAlpha = 0.55;
+    for (let y = y0; y < y1; y++) {
+      for (let x = x0; x < x1; x++) {
+        const over = this.tileAt(x, y).overSprite;
+        if (over) ctx.drawImage(over, x * TILE - camX, y * TILE - camY);
+      }
+    }
+    ctx.globalAlpha = 1;
     // Collectibles stay hidden: all you see is their tell (stink, music) rising off them, over whatever's in front.
     for (const c of this.collectibles) TELLS[c.tell ?? 'stench'](ctx, c.x * TILE - camX, c.y * TILE - camY, this.time);
 

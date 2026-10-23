@@ -44,10 +44,10 @@ export const NEMESES = {
       'It will be back on its perch soon. Try again!',
     ],
   },
-  // Erwinna's: on the towpath by the canal lock, blocking the way south. HANNAH tells you about it.
+  // Erwinna's: at the north end of the towpath, past the barge, blocking the way north. HANNAH tells you about it.
   greatBlueHeron: {
     bird: 'greatBlueHeron',
-    map: 'erwinna', x: 30, y: 19,
+    map: 'erwinna', x: 30, y: 2,
     region: 'plains',
     requires: { flags: ['metHannahErwinna'], species: 7 },
     film: 7,
@@ -66,7 +66,7 @@ export const NEMESES = {
     won: [
       'You photographed the GREAT BLUE HERON, the NEMESIS BIRD of the OPEN PLAINS!',
       'It unfolds its huge wings and glides off down the canal, croaking.',
-      'The towpath south is clear. HANNAH will want to hear about this!',
+      'The towpath north is clear. HANNAH will want to hear about this!',
     ],
     lost: [
       'The GREAT BLUE HERON lifted off with a deep croak... and landed right back on the towpath.',

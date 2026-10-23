@@ -45,7 +45,7 @@ export function layoutWorld(game) {
 const tileColors = {};
 function colorsOf(id) {
   if (tileColors[id]) return tileColors[id];
-  const sprite = TILES[id].sprites[0];
+  const sprite = TILES[id].overSprite ?? TILES[id].sprites[0];
   const data = sprite.getContext('2d').getImageData(0, 0, 16, 16).data;
   const quarters = [];
   for (const [qx, qy] of [[0, 0], [8, 0], [0, 8], [8, 8]]) {

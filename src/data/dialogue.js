@@ -42,6 +42,7 @@ export const DIALOGUE = {
   },
   // Hannah out painting the canal in Erwinna, after you've beaten her BALD EAGLE.
   // She tells you about the OPEN PLAINS' nemesis bird, the GREAT BLUE HERON.
+  // Once you've beaten it she's at Tinicum Park (hannahTinicum).
   hannahErwinna(game) {
     const name = playerName(game);
     const heron = NEMESES.greatBlueHeron;
@@ -50,11 +51,11 @@ export const DIALOGUE = {
     const region = REGIONS[heron.region].name;
 
     if (beatNemesis(game, 'greatBlueHeron')) {
+      // Only until you leave: then she's gone up the towpath.
       return [
         `HANNAH: ${name}! I watched the whole thing from my bench. You got the GREAT BLUE HERON!`,
-        'Two nemesis birds. Not many birders can say that.',
-        'The lock tender says that towpath runs all the way south, once they fix the bank.',
-        'Wherever it goes, I bet there\'s another nemesis bird waiting at the end of it.',
+        'And the towpath\'s open! I\'m packing up my paints. There\'s a pickup ball game at TINICUM PARK, just up the towpath.',
+        'Come find me on the ball fields!',
       ];
     }
     if (!game.progress.flags.metHannahErwinna) {
@@ -63,7 +64,7 @@ export const DIALOGUE = {
         'You\'re a real birder now. Welcome to the bird club!',
         'I came out to ERWINNA to paint the canal. Old forges, stone houses, mules on the towpath... and birds everywhere.',
         'But there\'s one bird I just can\'t paint. It won\'t let anyone near.',
-        'See it down on the towpath by the lock? The GREAT BLUE HERON. The NEMESIS BIRD of the OPEN PLAINS.',
+        'See it up at the end of the towpath, past the barge? The GREAT BLUE HERON. The NEMESIS BIRD of the OPEN PLAINS.',
         'The lock tender says it\'s been guarding that towpath since the canal was dug.',
         `It won't let a beginner near. Photograph ${need} kinds of ${region} birds first. You have ${have}.`,
         'Then go show that heron who\'s boss. I\'ll be right here.',
@@ -79,7 +80,38 @@ export const DIALOGUE = {
     return [
       `HANNAH: ${have} kinds! You're ready for the heron, ${name}.`,
       'It stands perfectly still for ages... then strikes. Be patient, and be quick when it moves.',
-      'It\'s on the towpath by the lock. Go get it!',
+      'It\'s up at the end of the towpath, past the barge. Go get it!',
+    ];
+  },
+  // Hannah playing pickup ball at Tinicum Park, after you've beaten the GREAT BLUE HERON.
+  // She welcomes you to the RIVERSHORE, raves about FRENCHTOWN, and has heard of a birder named ASA.
+  hannahTinicum(game) {
+    const name = playerName(game);
+    const region = REGIONS.rivershore.name;
+    const { have, total } = regionPhotos(game, 'rivershore');
+
+    if (!game.progress.flags.metHannahTinicum) {
+      return [
+        `HANNAH: ${name}! Heads up! ...Sorry, that one got away from me.`,
+        'You got the GREAT BLUE HERON! Two nemesis birds! I traded my paintbrush for a glove to celebrate.',
+        `Welcome to TINICUM PARK, and the ${region}: river country, all along the DELAWARE.`,
+        'Have you been to FRENCHTOWN, just across the river? Bakeries, a bike shop, an old iron bridge over the water... it\'s so nice.',
+        'Oh, and I keep hearing about a birder named ASA. They say he knows every bird on this river.',
+        'They also say he\'s a little... terse. Ask him for help and you\'re lucky to get three words out of him.',
+        `In the meantime, there are ${total} kinds of ${region} birds to find. You have ${have}.`,
+        'Bluebirds on the backstops, swallows over the outfield, orioles up in the sycamores, sandpipers down on the creek!',
+      ];
+    }
+    if (have < total) {
+      return [
+        `HANNAH: ${have} of ${total} kinds of ${region} birds, ${name}. Keep looking!`,
+        'Walk the creek slowly. A GREEN HERON can stand so still you\'ll walk right past it.',
+        'And keep an eye on the sky over the river. Ospreys fish there when it\'s clear.',
+      ];
+    }
+    return [
+      `HANNAH: All ${total} kinds of ${region} birds, ${name}! Even ASA would have to be impressed.`,
+      'Maybe he\'d even say four words to you.',
     ];
   },
 };
