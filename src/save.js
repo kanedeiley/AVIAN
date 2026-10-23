@@ -71,12 +71,13 @@ export function saveMoney(money) {
  * The saved story progress, or a fresh one:
  *   flags    story beats you've reached, e.g. { metHannah: true } (see data/flags.js)
  *   nemeses  nemesis birds you've beaten -> stars of the winning photo (see data/nemeses.js)
+ *   rivals   rivals' challenges you've beaten -> stars of the winning photo (see data/rivals.js)
  *   collectibles  collectibles you've found, e.g. { jacobsDoobie: true } (see data/collectibles.js)
  *   player   your name and look ({ name, look }, see assets/player.js), or null until the intro is done
  *   items    what's in your bag: item id -> how many (see data/items.js)
  */
 export function loadProgress() {
-  const fresh = { flags: {}, nemeses: {}, collectibles: {}, player: null, items: {} };
+  const fresh = { flags: {}, nemeses: {}, rivals: {}, collectibles: {}, player: null, items: {} };
   try {
     const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY));
     return saved && typeof saved === 'object' ? { ...fresh, ...saved } : fresh;

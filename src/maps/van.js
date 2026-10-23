@@ -1,4 +1,5 @@
-// Inside Wyatt's grey Sprinter van, parked on Hannahville beach. One short
+// Inside Wyatt's grey Sprinter van: parked on Hannahville beach, then (once
+// the Frenchtown bridge opens) on the canal path in Frenchtown. One short
 // lane runs between cabinets (a stove along the top, the sink beside the door),
 // from the cab seats and dashboard at the front (right) to the bed across the
 // back (left). The side door is always open. Tiles are in assets/vanTiles.js.
@@ -29,11 +30,11 @@ export default {
   // The bed fills the back of the van, wall to wall.
   props: [{ x: 0, y: 1, id: 'vanBed' }],
   warps: [
-    // The open side door. Arrive back on the sand just below it, facing down.
-    { x: 5, y: 4, to: 'hannahville', toX: 37, toY: 30, facing: 'down' },
+    // The open side door. Arrive back outside wherever the van is parked, facing down.
+    { x: 5, y: 4, to: 'back', facing: 'down' },
   ],
   signs: [
-    { x: 3, y: 0, text: ['Through the window: sand, sea, and the end of the Hannahville pier.'] },
+    { x: 3, y: 0, text: ['Through the window: wherever Wyatt parked last. He never parks anywhere for long.'] },
     { x: 6, y: 0, text: ['A sun-faded sticker on the glass: NOT ALL WHO WANDER ARE LOST.'] },
     { x: 4, y: 1, text: ['A two-burner stove. The kettle is still warm. Coffee, probably.'] },
     { x: 4, y: 3, text: ['A tiny sink with a foot pump, right by the door. The water jug next to it says FILL ME.'] },

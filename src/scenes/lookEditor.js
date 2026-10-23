@@ -5,7 +5,7 @@
 import { VIEW_H } from '../config.js';
 import { input } from '../input.js';
 import { drawBox, drawText, drawTinyText } from '../gfx/ui.js';
-import { LOOK_CHOICES, DEFAULT_LOOK, CLOTH_COLORS, HAIR_COLORS, SKIN_TONES, lookSprites } from '../assets/player.js';
+import { LOOK_CHOICES, DEFAULT_LOOK, CLOTH_COLORS, SHOP_COLORS, HAIR_COLORS, SKIN_TONES, lookSprites } from '../assets/player.js';
 
 const MUTED = '#9898a8';
 const INK = '#283050';
@@ -74,7 +74,7 @@ export class LookEditor {
       const value = this.look[row.key];
       if (off) drawText(ctx, '-', 92, y, MUTED);
       else if (row.swatches) {
-        ctx.fillStyle = row.swatches[value][0];
+        ctx.fillStyle = (row.swatches[value] ?? SHOP_COLORS[value])[0]; // or something from SunBeam you're wearing
         ctx.fillRect(76, y, 40, 8);
         ctx.strokeStyle = INK;
         ctx.lineWidth = 1;

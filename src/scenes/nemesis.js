@@ -4,12 +4,12 @@
 // restless (`rage`). Empty the bar before it runs out of patience, or you run
 // out of film, to win: it goes in the journal and in game.progress, and it
 // leaves its perch for good. Lose and it's back on its perch to try again.
+// A rival's challenge (data/rivals.js) is the same fight, saved as a rival win instead.
 import { TILE, VIEW_W } from '../config.js';
-import { NEMESES } from '../data/nemeses.js';
 import { TILES } from '../assets/tiles.js';
 import { drawBox, drawText, paginate } from '../gfx/ui.js';
 import { saveJournal } from '../save.js';
-import { recordNemesis } from '../progress.js';
+import { recordNemesis, recordRival } from '../progress.js';
 import { PhotoScene } from './photo.js';
 
 const BRANCH_Y = 92;   // must match photo.js
@@ -17,12 +17,13 @@ const HIT_FLASH = 0.5; // seconds the bar flashes after a hit
 const INK = '#283050';
 
 export class NemesisScene extends PhotoScene {
-  constructor(game, nemesisId, returnTo) {
-    const nemesis = NEMESES[nemesisId];
+  /** `nemesis` is the perched nemesis (or rival's bird) from perchOn() in progress.js. */
+  constructor(game, nemesis, returnTo) {
     super(game, nemesis.bird, returnTo);
-    this.nemesisId = nemesisId;
     this.nemesis = nemesis;
     this.species = { ...this.species }; // a copy: it speeds up as the fight goes on
+    // A rival's bird can move differently in the fight than it does in the wild (data/rivals.js).
+    for (const key of ['speed', 'hop', 'pause', 'focusTime']) if (nemesis[key]) this.species[key] = nemesis[key];
     this.film = this.shots = nemesis.film;
     this.patience = nemesis.patience;
     this.left = nemesis.hits;
@@ -65,7 +66,7 @@ export class NemesisScene extends PhotoScene {
         journal[this.id] = this.best;
         saveJournal(journal);
       }
-      recordNemesis(this.game, this.nemesisId, this.best);
+      (this.nemesis.kind === 'rival' ? recordRival : recordNemesis)(this.game, this.nemesis.id, this.best);
     }
     this.phase = 'result';
     this.dialog = { pages: paginate(lines), page: 0 };
@@ -100,12 +101,13 @@ export class NemesisScene extends PhotoScene {
   drawPanel(ctx) {
     if (this.phase !== 'arrive') return super.drawPanel(ctx);
     drawBox(ctx, 0, 116, VIEW_W, 44);
-    drawText(ctx, 'Your NEMESIS BIRD appears!', 12, 126);
+    drawText(ctx, this.nemesis.kind === 'rival' ? `${this.nemesis.name}'s challenge!` : 'Your NEMESIS BIRD appears!', 12, 126);
     drawText(ctx, `The ${this.species.name}!`, 12, 142);
   }
 
-  /** The summit: sky, far-off peaks, snowy pines and a dead branch over the snow. */
+  /** The summit: sky, far-off peaks, snowy pines and a dead branch over the snow. Or the river, for `scene: 'river'`. */
   drawBackground(ctx) {
+    if (this.nemesis.scene === 'river') return this.drawRiver(ctx);
     ctx.fillStyle = '#a8d0f0';
     ctx.fillRect(0, 0, VIEW_W, 116);
     for (const [x, h] of [[30, 30], [100, 40], [170, 26], [230, 36]]) {
@@ -121,6 +123,20 @@ export class NemesisScene extends PhotoScene {
     ctx.fillStyle = '#5a4a40';
     ctx.fillRect(0, BRANCH_Y, VIEW_W, 6);
     ctx.fillStyle = '#8a7a68';
+    ctx.fillRect(0, BRANCH_Y, VIEW_W, 2);
+  }
+
+  /** The river: sky, the wooded far bank, the water, and a weathered dock rail to perch on. */
+  drawRiver(ctx) {
+    ctx.fillStyle = '#a8d0f0';
+    ctx.fillRect(0, 0, VIEW_W, 116);
+    for (let x = 0; x < VIEW_W; x += TILE) ctx.drawImage(TILES.tree.sprites[0], x, 34);
+    for (let y = 50; y < 116; y += TILE) {
+      for (let x = 0; x < VIEW_W; x += TILE) ctx.drawImage(TILES.water.sprites[0], x, y);
+    }
+    ctx.fillStyle = '#6a5a48';
+    ctx.fillRect(0, BRANCH_Y, VIEW_W, 6);
+    ctx.fillStyle = '#9a8a70';
     ctx.fillRect(0, BRANCH_Y, VIEW_W, 2);
   }
 }

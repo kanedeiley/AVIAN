@@ -218,6 +218,58 @@ const HATS = {
       '.kk.SS.......kk.',
     ],
   },
+  // Sold at SunBeam in Frenchtown (data/items.js), not in the LOOK screen:
+  // a beret, tipped to one side with a little stalk on top,
+  beret: {
+    down: [
+      '.......kk.......',
+      '....kkk11kkk....',
+      '..kk11111111kk..',
+      '.k11w111111111k.',
+      '.k222222222222k.',
+    ],
+    up: [
+      '.......kk.......',
+      '....kkk11kkk....',
+      '..kk11111111kk..',
+      '.k111111111111k.',
+      '.k222222222222k.',
+    ],
+    left: [
+      '......kk........',
+      '...kkk11kkk.....',
+      '..k111111111kk..',
+      '.k1w1111111111k.',
+      '.k222222222222k.',
+    ],
+  },
+  // and a floppy bucket hat with a short, droopy brim.
+  bucket: {
+    down: [
+      '.....kkkkkk.....',
+      '...kk111111kk...',
+      '..k1w11111111k..',
+      '..k1111111111k..',
+      '.k222222222222k.',
+      '.kk..........kk.',
+    ],
+    up: [
+      '.....kkkkkk.....',
+      '...kk111111kk...',
+      '..k1111111111k..',
+      '..k1111111111k..',
+      '.k222222222222k.',
+      '.kk..........kk.',
+    ],
+    left: [
+      '.....kkkkkk.....',
+      '....k111111kk...',
+      '...k1w1111111k..',
+      '...k111111111k..',
+      '.k222222222222k.',
+      '.kk..........kk.',
+    ],
+  },
 };
 
 // ---------- legs: rows 15-19 standing, rows 17-19 mid-step ----------
@@ -291,9 +343,12 @@ export function personSprites(name, outfit = 'male', colors = {}) {
   const c = { ...DEFAULT_COLORS, ...colors };
   const palette = {
     ...PALETTE, 1: c.hat, 2: c.hatShade, 3: c.top, 4: c.topShade, 5: c.bottoms, 8: c.bottomsShade ?? darken(c.bottoms),
-    6: c.hair, 7: c.hairShade, s: c.skin, S: c.skinShade, i: c.cheeks,
+    6: c.hair, 7: c.hairShade, s: c.skin, S: c.skinShade, i: c.cheeks, 9: c.topStripe,
   };
-  const s = (rows) => makeSprite(rows, palette, name);
+  // A patterned top ('stripes' or 'plaid') paints `topStripe` over some of its pixels.
+  const on = { stripes: (x, y) => y % 2 === 0, plaid: (x, y) => x % 3 === 0 || y % 3 === 0 }[c.topPattern];
+  const pattern = (rows) => (on ? rows.map((r, y) => [...r].map((ch, x) => (ch === '3' && on(x, y) ? '9' : ch)).join('')) : rows);
+  const s = (rows) => makeSprite(pattern(rows), palette, name);
   const down = [...wearHat(head.down, hat.down), ...legs.down];
   const up = [...wearHat(head.up, hat.up), ...legs.down];
   const left = [...wearHat(head.left, hat.left), ...legs.left];
@@ -341,6 +396,16 @@ export const HAIR_COLORS = {
   blue: ['#4878d0', '#2c4c98'],
   pink: ['#f08cb8', '#c05888'],
 };
+// Only from SunBeam in Frenchtown (data/items.js): hat colors and tops the LOOK screen doesn't offer.
+// A top can have a pattern: [color, shade, pattern color, 'stripes' or 'plaid'].
+export const SHOP_COLORS = {
+  maroon: ['#8a2838', '#5a1824'],
+  sunbeam: ['#f8b028', '#c87c10'],
+  flannel: [PALETTE.p, PALETTE.P, '#302028', 'plaid'],
+  breton: ['#f0f0f0', '#c0c0c8', '#283c80', 'stripes'],
+};
+export const SHOP_HATS = ['beret', 'bucket'];
+
 export const SKIN_TONES = {
   fair: [PALETTE.s, PALETTE.S, '#f8a8a0'],
   light: ['#f0c090', '#d09868', '#f09098'],
@@ -363,18 +428,27 @@ export const DEFAULT_LOOK = {
   hair: 'short', hairColor: 'brown', hat: 'cap', hatColor: 'red', top: 'red', legs: 'pants', legsColor: 'blue', skin: 'fair',
 };
 
+// Everything a look can be: the LOOK screen's choices, plus what SunBeam sells.
+const COLORS = { ...CLOTH_COLORS, ...SHOP_COLORS };
+const ALLOWED = {
+  ...LOOK_CHOICES,
+  hat: [...LOOK_CHOICES.hat, ...SHOP_HATS],
+  hatColor: Object.keys(COLORS),
+  top: Object.keys(COLORS),
+};
+
 /** The player's sprites for a look (see DEFAULT_LOOK); anything missing or unknown falls back to the default. */
 export function lookSprites(look = {}) {
   const l = { ...DEFAULT_LOOK };
-  for (const [key, choices] of Object.entries(LOOK_CHOICES)) {
+  for (const [key, choices] of Object.entries(ALLOWED)) {
     if (choices.includes(look?.[key])) l[key] = look[key];
   }
-  const [hat, hatShade] = CLOTH_COLORS[l.hatColor];
-  const [top, topShade] = CLOTH_COLORS[l.top];
+  const [hat, hatShade] = COLORS[l.hatColor];
+  const [top, topShade, topStripe, topPattern] = COLORS[l.top];
   const [hair, hairShade] = HAIR_COLORS[l.hairColor];
   const [skin, skinShade, cheeks] = SKIN_TONES[l.skin];
   return personSprites('player', { hair: l.hair, hat: l.hat, legs: l.legs }, {
-    hat, hatShade, top, topShade, bottoms: CLOTH_COLORS[l.legsColor][0], bottomsShade: CLOTH_COLORS[l.legsColor][1], hair, hairShade, skin, skinShade, cheeks,
+    hat, hatShade, top, topShade, topStripe, topPattern, bottoms: CLOTH_COLORS[l.legsColor][0], bottomsShade: CLOTH_COLORS[l.legsColor][1], hair, hairShade, skin, skinShade, cheeks,
   });
 }
 

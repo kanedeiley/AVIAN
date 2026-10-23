@@ -15,6 +15,7 @@
 export default {
   name: 'TINICUM PARK',
   region: 'rivershore',
+  banks: true, // muddy river banks where the water meets land (assets/banks.js)
   legend: {
     // the canal, towpath, creek and river bank
     't': 'towpath',

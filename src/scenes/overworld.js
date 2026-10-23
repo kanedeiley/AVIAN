@@ -1,6 +1,6 @@
 // Walking around a map: grid movement, collisions, warps, signs, boats you can
 // book a voyage on (see voyage.js), the birds you sneak up on (see fieldBirds.js),
-// the nemesis bird guarding its perch (see nemesis.js), and the collectibles
+// the nemesis bird (or a rival's bird) guarding its perch (see nemesis.js), and the collectibles
 // hidden around (see data/collectibles.js). Outdoors the light follows the
 // real time of day and weather (time.js, gfx/lighting.js), and beds and
 // benches let you rest until it's another time of day. Shopkeepers sell
@@ -8,6 +8,7 @@
 import { TILE, VIEW_W, VIEW_H, STEP_TIME } from '../config.js';
 import { getMap, doorTo } from '../maps/index.js';
 import { TILES } from '../assets/tiles.js';
+import { findBanks } from '../assets/banks.js';
 import { lookSprites } from '../assets/player.js';
 import { BIRD_SPRITES } from '../assets/birds.js';
 import { TELLS } from '../assets/collectibles.js';
@@ -26,7 +27,7 @@ import { DIALOGUE } from '../data/dialogue.js';
 import { ITEMS } from '../data/items.js';
 import { ITEM_SPRITES, BIKE_SPRITES } from '../assets/items.js';
 import { saveMoney, saveLocation } from '../save.js';
-import { nemesisNeeds, nemesisOn, setFlag, collectiblesOn, collect, warpOpen, spendItem, shown } from '../progress.js';
+import { perchNeeds, perchOn, perchBeaten, toggleWear, setFlag, collectiblesOn, collect, warpOpen, spendItem, shown } from '../progress.js';
 import { timeUntil } from '../time.js';
 import { drawLighting, tintPanes, drawClock } from '../gfx/lighting.js';
 
@@ -34,7 +35,7 @@ const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const TURN_DELAY = 0.09; // a quick tap turns in place instead of walking
 const LANTERN = 4.5;     // tiles your lantern lights up on a `dark` map
 const DARKNESS = 'rgba(10,8,20,0.9)';
-const NEMESIS_FLAP = [3, 0.4]; // the nemesis on its perch flaps for 0.4s every 3s
+const PERCH_FLAP = [3, 0.4]; // a nemesis (or rival's bird) on its perch flaps for 0.4s every 3s
 const REST_UNTIL = ['dawn', 'dusk', 'night']; // what a bed or bench lets you rest until
 const REST_DARK = 0.85;        // how dark the screen gets while you rest
 
@@ -53,7 +54,9 @@ export class Overworld {
     this.map = getMap(id);
     if (this.map.indoor) this.riding = false; // you leave your bike at the door
     Object.assign(this.player, { x, y, facing, moving: false, progress: 0 });
-    this.nemesis = nemesisOn(this.game, id);
+    this.perch = perchOn(this.game, id); // a nemesis bird, or a rival's (data/rivals.js)
+    this.goneProps = this.map.props.filter((o) => !shown(this.game, o)); // props only there `after`/`until` something
+    this.banks = this.map.banks ? findBanks(this.map) : []; // muddy edges where water meets land (assets/banks.js)
     this.collectibles = collectiblesOn(this.game, id);
     this.rememberLocation();
     this.npcs = new Npcs(this);
@@ -75,24 +78,29 @@ export class Overworld {
   tileAt(x, y) {
     if (x < 0 || y < 0 || x >= this.map.width || y >= this.map.height) return null;
     const lock = this.lockAt(x, y);
-    return TILES[lock ? lock.tile : this.map.grid[y][x]];
+    if (lock) return TILES[lock.tile];
+    // A prop that isn't there right now (`after`/`until`): what's under it.
+    const gone = this.goneProps.find((o) => x >= o.x && x < o.x + o.w && y >= o.y && y < o.y + o.h);
+    return TILES[gone ? gone.under[y - gone.y][x - gone.x] : this.map.grid[y][x]];
   }
 
-  /** The `locked` part of a warp on this tile that's still shut, if any. */
+  /** The `locked` part of a warp (or a gate) on this tile that's still shut, if any. */
   lockAt(x, y) {
     const warp = this.map.warps.find((w) => w.locked && w.x === x && w.y === y);
-    return warp && !warpOpen(this.game, warp) ? warp.locked : null;
+    if (warp) return !warpOpen(this.game, warp) ? warp.locked : null;
+    const gate = this.map.gates.find((g) => g.x === x && g.y === y);
+    return gate && !warpOpen(this.game, gate) ? gate.locked : null;
   }
 
   isBlocked(x, y) {
     const tile = this.tileAt(x, y);
-    return !tile || tile.solid || this.npcs.occupies(x, y) || this.nemesisAt(x, y);
+    return !tile || tile.solid || this.npcs.occupies(x, y) || this.perchAt(x, y);
   }
 
-  /** True if the (not yet beaten) nemesis perches on this tile. */
-  nemesisAt(x, y) {
-    const n = this.nemesis;
-    return Boolean(n && n.x === x && n.y === y && !this.game.progress.nemeses[n.id]);
+  /** True if the (not yet beaten) nemesis or rival's bird perches on this tile. */
+  perchAt(x, y) {
+    const n = this.perch;
+    return Boolean(n && n.x === x && n.y === y && !perchBeaten(this.game, n));
   }
 
   update(dt) {
@@ -116,13 +124,16 @@ export class Overworld {
           return;
         }
         this.dialog.page++;
-        if (this.dialog.page >= this.dialog.pages.length) this.dialog = null;
+        if (this.dialog.page >= this.dialog.pages.length) {
+          this.dialog = null;
+          d.then?.(); // anything that happens once you've read it all
+        }
       }
       return;
     }
 
     if (p.moving) {
-      p.progress += (dt / STEP_TIME) * (this.riding ? ITEMS.bike.speed : 1);
+      p.progress += (dt / STEP_TIME) * this.speed();
       if (p.progress < 1) return;
       p.x += p.dx;
       p.y += p.dy;
@@ -185,11 +196,20 @@ export class Overworld {
         const text = npc.talk ? DIALOGUE[npc.talk](this.game) : npc.text;
         if (npc.sets) setFlag(this.game, npc.sets);
         this.dialog = { pages: paginate(text), page: 0 };
+        // Someone who `leaves` once you show them a photo of a bird: after they've had their say,
+        // the screen fades, their flag is set, and they're gone (and anything that was there `until` it).
+        const { leaves } = npc;
+        if (leaves && this.game.journal[leaves.photo] && !this.game.progress.flags[leaves.flag]) {
+          this.dialog.then = () => this.game.transition(() => {
+            setFlag(this.game, leaves.flag);
+            this.loadMap(this.map.id, p.x, p.y, p.facing);
+          });
+        }
         p.walking = false;
         return;
       }
-      if (this.nemesisAt(p.x + dx, p.y + dy)) {
-        this.offerNemesis();
+      if (this.perchAt(p.x + dx, p.y + dy)) {
+        this.offerPerch();
         p.walking = false;
         return;
       }
@@ -232,6 +252,12 @@ export class Overworld {
     Object.assign(p, { moving: true, dx, dy, progress: 0 });
   }
 
+  /** How much faster than walking you're going: on the bike, or on foot with a coffee in you. */
+  speed() {
+    if (this.riding) return ITEMS.bike.speed;
+    return this.inUse.coffee ? ITEMS.coffee.walk : 1;
+  }
+
   /** How far away (in tiles) you can photograph a bird: farther with binoculars. */
   photoRange() {
     return this.inUse.binoculars ? ITEMS.binoculars.range : undefined;
@@ -255,6 +281,10 @@ export class Overworld {
       this.riding = !this.riding;
       return [this.riding ? `You hop on your ${item.name}. Birds will hear you coming!` : `You get off your ${item.name}.`];
     }
+    if (item.wear) {
+      // Clothes go on over that part of your look (assets/player.js); use them again to take them off.
+      return [toggleWear(this.game, id) ? `You put on the ${item.name}. Looking good!` : `You take off the ${item.name}.`];
+    }
     if (this.inUse[id] || (item.feeds && this.birds.seed)) return [item.busy];
     if (item.feeds) {
       if (!this.map.birds) return ['There are no birds around here to feed.'];
@@ -271,7 +301,7 @@ export class Overworld {
 
   /** The big prop (see maps/index.js) covering this tile, if any. */
   propAt(x, y) {
-    return this.map.props.find((o) => x >= o.x && x < o.x + o.w && y >= o.y && y < o.y + o.h) ?? null;
+    return this.map.props.find((o) => x >= o.x && x < o.x + o.w && y >= o.y && y < o.y + o.h && !this.goneProps.includes(o)) ?? null;
   }
 
   /** The captain's pitch, the fare, and a yes/no to board. Boarding pays the fare. */
@@ -295,19 +325,19 @@ export class Overworld {
     };
   }
 
-  /** Face the nemesis: it tells you what you still need, or asks if you're ready to fight. */
-  offerNemesis() {
-    const n = this.nemesis;
-    const needs = nemesisNeeds(this.game, n.id);
+  /** Face the nemesis (or rival's bird): it tells you what you still need, or asks if you're ready to fight. */
+  offerPerch() {
+    const n = this.perch;
+    const needs = perchNeeds(this.game, n);
     if (needs.length) {
       this.dialog = { pages: paginate([...n.locked, 'To get close, you need to:', ...needs]), page: 0 };
       return;
     }
     const pages = paginate(n.challenge);
-    pages.push(['Face your NEMESIS BIRD?', 'A:YES  B:NO']);
+    pages.push([n.kind === 'rival' ? `Take ${n.name}'s challenge?` : 'Face your NEMESIS BIRD?', 'A:YES  B:NO']);
     this.dialog = {
       pages, page: 0,
-      onYes: () => this.game.transition(() => this.game.setScene(new NemesisScene(this.game, n.id, this))),
+      onYes: () => this.game.transition(() => this.game.setScene(new NemesisScene(this.game, n, this))),
     };
   }
 
@@ -361,11 +391,11 @@ export class Overworld {
     drawDialog(ctx, [`Resting until ${target.toUpperCase()}`, `${formatWait(timeUntil(target), true)}  B:WAKE UP`]);
   }
 
-  /** The nemesis on its perch, drawn in front of (`front`) or behind the player's row. */
-  drawNemesis(ctx, camX, camY, front) {
-    const n = this.nemesis;
-    if (!n || !this.nemesisAt(n.x, n.y) || n.y >= this.player.y !== front) return;
-    const [every, flapFor] = NEMESIS_FLAP;
+  /** The nemesis (or rival's bird) on its perch, drawn in front of (`front`) or behind the player's row. */
+  drawPerch(ctx, camX, camY, front) {
+    const n = this.perch;
+    if (!n || !this.perchAt(n.x, n.y) || n.y >= this.player.y !== front) return;
+    const [every, flapFor] = PERCH_FLAP;
     const flapping = this.time % every < flapFor && Math.floor(this.time * 12) % 2;
     const sprite = BIRD_SPRITES[n.bird][this.player.x < n.x ? 'left' : 'right'][flapping ? 'flap' : 'perched'];
     // Twice the size of an ordinary bird, centered on its tile with its feet (row 12) near the bottom.
@@ -377,7 +407,7 @@ export class Overworld {
   /** Called after each completed step. Returns true if it started a transition. */
   onStep() {
     const p = this.player;
-    const warp = this.map.warps.find((w) => w.x === p.x && w.y === p.y);
+    const warp = this.map.warps.find((w) => w.x === p.x && w.y === p.y && shown(this.game, w));
     if (warp) {
       const facing = warp.facing ?? p.facing;
       const to = warp.to === 'back' ? this.wayBack(facing) : { map: warp.to, x: warp.toX, y: warp.toY };
@@ -446,12 +476,16 @@ export class Overworld {
         ctx.drawImage(this.frameOf(this.tileAt(x, y)), x * TILE - camX, y * TILE - camY);
       }
     }
+    for (const b of this.banks) {
+      if (b.x < x0 || b.x >= x1 || b.y < y0 || b.y >= y1) continue;
+      for (const s of b.sprites) ctx.drawImage(s, b.x * TILE - camX, b.y * TILE - camY);
+    }
     const { phase, weather } = this.game;
     if (this.panes.length) tintPanes(ctx, phase, this.panes.map((r) => ({ ...r, x: r.x - camX, y: r.y - camY })));
 
     this.npcs.draw(ctx, camX, camY, false, this.time);
     this.birds.draw(ctx, camX, camY, false, this.time);
-    this.drawNemesis(ctx, camX, camY, false);
+    this.drawPerch(ctx, camX, camY, false);
 
     // Player
     const frames = this.playerSprites()[p.facing];
@@ -472,7 +506,7 @@ export class Overworld {
 
     this.npcs.draw(ctx, camX, camY, true, this.time);
     this.birds.draw(ctx, camX, camY, true, this.time);
-    this.drawNemesis(ctx, camX, camY, true);
+    this.drawPerch(ctx, camX, camY, true);
 
     // Overhead: things you walk under, like a covered bridge, go over everyone. You can see yourself through them.
     const overhead = this.tileAt(fx, fy)?.overSprite;

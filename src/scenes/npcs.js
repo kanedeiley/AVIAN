@@ -4,9 +4,10 @@
 // `id` picks the sprites (assets/dogs.js, assets/people.js or assets/farmAnimals.js) and `area` is the
 // box of tiles they wander in. Instead of `text`, `talk` names a function in
 // data/dialogue.js whose lines change as you progress, and `sets` is a story
-// flag (data/flags.js) you earn by talking to them. `after`/`until` a nemesis is beaten,
+// flag (data/flags.js) you earn by talking to them. `after`/`until` a nemesis or rival is beaten (or a flag is set),
 // they're only around some of the time (see progress.js shown()). They block the player like any solid tile. Face one and press A
-// to say hi: it sits and looks at you while you talk.
+// to say hi: it sits and looks at you while you talk. `leaves: { photo, flag }`: once a photo
+// of that bird is in your journal, talking to them sets `flag` and they're gone (scenes/overworld.js).
 import { TILE } from '../config.js';
 import { DOG_SPRITES } from '../assets/dogs.js';
 import { PEOPLE_SPRITES } from '../assets/people.js';

@@ -14,6 +14,8 @@
 //   ride     the bike: using it gets on or off; `speed` times faster, `noise`
 //            times more noticeable to birds (see scenes/fieldBirds.js)
 //   feeds    birdseed: scattered in front of you, it calms birds nearby and draws them in
+//   walk     coffee: you walk this many times faster while it lasts (not on the bike)
+//   wear     clothes: using it puts it on, over that part of your look (assets/player.js)
 export const ITEMS = {
   binoculars: {
     name: 'BINOCULARS', price: 15, kind: 'supply', max: 5,
@@ -34,5 +36,40 @@ export const ITEMS = {
     used: ['You scatter a handful of BIRDSEED. Nearby birds look interested...'],
     lasts: 25, feeds: true,
     busy: 'The birds are still busy with your last handful.',
+  },
+  // Sold at Homestead Coffee Roasters in Upper Black Eddy.
+  coffee: {
+    name: 'COFFEE', price: 8, kind: 'supply', max: 5,
+    about: 'Walk 40% faster for 45s. Does nothing on a bike!',
+    used: ['You gulp down a hot COFFEE. Your feet feel quicker already!'],
+    lasts: 45, walk: 1.4,
+    wornOff: ['Your COFFEE wears off. You could go for another cup...'],
+    busy: 'Easy! One COFFEE at a time.',
+  },
+  // Clothes from SunBeam in Frenchtown. Buy one and wear it from your BAG whenever you like.
+  beret: {
+    name: 'BERET', price: 25, kind: 'tool',
+    about: 'A maroon beret. Very Frenchtown.',
+    wear: { hat: 'beret', hatColor: 'maroon' },
+  },
+  bucketHat: {
+    name: 'BUCKET HAT', price: 20, kind: 'tool',
+    about: 'A floppy khaki bucket hat. Keeps the sun off.',
+    wear: { hat: 'bucket', hatColor: 'khaki' },
+  },
+  sunbeamTee: {
+    name: 'SUNBEAM TEE', price: 15, kind: 'tool',
+    about: 'A golden SunBeam T-shirt. Bright as the name.',
+    wear: { top: 'sunbeam' },
+  },
+  flannel: {
+    name: 'FLANNEL', price: 30, kind: 'tool',
+    about: 'Red plaid, for cool mornings on the river.',
+    wear: { top: 'flannel' },
+  },
+  breton: {
+    name: 'BRETON SHIRT', price: 30, kind: 'tool',
+    about: 'Navy stripes, like a French sailor. Ooh la la.',
+    wear: { top: 'breton' },
   },
 };
