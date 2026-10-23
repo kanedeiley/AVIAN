@@ -5,4 +5,5 @@
 export const FLAGS = {
   metHannah: 'Talk to HANNAH at her house in HANNAHVILLE.',
   metHannahErwinna: 'Find HANNAH by the canal in ERWINNA, east of VAN SANT AIRPORT.',
+  metHannahTinicum: 'Find HANNAH on the ball fields at TINICUM PARK, up the towpath north of ERWINNA.',
 };

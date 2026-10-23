@@ -16,6 +16,13 @@ const PEOPLE = {
   blacksmith: personSprites('blacksmith', { hair: 'short', hat: 'none', legs: 'pants' }, { top: '#6a4a30', topShade: '#4a3020', bottoms: '#3a3a48', hair: '#888890', hairShade: '#5a5a64' }),
   // The lock tender: a navy cap and jacket, and canvas trousers.
   lockTender: personSprites('lockTender', 'male', { hat: '#283c60', hatShade: '#182840', top: '#304878', topShade: '#203058', bottoms: '#b0a078', hair: '#202028', hairShade: '#101018' }),
+  // Tinicum Park: a ballplayer in a red cap and white uniform, and two kids on the playground.
+  ballplayer: personSprites('ballplayer', 'male', { hat: PALETTE.p, hatShade: PALETTE.P, top: '#f0f0f0', topShade: '#c8c8d0', bottoms: '#e8e8e8', hair: '#3a2818', hairShade: '#241810' }),
+  kidRed: personSprites('kidRed', { hair: 'short', hat: 'cap', legs: 'shorts' }, { hat: '#4870d0', hatShade: '#283c80', top: PALETTE.p, topShade: PALETTE.P, bottoms: '#4a68a0', hair: '#e8c860', hairShade: '#b89838' }),
+  kidYellow: personSprites('kidYellow', { hair: 'long', hat: 'none', legs: 'shorts' }, { top: '#f0c030', topShade: '#b88a18', bottoms: '#58a040', hair: '#303038', hairShade: '#18181f' }),
+  // Tinicum Riverbank: BLAIR MARSHALL, an older gent with brown hair, and his wife DIANE, a redhead.
+  blair: personSprites('blair', { hair: 'short', hat: 'none', legs: 'pants' }, { top: '#4a6a48', topShade: '#344c32', bottoms: '#8a7a58', hair: '#6a4a30', hairShade: '#4a3020' }),
+  diane: personSprites('diane', 'female', { top: '#7890c8', topShade: '#5068a0', bottoms: '#8a5a8a', hair: '#c84828', hairShade: '#8a2c18' }),
   pilot: personSprites('pilot', 'male', { hat: '#7a4a28', hatShade: '#4a2c18', top: '#8a5a30', topShade: '#5a3818', bottoms: '#4a68a0', hair: '#c8c8c8', hairShade: '#909098' }),
 };
 

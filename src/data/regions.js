@@ -6,4 +6,5 @@
 export const REGIONS = {
   valley: { name: 'WILLOW VALLEY' },
   plains: { name: 'OPEN PLAINS' },
+  rivershore: { name: 'RIVERSHORE' },
 };

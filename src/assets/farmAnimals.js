@@ -202,6 +202,9 @@ const ANIMALS = {
   horse: { walk: [HORSE_WALK, HORSE_STRIDE], sitting: HORSE_FRONT, colors: ['#a0582c', '#784020', '#3a2418', '#2a2024', '#f8f0e0'] },
   // Erwinna's canal mule: gray-brown with a dark mane and a pale nose.
   mule: { walk: [HORSE_WALK, HORSE_STRIDE], sitting: HORSE_FRONT, colors: ['#7a6a5a', '#5a4c40', '#2a2420', '#202020', '#d8ccb8'] },
+  // Tinicum Park's polo ponies: a bay with a black mane, and a dapple grey.
+  poloPony: { walk: [HORSE_WALK, HORSE_STRIDE], sitting: HORSE_FRONT, colors: ['#6a3a20', '#4a2814', '#202020', '#202020'] },
+  poloPonyGrey: { walk: [HORSE_WALK, HORSE_STRIDE], sitting: HORSE_FRONT, colors: ['#c8c8cc', '#a0a0a8', '#606068', '#303030', '#e8e8ec'] },
   // A white goat and a brown-and-white one.
   goat: { walk: [GOAT_WALK, GOAT_STRIDE], sitting: GOAT_FRONT, colors: ['#f4f0e4', '#c8bca8', '#d8d0c0', '#686070', '#f0b8b0'] },
   goatBrown: { walk: [GOAT_WALK, GOAT_STRIDE], sitting: GOAT_FRONT, colors: ['#8a5a34', '#f4f0e4', '#5a3818', '#383038', '#d8a888'] },

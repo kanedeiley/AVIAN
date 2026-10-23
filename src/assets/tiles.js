@@ -9,6 +9,8 @@
 //   perch       birds can land and hop around here (if the map has birds)
 //   cover       birds barely notice you walking here
 //   coversFeet  redraw the bottom of the tile over the player (tall grass)
+//   over        art drawn over the player and everyone else, like a bridge you walk under
+//               (see-through while you're under it)
 //   glow        lights up this many tiles around it on a `dark` map (cave crystals, daylight),
 //               and shines at night outdoors (windows, lamps)
 //   flicker     its glow flickers like a fire
@@ -29,6 +31,7 @@ import { FARM_DEFS } from './farmTiles.js';
 import { AIRPORT_DEFS } from './airportTiles.js';
 import { STORE_DEFS } from './storeTiles.js';
 import { CANAL_DEFS } from './canalTiles.js';
+import { PARK_DEFS } from './parkTiles.js';
 
 // ---------- outdoor ----------
 
@@ -702,6 +705,7 @@ const DEFS = {
   ...AIRPORT_DEFS, // Van Sant Airport: see airportTiles.js
   ...STORE_DEFS,   // shop fronts and the inside of the general store: see storeTiles.js
   ...CANAL_DEFS,   // Erwinna, the canal town: see canalTiles.js
+  ...PARK_DEFS,    // Tinicum Park's ball fields, polo grounds and playground: see parkTiles.js
   hillTree:  { art: TREE, base: 'hill', solid: true },
 
   floor:     { art: FLOOR },
@@ -760,6 +764,7 @@ export const TILES = {};
 for (const [id, def] of Object.entries(DEFS)) {
   const arts = def.frames ?? [def.art];
   TILES[id] = { id, ...def, sprites: arts.map((a) => makeSprite(a, PALETTE, `tile "${id}"`)) };
+  if (def.over) TILES[id].overSprite = makeSprite(def.over, PALETTE, `tile "${id}" over`);
 }
 for (const tile of Object.values(TILES)) {
   if (tile.base) tile.sprites = tile.sprites.map((s) => layer(TILES[tile.base].sprites[0], s));
