@@ -30,6 +30,8 @@ const PEOPLE = {
   barista: personSprites('barista', { hair: 'long', hat: 'beanie', legs: 'pants' }, { hat: '#a04830', hatShade: '#702c18', top: '#6a4a30', topShade: '#4a3020', bottoms: '#303038', hair: '#e8c860', hairShade: '#b89838' }),
   // The clerk at SunBeam in Frenchtown, in a SunBeam tee and a bucket hat.
   sunbeamClerk: personSprites('sunbeamClerk', { hair: 'long', hat: 'bucket', legs: 'pants' }, { hat: '#8a7a58', hatShade: '#6a5a40', top: '#f8b028', topShade: '#c87c10', bottoms: '#4060b0', hair: '#303038', hairShade: '#18181f' }),
+  // The station agent at Milford Station: a navy conductor's cap and vest.
+  stationAgent: personSprites('stationAgent', 'male', { hat: '#283c60', hatShade: '#182840', top: '#304878', topShade: '#203058', bottoms: '#404050', hair: '#c8c8c8', hairShade: '#909098' }),
   pilot: personSprites('pilot', 'male', { hat: '#7a4a28', hatShade: '#4a2c18', top: '#8a5a30', topShade: '#5a3818', bottoms: '#4a68a0', hair: '#c8c8c8', hairShade: '#909098' }),
 };
 

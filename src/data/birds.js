@@ -48,8 +48,12 @@ export const BIRDS = {
   // Frenchtown's peregrines hunt pigeons off the bridge and the rooftops. WYATT wants a photo of one.
   peregrine:  { name: 'PEREGRINE', shape: 'upright', colors: { body: '#506070', wing: '#384858', belly: '#e8e4dc', head: '#283038', face: '#283038', bill: '#f0c030' }, speed: 95, hop: 90, pause: [0.4, 1.2], patience: 8, focusTime: 1.4, skittish: 1.3, times: ['dawn', 'morning', 'midday', 'afternoon', 'dusk'] },
   osprey:     { name: 'OSPREY',     shape: 'upright',  colors: { body: '#4a3a2c', wing: '#38281c', belly: '#f8f8f8', head: '#f8f8f8', face: '#383030', bill: '#303038' }, speed: 115, hop: 100, pause: [0.3, 0.8], patience: 7, focusTime: 1.6, skittish: 1.4, times: ['morning', 'midday', 'afternoon'], weather: ['clear', 'overcast'] },
+  // Milford: cliff swallows nest under the bridges.
+  cliffSwallow: { name: 'CLIFF SWALLOW', shape: 'songbird', colors: { body: '#304060', wing: '#283048', belly: '#f0e0c8', face: '#a04830', bill: '#202028' }, speed: 120, hop: 90, pause: [0.2, 0.6], patience: 8, focusTime: 1.4, skittish: 1.2, times: ['dawn', 'morning', 'midday', 'afternoon', 'dusk'] },
   // Nemesis birds: never out on the map, only fought at their perch (data/nemeses.js).
   baldEagle: { name: 'BALD EAGLE', shape: 'upright', colors: { body: '#4a3020', wing: '#302014', belly: '#5a3a24', head: '#f8f8f8', bill: '#f0c030' }, speed: 70, hop: 90, pause: [0.6, 1.4], patience: 40, focusTime: 1.4, skittish: 1 },
   // Stands perfectly still for ages, then strikes: long pauses, long hops.
+  // Down from the Arctic: pale as snow, flecked with gray. Fast, but it sits and stares between moves.
+  gyrfalcon: { name: 'GYRFALCON', shape: 'upright', colors: { body: '#e8e8ec', wing: '#a8a8b8', belly: '#f8f8f8', head: '#d8d8e0', face: '#404050', bill: '#f0c030' }, speed: 65, hop: 90, pause: [1.0, 2.2], patience: 50, focusTime: 1.3, skittish: 1 },
   greatBlueHeron: { name: 'BLUE HERON', shape: 'heron', colors: { body: '#7888a0', wing: '#566880', belly: '#c8ccd8', head: '#f0f0f0', face: '#202028', bill: '#e8b840' }, speed: 65, hop: 90, pause: [1.0, 2.4], patience: 45, focusTime: 1.6, skittish: 1 },
 };

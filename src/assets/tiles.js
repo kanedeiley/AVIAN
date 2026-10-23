@@ -33,6 +33,7 @@ import { STORE_DEFS } from './storeTiles.js';
 import { CANAL_DEFS } from './canalTiles.js';
 import { PARK_DEFS } from './parkTiles.js';
 import { FRENCHTOWN_DEFS } from './frenchtownTiles.js';
+import { MILFORD_DEFS } from './milfordTiles.js';
 
 // ---------- outdoor ----------
 
@@ -708,6 +709,7 @@ const DEFS = {
   ...CANAL_DEFS,   // Erwinna, the canal town: see canalTiles.js
   ...PARK_DEFS,    // Tinicum Park's ball fields, polo grounds and playground: see parkTiles.js
   ...FRENCHTOWN_DEFS, // Frenchtown's gas pumps, and the racks inside SunBeam: see frenchtownTiles.js
+  ...MILFORD_DEFS, // Milford's railroad: see milfordTiles.js
   hillTree:  { art: TREE, base: 'hill', solid: true },
 
   floor:     { art: FLOOR },

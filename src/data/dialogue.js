@@ -141,17 +141,49 @@ export const DIALOGUE = {
       return [
         'WYATT: No way. Is that... a PEREGRINE? Right here in FRENCHTOWN?!',
         'The dark helmet, the barred chest... that\'s a peregrine, all right.',
-        'Which means I\'m on the right river. The nemesis is up north somewhere. I can feel it.',
+        'Which means I\'m on the right river. Now I just have to find the thing.',
         `Thanks, ${name}! I'm packing up the van. See you upriver!`,
       ];
     }
     return [
       'WYATT: Hey! You made it across the river! Told you I move around a lot.',
       'I\'m on the trail of the RIVERSHORE\'s NEMESIS BIRD. Nobody will tell me what it is. Birders get funny about their nemesis birds.',
-      'But everybody says the same thing: it hunts where the PEREGRINE FALCONS hunt.',
+      'But the old-timers all say the same thing: find the PEREGRINES, and you\'re on the right river.',
       'There\'s a pair around FRENCHTOWN. Rooftops, the bridge, the Citgo sign... I\'ve stared at the sky all week and can\'t get one shot.',
       'Get me a photo of a PEREGRINE and I\'ll know I\'m on the right river. Then I\'m heading north!',
       'Till then the van stays put. Sorry about the canal path.',
+    ];
+  },
+  // The STATION AGENT at Milford Station. The first anyone tells you about the RIVERSHORE's
+  // nemesis bird: the GYRFALCON on the platform, holding up the trains north.
+  stationAgent(game) {
+    if (beatNemesis(game, 'gyrfalcon')) {
+      return [
+        'STATION AGENT: You did it! That falcon took off up the tracks, and the last train north pulled out right behind it.',
+        'There\'s track work up the line now, so no more trains to VERMONT for a while. Check back soon!',
+      ];
+    }
+    if (game.progress.flags.metMilfordAgent) {
+      return ['STATION AGENT: Still there. Still staring. Good luck.'];
+    }
+    return [
+      'STATION AGENT: Sorry, no trains north. Nobody can get onto the platform.',
+      'There\'s a GYRFALCON sitting on it. A GYRFALCON! Down from the ARCTIC, white as snow, bigger than any hawk.',
+      'Birders have come from three states to see it. Nobody\'s gotten a decent photo. It just stares them down.',
+      'If you ask me, it\'s the NEMESIS BIRD of this whole river. Think you can get it? Be my guest.',
+    ];
+  },
+  // HANNAH calls right after you beat the GYRFALCON (data/nemeses.js `wonTalk`). She was on
+  // the train stuck behind it at Milford Station, and now she's on her way north to VERMONT.
+  hannahCall(game) {
+    const name = playerName(game);
+    return [
+      `HANNAH: ${name}!! Was that YOU? The conductor just said the falcon's gone off the platform!`,
+      'I\'ve been stuck on this train all morning waiting for it to move. And now we\'re rolling!',
+      `Three nemesis birds, ${name}. THREE. The bird club is never going to believe it.`,
+      'This train runs north on the railroad out of MILFORD, all the way up to VERMONT.',
+      'They say there are birds up in those mountains you\'ll never see down here. I couldn\'t resist!',
+      'When the line opens again, catch a train north and come find me. I\'ll save you a seat!',
     ];
   },
   // ASA COOPER, your rival, in his backyard in Upper Black Eddy. He's the volunteer

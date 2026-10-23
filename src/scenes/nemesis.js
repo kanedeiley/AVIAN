@@ -10,6 +10,7 @@ import { TILES } from '../assets/tiles.js';
 import { drawBox, drawText, paginate } from '../gfx/ui.js';
 import { saveJournal } from '../save.js';
 import { recordNemesis, recordRival } from '../progress.js';
+import { DIALOGUE } from '../data/dialogue.js';
 import { PhotoScene } from './photo.js';
 
 const BRANCH_Y = 92;   // must match photo.js
@@ -67,6 +68,8 @@ export class NemesisScene extends PhotoScene {
         saveJournal(journal);
       }
       (this.nemesis.kind === 'rival' ? recordRival : recordNemesis)(this.game, this.nemesis.id, this.best);
+      // Someone may have something to say about it right away (a phone call: `wonTalk`, data/dialogue.js).
+      if (this.nemesis.wonTalk) lines.push(...DIALOGUE[this.nemesis.wonTalk](this.game));
     }
     this.phase = 'result';
     this.dialog = { pages: paginate(lines), page: 0 };

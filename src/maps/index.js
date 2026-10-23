@@ -20,6 +20,7 @@ import blackEddy from './blackEddy.js';
 import coffeeShop from './coffeeShop.js';
 import frenchtown from './frenchtown.js';
 import sunbeamShop from './sunbeamShop.js';
+import milford from './milford.js';
 import { TILES, LEGEND } from '../assets/tiles.js';
 import { PROPS } from '../assets/coastTiles.js'; // storefronts too (storeTiles.js)
 import { VOYAGES } from '../data/voyages.js';
@@ -32,7 +33,7 @@ import { COLLECTIBLES } from '../data/collectibles.js';
 import { ITEMS } from '../data/items.js';
 import { COLLECTIBLE_SPRITES, TELLS } from '../assets/collectibles.js';
 
-const MAPS = { village, house, shrine, hannahville, hannahHouse, cave, mountain, van, farm, leisterHouse, grandparentsHouse, pasture, airport, generalStore, erwinna, tinicum, riverbank, blackEddy, coffeeShop, frenchtown, sunbeamShop };
+const MAPS = { village, house, shrine, hannahville, hannahHouse, cave, mountain, van, farm, leisterHouse, grandparentsHouse, pasture, airport, generalStore, erwinna, tinicum, riverbank, blackEddy, coffeeShop, frenchtown, sunbeamShop, milford };
 export const MAP_IDS = Object.keys(MAPS);
 const cache = {};
 
@@ -62,10 +63,12 @@ function checkShown(thing, at) {
   }
 }
 
-/** A `locked` warp or gate opens when its `nemesis` (or `rival`) is beaten: it has to name a real one. */
+/** A `locked` warp or gate opens when its `nemesis` or `rival` is beaten, or its `flag` is set: it has to name a real one. */
 function checkLock(locked, at) {
-  if (locked.nemesis ? !NEMESES[locked.nemesis] : !RIVALS[locked.rival]) {
-    throw new Error(`${at} is locked by unknown ${locked.nemesis ? `nemesis "${locked.nemesis}"` : `rival "${locked.rival}"`} (see data/nemeses.js, data/rivals.js)`);
+  const known = locked.nemesis ? NEMESES[locked.nemesis] : locked.rival ? RIVALS[locked.rival] : FLAGS[locked.flag];
+  if (!known) {
+    const what = locked.nemesis ? `nemesis "${locked.nemesis}"` : locked.rival ? `rival "${locked.rival}"` : `flag "${locked.flag}"`;
+    throw new Error(`${at} is locked by unknown ${what} (see data/nemeses.js, rivals.js, flags.js)`);
   }
   if (!TILES[locked.tile]) throw new Error(`${at} is locked with unknown tile "${locked.tile}"`);
 }

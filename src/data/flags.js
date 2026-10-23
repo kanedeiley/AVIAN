@@ -7,5 +7,6 @@ export const FLAGS = {
   metHannahErwinna: 'Find HANNAH by the canal in ERWINNA, east of VAN SANT AIRPORT.',
   metAsa: 'Talk to ASA in the COOPERS\' backyard in UPPER BLACK EDDY, up the towpath north of TINICUM.',
   wyattWentNorth: 'Show WYATT a photo of a PEREGRINE FALCON, by his van on the canal path in FRENCHTOWN.',
+  metMilfordAgent: 'Talk to the STATION AGENT at MILFORD STATION.',
   metHannahTinicum: 'Find HANNAH on the ball fields at TINICUM PARK, up the towpath north of ERWINNA.',
 };
