@@ -23,6 +23,13 @@ const PEOPLE = {
   // Tinicum Riverbank: BLAIR MARSHALL, an older gent with brown hair, and his wife DIANE, a redhead.
   blair: personSprites('blair', { hair: 'short', hat: 'none', legs: 'pants' }, { top: '#4a6a48', topShade: '#344c32', bottoms: '#8a7a58', hair: '#6a4a30', hairShade: '#4a3020' }),
   diane: personSprites('diane', 'female', { top: '#7890c8', topShade: '#5068a0', bottoms: '#8a5a8a', hair: '#c84828', hairShade: '#8a2c18' }),
+  // Upper Black Eddy: ASA COOPER, your rival (a bucket hat, a khaki birding vest, scruffy dark hair),
+  // his mom, and the barista at Homestead Coffee Roasters.
+  asa: personSprites('asa', { hair: 'short', hat: 'sunhat', legs: 'pants' }, { hat: '#b8a878', hatShade: '#8a7a50', top: '#6a7040', topShade: '#4a5028', bottoms: '#4a4a40', hair: '#2a2018', hairShade: '#181008' }),
+  mrsCooper: personSprites('mrsCooper', 'female', { top: '#e890a8', topShade: '#b86078', bottoms: '#58709a', hair: '#8a6a40', hairShade: '#5a4428' }),
+  barista: personSprites('barista', { hair: 'long', hat: 'beanie', legs: 'pants' }, { hat: '#a04830', hatShade: '#702c18', top: '#6a4a30', topShade: '#4a3020', bottoms: '#303038', hair: '#e8c860', hairShade: '#b89838' }),
+  // The clerk at SunBeam in Frenchtown, in a SunBeam tee and a bucket hat.
+  sunbeamClerk: personSprites('sunbeamClerk', { hair: 'long', hat: 'bucket', legs: 'pants' }, { hat: '#8a7a58', hatShade: '#6a5a40', top: '#f8b028', topShade: '#c87c10', bottoms: '#4060b0', hair: '#303038', hairShade: '#18181f' }),
   pilot: personSprites('pilot', 'male', { hat: '#7a4a28', hatShade: '#4a2c18', top: '#8a5a30', topShade: '#5a3818', bottoms: '#4a68a0', hair: '#c8c8c8', hairShade: '#909098' }),
 };
 

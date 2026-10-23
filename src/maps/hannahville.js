@@ -148,11 +148,14 @@ export default {
     // Hannah's front door. Arrive inside just above the doormat, facing up.
     { x: 7, y: 27, to: 'hannahHouse', toX: 7, toY: 7, facing: 'up' },
     // The van's open side door. Arrive inside, in the gap between the cabinets.
-    { x: 37, y: 29, to: 'van', toX: 5, toY: 3, facing: 'up' },
+    // Once the Frenchtown bridge opens (you beat ASA), Wyatt drives off there (maps/frenchtown.js).
+    { x: 37, y: 29, to: 'van', toX: 5, toY: 3, facing: 'up', until: 'asa' },
     // The general store's door. Arrive inside just above the doormat, facing up.
     { x: 24, y: 5, to: 'generalStore', toX: 5, toY: 8, facing: 'up' },
   ],
   signs: [
+    // Where Wyatt's van was, after he's gone to Frenchtown.
+    { x: 37, y: 29, after: 'asa', text: ['Tire tracks run off the beach toward the road.', 'Written in the sand with a stick: GONE TO FRENCHTOWN. FOLLOWING A BIRD. - W'] },
     { x: 20, y: 15, text: ['HANNAHVILLE BOUTIQUE', 'Sun hats, sandals and binocular straps.', 'A note on the door: OUT BIRDWATCHING! Back by sundown.'] },
     { x: 19, y: 17, text: ['HANNAHVILLE BOUTIQUE', 'Open every day the birds are singing.'] },
     { x: 15, y: 9, text: ['HANNAHVILLE BOUTIQUE', 'Down the stairs!'] },
@@ -176,7 +179,8 @@ export default {
     { id: 'chloe', x: 12, y: 27, area: [0, 24, 14, 29], text: ['CHLOE the white cockapoo bounces in a circle.', 'She is a fluffy little cloud with a nose.'] },
     { id: 'libby', x: 7, y: 29, area: [0, 24, 14, 29], text: ['LIBBY the white lab leans against your legs.', 'She would like you to throw something. Anything.'] },
     // Wyatt lives in the van, and hangs out by his campfire. He moves around a lot; this is his first stop.
-    { id: 'wyatt', x: 34, y: 29, area: [32, 28, 35, 29], text: [
+    // His next is Frenchtown, once its bridge opens.
+    { id: 'wyatt', x: 34, y: 29, area: [32, 28, 35, 29], until: 'asa', text: [
       'WYATT: Hey! Pull up a log. Welcome to my place.',
       'Home is wherever I park it. This week, it\'s this beach.',
       'I follow the birds: north for the summer, south for the winter.',
@@ -185,6 +189,6 @@ export default {
   ],
   // The bird tour ship, moored along the east side of the pier: face it and press A to book a voyage.
   // Wyatt's van is parked on the beach at the east end, and the general store is up the hill (storeTiles.js).
-  props: [{ x: 21, y: 31, id: 'tourShip', voyage: 'bay' }, { x: 36, y: 28, id: 'sprinterVan' }, { x: 22, y: 2, id: 'generalStoreFront' }],
+  props: [{ x: 21, y: 31, id: 'tourShip', voyage: 'bay' }, { x: 36, y: 28, id: 'sprinterVan', until: 'asa' }, { x: 22, y: 2, id: 'generalStoreFront' }],
   birds: { count: 7, table: ['robin', 'goldfinch', 'cardinal', 'goldfinch', 'gull', 'gull'] },
 };

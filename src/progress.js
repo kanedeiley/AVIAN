@@ -1,10 +1,11 @@
 // Story progress: who you are (your name and look, from the intro), what you've
-// done (flags), which nemesis birds you've beaten, which collectibles you've
+// done (flags), which nemesis birds and rivals you've beaten, which collectibles you've
 // found, what's in your bag, and how many of each region's birds you've photographed. It lives in
 // game.progress and is saved with save.js (and online, like the journal).
 import { REGIONS } from './data/regions.js';
 import { FLAGS } from './data/flags.js';
 import { NEMESES } from './data/nemeses.js';
+import { RIVALS } from './data/rivals.js';
 import { VOYAGES } from './data/voyages.js';
 import { COLLECTIBLES } from './data/collectibles.js';
 import { ITEMS } from './data/items.js';
@@ -36,14 +37,24 @@ export function beatNemesis(game, id) {
   return Boolean(game.progress.nemeses[id]);
 }
 
-/** False for a map's npc or sign that's only there `after` (or `until`) you've beaten a nemesis. */
-export function shown(game, thing) {
-  return (!thing.after || beatNemesis(game, thing.after)) && (!thing.until || !beatNemesis(game, thing.until));
+/** True once you've beaten a rival's challenge (data/rivals.js). */
+export function beatRival(game, id) {
+  return Boolean(game.progress.rivals[id]);
 }
 
-/** Hints for each requirement of a nemesis you haven't met yet; empty when you're ready. */
-export function nemesisNeeds(game, id) {
-  const { requires, region } = NEMESES[id];
+/** True once `id` is done: a nemesis or rival you've beaten, or a story flag you've reached (data/flags.js). */
+export function done(game, id) {
+  return beatNemesis(game, id) || beatRival(game, id) || Boolean(game.progress.flags[id]);
+}
+
+/** False for a map's npc, sign, prop or warp that's only there `after` (or `until`) something is done (see done()). */
+export function shown(game, thing) {
+  return (!thing.after || done(game, thing.after)) && (!thing.until || !done(game, thing.until));
+}
+
+/** Hints for each requirement of a perched bird (a nemesis or a rival's) you haven't met yet; empty when you're ready. */
+export function perchNeeds(game, perch) {
+  const { requires, region } = perch;
   const needs = (requires.flags ?? []).filter((f) => !game.progress.flags[f]).map((f) => FLAGS[f]);
   const { have } = regionPhotos(game, region);
   if (have < (requires.species ?? 0)) {
@@ -52,15 +63,25 @@ export function nemesisNeeds(game, id) {
   return needs;
 }
 
-/** The nemesis perched on this map that you haven't beaten yet, if any: { id, ...entry }. */
-export function nemesisOn(game, mapId) {
-  const found = Object.entries(NEMESES).find(([id, n]) => n.map === mapId && !beatNemesis(game, id));
-  return found ? { id: found[0], ...found[1] } : null;
+/**
+ * The bird perched on this map that you haven't beaten yet, if any: a nemesis,
+ * or a rival's bird. { id, kind: 'nemesis' or 'rival', ...entry }.
+ */
+export function perchOn(game, mapId) {
+  const nemesis = Object.entries(NEMESES).find(([id, n]) => n.map === mapId && !beatNemesis(game, id));
+  if (nemesis) return { id: nemesis[0], kind: 'nemesis', ...nemesis[1] };
+  const rival = Object.entries(RIVALS).find(([id, r]) => r.map === mapId && !beatRival(game, id));
+  return rival ? { id: rival[0], kind: 'rival', ...rival[1] } : null;
 }
 
-/** False while a `locked` warp is still shut (see maps/village.js). */
+/** True once the perched bird (from perchOn) is beaten. */
+export function perchBeaten(game, perch) {
+  return perch.kind === 'rival' ? beatRival(game, perch.id) : beatNemesis(game, perch.id);
+}
+
+/** False while a `locked` warp (or a map's gate) is still shut: until its `nemesis` or `rival` is beaten (see maps/village.js). */
 export function warpOpen(game, warp) {
-  return !warp.locked || beatNemesis(game, warp.locked.nemesis);
+  return !warp.locked || done(game, warp.locked.nemesis ?? warp.locked.rival);
 }
 
 export function setFlag(game, flag) {
@@ -72,6 +93,12 @@ export function setFlag(game, flag) {
 /** Record a nemesis as beaten, with the stars of your best photo of it. */
 export function recordNemesis(game, id, stars) {
   game.progress.nemeses[id] = Math.max(game.progress.nemeses[id] ?? 0, stars);
+  saveProgress(game.progress);
+}
+
+/** Record a rival's challenge as beaten, with the stars of your best photo. */
+export function recordRival(game, id, stars) {
+  game.progress.rivals[id] = Math.max(game.progress.rivals[id] ?? 0, stars);
   saveProgress(game.progress);
 }
 
@@ -108,6 +135,40 @@ export function buyItem(game, id) {
   game.progress.items[id] = itemCount(game, id) + 1;
   saveMoney(game.money);
   saveProgress(game.progress);
+}
+
+/** True while you're wearing clothes `id` (data/items.js `wear`). */
+export function wearing(game, id) {
+  const look = game.progress.player?.look ?? {};
+  return Object.entries(ITEMS[id].wear).every(([key, value]) => look[key] === value);
+}
+
+/**
+ * Put clothes `id` on, or take them off if you're wearing them. Your own look
+ * (from the LOOK screen) is kept in `player.plain` for each part a piece of
+ * clothing covers, so taking it off puts back what you had on before.
+ * Returns true if they're on now.
+ */
+export function toggleWear(game, id) {
+  const player = game.progress.player ?? { name: 'BIRDER' };
+  const look = { ...player.look };
+  const plain = { ...player.plain };
+  const on = !wearing(game, id);
+  for (const [key, value] of Object.entries(ITEMS[id].wear)) {
+    if (on) {
+      // Only remember it if it's your own, not other clothes you're swapping out.
+      const bought = Object.values(ITEMS).some((item) => item.wear?.[key] === look[key]);
+      if (!bought && key in look) plain[key] = look[key];
+      look[key] = value;
+    } else if (key in plain) {
+      look[key] = plain[key];
+    } else {
+      delete look[key]; // back to the default look
+    }
+  }
+  game.progress.player = { ...player, look, plain };
+  saveProgress(game.progress);
+  return on;
 }
 
 /** Use up one of a supply. */

@@ -1072,6 +1072,8 @@ export function bigProp(id, art, def, overrides = {}, defs = COAST_DEFS) {
 bigProp('tourShip', TOUR_SHIP, { base: 'water', solid: true });
 // The van's open side door (middle of the bottom row) is walkable: the map puts a warp on it.
 bigProp('sprinterVan', SPRINTER_VAN, { base: 'sand', solid: true }, { '1_1': { solid: false } });
+// The same van parked on a towpath (Frenchtown).
+bigProp('sprinterVanTowpath', SPRINTER_VAN, { base: 'towpath', solid: true }, { '1_1': { solid: false } });
 
 for (const [color, swaps] of Object.entries(PLASTERS)) {
   for (const [part, { art, walk, ...rest }] of Object.entries(BUILDING_PARTS)) {

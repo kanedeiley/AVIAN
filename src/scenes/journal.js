@@ -27,6 +27,8 @@ import { playerName } from '../progress.js';
 const TOP = 24;          // title bar height
 const ROW_H = 16;
 const LIST_W = 100;      // the list on the left; details on the right
+const LIST_CHARS = 10;   // letters that fit in the list after the cursor
+const PLACE_LINES = 3;   // lines for where a bird lives
 const ROWS = Math.floor((VIEW_H - TOP - 8) / ROW_H);
 const MUTED = '#9898a8';
 
@@ -48,6 +50,19 @@ function habitats(birdId) {
   const maps = MAP_IDS.map(getMap).filter((m) => m.birds?.table.includes(birdId) || m.birds?.rare?.includes(birdId) || perches.includes(m.id));
   const voyages = Object.values(VOYAGES).filter((v) => v.table.includes(birdId) || v.rare?.includes(birdId));
   return [...maps, ...voyages].map((place) => place.name);
+}
+
+/**
+ * A name short enough for the list (`chars` characters): leading words become
+ * initials (BARN SWALLOW -> B. SWALLOW), and if it's still too long, it's cut.
+ */
+function fitName(name, chars) {
+  const words = name.split(' ');
+  for (let i = 0; name.length > chars && i < words.length - 1; i++) {
+    words[i] = `${words[i][0]}.`;
+    name = words.join(' ');
+  }
+  return name.slice(0, chars);
 }
 
 /** Word-wrap text into lines of at most `chars` characters. */
@@ -77,12 +92,19 @@ const PAGES = [
       drawText(ctx, name, x0 + (w - name.length * 8) / 2, TOP + 56);
       for (let i = 0; i < 3; i++) ctx.drawImage(i < stars ? STAR : NO_STAR, x0 + w / 2 - 14 + i * 10, TOP + 70);
 
-      drawText(ctx, 'LIVES IN:', x0 + 8, TOP + 86, MUTED);
+      drawText(ctx, 'LIVES IN:', x0 + 8, TOP + 84, MUTED);
+      // As many places as fit in 3 lines; if there are more, the last line says how many.
       const places = habitats(id);
-      const lines = (places.length ? places : ['UNKNOWN']).slice(0, 2).flatMap((place) => wrap(place, Math.floor((w - 16) / 8)));
-      lines.slice(0, 3).forEach((line, i) => {
-        drawText(ctx, line, x0 + 8, TOP + 100 + i * 12);
-      });
+      const wrapped = (places.length ? places : ['UNKNOWN']).map((place) => wrap(place, Math.floor((w - 16) / 8)));
+      const linesFor = (n) => wrapped.slice(0, n).flat().length;
+      let n = wrapped.length;
+      if (linesFor(n) > PLACE_LINES) {
+        n = 0;
+        while (linesFor(n + 1) <= PLACE_LINES - 1) n++;
+      }
+      const lines = wrapped.slice(0, n).flat();
+      if (n < wrapped.length) lines.push(`+${wrapped.length - n} MORE`);
+      lines.forEach((line, i) => drawText(ctx, line, x0 + 8, TOP + 96 + i * 11));
     },
   },
   {
@@ -148,7 +170,7 @@ export class JournalScene {
   editLook() {
     const { game } = this;
     this.editor = new LookEditor(game.progress.player?.look, playerName(game), (look) => {
-      game.progress.player = { name: playerName(game), ...game.progress.player, look };
+      game.progress.player = { name: playerName(game), ...game.progress.player, look, plain: {} }; // your own look now: nothing to put back
       saveProgress(game.progress);
       this.editor = null;
     });
@@ -175,7 +197,7 @@ export class JournalScene {
       const y = TOP + 8 + i * ROW_H;
       const have = page.has(game, id);
       if (scroll + i === selected) drawText(ctx, '>', 6, y);
-      drawText(ctx, have ? page.listName(id) : '???', 16, y, have ? undefined : MUTED);
+      drawText(ctx, have ? fitName(page.listName(id), LIST_CHARS) : '???', 16, y, have ? undefined : MUTED);
     });
 
     // Details for the selected entry.

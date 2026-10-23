@@ -9,7 +9,7 @@ import { ITEMS } from '../data/items.js';
 import { ITEM_SPRITES } from '../assets/items.js';
 import { input } from '../input.js';
 import { drawBox, drawText, drawDialog, paginate } from '../gfx/ui.js';
-import { itemCount, cantBuy, buyItem } from '../progress.js';
+import { itemCount, cantBuy, buyItem, wearing } from '../progress.js';
 
 const TOP = 28;      // where the list starts, under the title
 const ROW_H = 20;
@@ -119,6 +119,7 @@ export class BagScene extends ItemMenu {
   note(id) {
     const { world } = this;
     if (ITEMS[id].ride) return world.riding ? ['RIDING'] : [''];
+    if (ITEMS[id].wear) return wearing(this.game, id) ? ['WEARING'] : [''];
     if (world.inUse[id]) return [`${Math.ceil(world.inUse[id])}S x${itemCount(this.game, id)}`];
     return ITEMS[id].kind === 'supply' ? [`x${itemCount(this.game, id)}`] : [''];
   }

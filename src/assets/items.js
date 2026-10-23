@@ -1,7 +1,7 @@
 // Art for the items in data/items.js: a 16x16 icon each for the shop and the
 // bag, and the bike you ride on (drawn over the player, see scenes/overworld.js).
 import { PALETTE } from './palette.js';
-import { makeSprite, mirror } from '../gfx/sprite.js';
+import { makeSprite, mirror, recolor } from '../gfx/sprite.js';
 
 const BLANK = '................';
 
@@ -72,12 +72,86 @@ export const SEED_SACK = [
   BLANK,
 ];
 
+// A paper to-go cup of coffee with a lid, a sleeve and a wisp of steam.
+const COFFEE_CUP = [
+  '......w..w......',
+  '.......w..w.....',
+  '......w..w......',
+  '....kkkkkkkk....',
+  '...kqqqqqqqqk...',
+  '...kkkkkkkkkk...',
+  '....kwwwwwwk....',
+  '....kwwwwwwk....',
+  '....knnnnnnk....',
+  '....knNNNNnk....',
+  '....knnnnnnk....',
+  '.....kwwwwk.....',
+  '.....kwwwwk.....',
+  '.....kkkkkk.....',
+  BLANK,
+  BLANK,
+];
+
+// SunBeam's clothes: a T-shirt ('x' the color, 'z' the hem), recolored for each one,
+const TEE = [
+  BLANK,
+  '....kk....kk....',
+  '..kkxxkkkkxxkk..',
+  '.kxxxxxxxxxxxxk.',
+  'kxxxxxxxxxxxxxxk',
+  'kxxkxxxxxxxxkxxk',
+  '.kk.kxxxxxxk.kk.',
+  '....kxxxxxxk....',
+  '....kxxxxxxk....',
+  '....kxxxxxxk....',
+  '....kzzzzzzk....',
+  '....kkkkkkkk....',
+  BLANK,
+  BLANK,
+  BLANK,
+  BLANK,
+];
+/** Paint `line` over some of the shirt's color: every 3rd row and column (plaid), or every other row (stripes). */
+const pattern = (rows, line, on) => rows.map((r, y) => [...r].map((c, x) => (c === 'x' && on(x, y) ? line : c)).join(''));
+
+// a beret,
+const BERET = [
+  ...Array(4).fill(BLANK),
+  '.......kk.......',
+  '....kkkPPkkk....',
+  '..kkPPPPPPPPkk..',
+  '.kPPpPPPPPPPPPk.',
+  '.kNNNNNNNNNNNNk.',
+  '..kkkkkkkkkkkk..',
+  ...Array(6).fill(BLANK),
+];
+
+// and a bucket hat.
+const BUCKET_HAT = [
+  ...Array(3).fill(BLANK),
+  '.....kkkkkk.....',
+  '...kkYYYYYYkk...',
+  '..kYwYYYYYYYYk..',
+  '..kYYYYYYYYYYk..',
+  '..kDDDDDDDDDDk..',
+  '.kYYYYYYYYYYYYk.',
+  'kYYYYYYYYYYYYYYk',
+  '.kkkkkkkkkkkkkk.',
+  ...Array(5).fill(BLANK),
+];
+
 const sprite = (art, name) => makeSprite(art, PALETTE, name);
 
 export const ITEM_SPRITES = {
   binoculars: sprite(BINOCULARS, 'binoculars icon'),
   bike: sprite([...BIKE_SIDE.slice(3), BLANK, BLANK, BLANK], 'bike icon'),
   birdseed: sprite(SEED_SACK, 'birdseed icon'),
+  coffee: sprite(COFFEE_CUP, 'coffee icon'),
+  beret: sprite(BERET, 'beret icon'),
+  bucketHat: sprite(BUCKET_HAT, 'bucket hat icon'),
+  sunbeamTee: sprite(recolor(TEE, { x: 'a', z: 'A' }), 'sunbeam tee icon'),
+  flannel: sprite(recolor(pattern(TEE, 'k', (x, y) => x % 3 === 0 || y % 3 === 0), { x: 'p', z: 'P' }), 'flannel icon'),
+  breton: sprite(recolor(pattern(TEE, 'u', (x, y) => y % 2 === 0), { x: 'w', z: 'q' }), 'breton icon'),
 };
 
 /** The bike under you while riding, by the way you face. */

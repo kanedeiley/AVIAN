@@ -99,6 +99,41 @@ const DISPLAYS = {
     '..pfwuiGgfpvi...',
     '..pfwuiGgfpvi...',
   ]),
+  // Coffee cups with sleeves (Bridge Cafe).
+  coffee: display([
+    '...kk..kk..kk...',
+    '..kwwkkwwkkwwk..',
+    '..knnkknnkknnk..',
+    '..kkkkkkkkkkkk..',
+  ]),
+  // Strings of red and yellow peppers (Cocina del Sol).
+  peppers: display([
+    '...h...h...h....',
+    '..ppp.fff.ppp...',
+    '..pPp.fef.pPp...',
+    '...p...f...p....',
+  ]),
+  // A pizza on a stand (Napoli Pizza).
+  pizza: display([
+    '..kkkkkkkkkk....',
+    '..kfpfffpffk....',
+    '..kffpffffpk....',
+    '..kkkkkkkkkk....',
+  ]),
+  // Two T-shirts on hangers (SunBeam).
+  clothes: display([
+    '..kkkk....kkkk..',
+    '.kuuuuk..kaaaak.',
+    '..kuuk....kaak..',
+    '..kkkk....kkkk..',
+  ]),
+  // Snacks and drinks (the Citgo).
+  snacks: display([
+    '..kkk.kkk.kkk...',
+    '..kpk.kfk.kuk...',
+    '..kpk.kfk.kuk...',
+    '..kkk.kkk.kkk...',
+  ]),
 };
 
 const SHOP_DOOR = [
@@ -141,8 +176,9 @@ function signboard(name, cols) {
 /**
  * A shop's front `cols` tiles wide (and 4 tall) as the prop `id`, with `name`
  * on the sign and `goods` (DISPLAYS ids) in the windows either side of the door.
+ * A `shut` shop's door is solid (no inside yet): give it sign text.
  */
-export function storefront(id, name, cols, goods = Object.keys(DISPLAYS)) {
+export function storefront(id, name, cols, goods = Object.keys(DISPLAYS), shut = false) {
   const door = Math.floor(cols / 2);
   const each = (fn) => Array.from({ length: cols }, (_, col) => fn(col));
   const side = (tiles) => tiles[0].map((_, y) => tiles.map((t) => t[y]).join('')); // tiles side by side
@@ -155,11 +191,18 @@ export function storefront(id, name, cols, goods = Object.keys(DISPLAYS)) {
     ...side(each((col) => stamp(SIDING, stamp(ground(col), AWNING)))),
   ];
   const overrides = {};
-  for (let col = 0; col < cols; col++) overrides[`${col}_3`] = col === door ? { solid: false, glow: 1 } : { glow: 1.5 };
+  for (let col = 0; col < cols; col++) overrides[`${col}_3`] = col === door ? { solid: shut, glow: 1 } : { glow: 1.5 };
   bigProp(id, art, { solid: true }, overrides, STORE_DEFS);
 }
 
 storefront('generalStoreFront', 'GENERAL STORE', 5, ['optics', 'seed']);
+// Frenchtown's shops. Kathleen's and SunBeam have insides; the rest are shut for now.
+storefront('kathleensFront', "KATHLEEN'S", 5, ['optics', 'seed']);
+storefront('sunbeamFront', 'SUNBEAM', 5, ['clothes']);
+storefront('bridgeCafeFront', 'BRIDGE CAFE', 4, ['coffee'], true);
+storefront('cocinaFront', 'COCINA DEL SOL', 5, ['peppers'], true);
+storefront('napoliFront', 'NAPOLI PIZZA', 4, ['pizza'], true);
+storefront('citgoFront', 'CITGO', 3, ['snacks'], true);
 
 // ---------- inside ----------
 

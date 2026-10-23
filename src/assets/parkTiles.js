@@ -6,8 +6,12 @@
 // Also Tinicum Riverbank, north of the park: the red covered bridge the
 // towpath runs under (its roof is `over` art, drawn over you), the steel truss
 // bridge to Frenchtown with its construction barricade, and the Marshalls' door.
+// And Upper Black Eddy: Homestead Coffee Roasters (its barn door and sign, and
+// inside, the roaster, the bean sacks and the espresso machine) and the Coopers' door.
 import { stamp, flipY } from '../gfx/sprite.js';
 import { FARM_DEFS } from './farmTiles.js';
+import { STORE_DEFS } from './storeTiles.js';
+import { COAST_DEFS } from './coastTiles.js';
 
 // ---------- the ball fields ----------
 
@@ -115,24 +119,24 @@ const POLO_BOARDS = [
 
 // ---------- the playground ----------
 
-// Wood chips.
+// Wood chips: warm brown, with lighter chips scattered evenly, each casting a little shadow.
 const MULCH = [
-  'nnNnonnonnnnnNnn',
-  'oOonOnNnnnnNnoon',
-  'onnnNnnoonNNnooN',
-  'NnOnnNnonNNoNnNo',
-  'ooNOoNnNoONnnNno',
-  'nnnNnnnNnnoNNNnn',
-  'nNOnnnnoonnnnoON',
-  'ooNnNNNNnnnonnnn',
-  'nnnnnnnNonnnnnNO',
-  'oonnnnNnnOononoO',
-  'NNnnnNoNnnNONNNN',
-  'nonnnnnNOnOOOnnn',
-  'nnoONoNNnNONNonN',
-  'nNOnnONnnnONnNON',
-  'nonnOooOnNNnnnno',
-  'nnnOnooOnOooonnn',
+  'OONOOOoOOOOOOOON',
+  'OooOOonOOoOOOooO',
+  'OnnOOnOOonOOOnnO',
+  'OOOOOOONnOOOOOOO',
+  'ooONOOOOOONOooON',
+  'nnOOoOOOoooOnnOO',
+  'OOOOnoOOnnnOOOOO',
+  'OONOOnOOOOOOOONO',
+  'OOOOooNOOoNOOOoO',
+  'OooOnnOOonOOOonO',
+  'OnnOOOOOnOOOOnOO',
+  'OOOOOONOOONOOOON',
+  'OOONooOOOoOOOOOO',
+  'ooOOnnOOonOOOOoO',
+  'nnOOOOOOnOOOOonO',
+  'OOOOOONOOONOOnOO',
 ];
 
 // One bay of the swing set: a blue frame with a red seat on two chains.
@@ -376,6 +380,78 @@ const BARRICADE = [
   ...EMPTY.slice(0, 3),
 ];
 
+// ---------- Upper Black Eddy: Homestead Coffee Roasters ----------
+
+// A wooden sign with a coffee cup, hung on the barn.
+const CUP_SIGN = [
+  '................',
+  '..kkkkkkkkkkkk..',
+  '..knnnnnnnnnnk..',
+  '..knnwwwwwnnnk..',
+  '..knnwNNNwnwnk..',
+  '..knnwwwwwwnnk..',
+  '..knnnwwwnnnnk..',
+  '..knnnnnnnnnnk..',
+  '..kkkkkkkkkkkk..',
+  ...EMPTY.slice(0, 7),
+];
+
+// A glass shop door set into the barn wall.
+const GLASS_DOOR = [
+  '................',
+  '................',
+  '...kkkkkkkkkk...',
+  '...kNNNNNNNNk...',
+  '...kNccccccNk...',
+  '...kNcwccccNk...',
+  '...kNcwccccNk...',
+  '...kNccccccNk...',
+  '...kNccccccNk...',
+  '...kNNNNNNNNk...',
+  '...kNnnnnnfNk...',
+  '...kNnnnnnnNk...',
+  '...kNnnnnnnNk...',
+  '...kNNNNNNNNk...',
+  '...kkkkkkkkkk...',
+  '................',
+];
+
+// The roaster: a copper drum on legs, with the bean hopper on top.
+const ROASTER = [
+  '................',
+  '......kkkk......',
+  '.....kqqqqk.....',
+  '......kqqk......',
+  '..kkkkkkkkkkkk..',
+  '.keeeeeeeeeeeek.',
+  'keEeeeeeeeeeeEek',
+  'keEeeffeeeeeeEek',
+  'keEeeffeeeeeeEek',
+  'keEeeeeeeeeeeEek',
+  '.keEEEEEEEEEEek.',
+  '..kkkkkkkkkkkk..',
+  '...kQk....kQk...',
+  '...kQk....kQk...',
+  '..kkkk....kkkk..',
+  '................',
+];
+
+// Shelves of burlap bean sacks.
+const SACKS = ['NkjjkNkjjkNkjjkN', 'NjJjjNjjJjNjJjjN', 'NjjjjNjjjjNjjjjN', 'NJJJJNJJJJNJJJJN', 'NNNNNNNNNNNNNNNN', 'nnnnnnnnnnnnnnnn', 'NNNNNNNNNNNNNNNN'];
+const BEAN_SHELF = ['kkkkkkkkkkkkkkkk', 'NnnnnnnnnnnnnnnN', ...SACKS, ...SACKS.slice(0, 7)];
+
+// An espresso machine, with two little cups, on the counter.
+const ESPRESSO = [
+  '...kkkkkkkkk....',
+  '...kqqqqqqqk....',
+  '...kqkkqkkqk....',
+  '...kqqqqqqqk....',
+  '...kQkQQQkQk....',
+  '...kQwQQQwQk....',
+  '...kkkkkkkkk....',
+  ...EMPTY.slice(0, 9),
+];
+
 // The covered bridge's roof over whatever runs under it: the towpath (walk under it), the canal or the woods.
 const UNDER = { Towpath: ['towpath', false], Water: ['water', true], Woods: ['tree', true] };
 const COVERED = { North: COVERED_NORTH, Ridge: COVERED_RIDGE, South: COVERED_SOUTH };
@@ -394,6 +470,13 @@ export const PARK_DEFS = {
   trussSouth: { art: flipY(TRUSS), base: 'tarmac', solid: true },
   barricade:  { art: BARRICADE, base: 'tarmac', solid: true },
   marshallDoor: { art: FARM_DEFS.leisterDoor.art, solid: true },  // no inside yet: give it sign text
+  roasterSign: { art: stamp(FARM_DEFS.barnWall.art, CUP_SIGN), solid: true },
+  roasterDoor: { art: stamp(FARM_DEFS.barnWall.art, GLASS_DOOR) },  // walkable: the map puts a warp on it
+  cooperDoor:  { art: FARM_DEFS.grandparentsDoor.art, solid: true },  // no inside: give it sign text
+  coffeeRoaster: { art: ROASTER, base: 'floor', solid: true },
+  coffeeBags:    { art: BEAN_SHELF, solid: true },
+  counterEspresso: { art: stamp(STORE_DEFS.counter.art, ESPRESSO), base: 'floor', solid: true, counter: true },
+  cafeTableIndoor: { ...COAST_DEFS.cafeTable, base: 'floor' },
   clay:       { art: CLAY, perch: true },
   base:       { art: stamp(CLAY, BASE), perch: true },
   homePlate:  { art: stamp(CLAY, HOME_PLATE), perch: true },

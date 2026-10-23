@@ -3,14 +3,17 @@
 // At the west edge the street goes over the canal on the red covered bridge,
 // and the towpath runs right under it (its roof is `over` art: assets/parkTiles.js).
 // East, the street runs out to the steel truss bridge over the Delaware to
-// Frenchtown, closed for construction for now. A spur of towpath climbs from
+// Frenchtown. Work on it has stopped while ospreys nest on the truss, until you
+// beat ASA's challenge in Upper Black Eddy (its barricades are `gates`). A spur of towpath climbs from
 // the towpath up through the woodsline to the street. South of the street,
 // past the woods, a gravel lane runs down to two houses: a fieldstone one, and
-// BLAIR and DIANE MARSHALL's white one with its garden. North, the towpath is closed.
+// BLAIR and DIANE MARSHALL's white one with its garden. North, the towpath goes on
+// to Upper Black Eddy (maps/blackEddy.js).
 // The rows were painted with a script.
 export default {
   name: 'TINICUM RIVERBANK',
   region: 'rivershore',
+  banks: true, // muddy river banks where the water meets land (assets/banks.js)
   legend: {
     // the canal and towpath
     't': 'towpath',
@@ -58,13 +61,13 @@ export default {
     'm': 'marshallDoor',
   },
   rows: [
-    'TT~~~STTTTTTTTTTTTTTTTTTTTTTTTTTTTTT~~~~~~~~~~~~~~~~~~~~~',
+    'TT~~~ttTTTTTTTTTTTTTTTTTTTTTTTTTTTTT~~~~~~~~~~~~~~~~~~~~~',
     'TT~~~tt..T,T,TT,..T.......*..T....cc~~~~~~~~~~~~~~~~~~~~~',
     'TT~~~tt..TTT,,TT....*..T........T.TT~~~~~~~~~~~~~~~~~~~~~',
     'TT~~~tt..TTTTTTTS..........*.....STT~~~~~~~~~~~~~~~~~~~~~',
-    '1122233<##########################x#vvvvvvvvvvvvvvvvvvvvv',
-    '4455566[--------------------------x-=====================',
-    '7788899>##########################x#wwwwwwwwwwwwwwwwwwwww',
+    '1122233<############################vvvvvvvvvvvvvvvvvvvvv',
+    '4455566[----------------------------=====================',
+    '7788899>############################wwwwwwwwwwwwwwwwwwwww',
     'TT~~~tt.,TttTTTT........MgM.......TT~~~~~~~~~~~~~~~~~~~~~',
     'TT~~~tt..Ttt,T,T.........g.........c~~~~~~~~~~~~~~~~~~~~~',
     'TT~~~tttttttTTTT.T.......g....T...Tc~~~~~~~~~~~~~~~~~~~~~',
@@ -93,13 +96,25 @@ export default {
     // The towpath south, back down to Tinicum Park.
     { x: 5, y: 29, to: 'tinicum', toX: 5, toY: 1, facing: 'down' },
     { x: 6, y: 29, to: 'tinicum', toX: 6, toY: 1, facing: 'down' },
+    // The far end of the bridge: Frenchtown, N.J. Barricaded too (and off the world map) until you beat ASA.
+    {
+      x: 56, y: 5, to: 'frenchtown', toX: 1, toY: 23, facing: 'right',
+      locked: { rival: 'asa', tile: 'barricade', text: ['WORK STOPPED. OSPREYS NESTING ON THE TRUSS.'] },
+    },
+    // The towpath north, up to Upper Black Eddy.
+    { x: 5, y: 0, to: 'blackEddy', toX: 5, toY: 30, facing: 'up' },
+    { x: 6, y: 0, to: 'blackEddy', toX: 6, toY: 30, facing: 'up' },
   ],
+  // Barricades across the Frenchtown bridge, until you beat ASA's challenge (data/rivals.js).
+  gates: [4, 5, 6].map((y) => ({
+    x: 34, y,
+    locked: { rival: 'asa', tile: 'barricade', text: ['A striped barricade blocks the bridge.', 'A sign on it: WORK STOPPED. OSPREYS NESTING ON THE TRUSS.'] },
+  })),
   signs: [
-    { x: 5, y: 0, text: ['TOWPATH CLOSED', 'A washout up ahead. The towpath north is closed until further notice.'] },
     ...[4, 5, 6].map((y) => ({ x: 7, y, text: ['THE RED COVERED BRIDGE', 'It carries BRIDGE STREET over the canal. The towpath runs right underneath.', 'A rope is strung across the doorway: WET PAINT.'] })),
     { x: 16, y: 3, text: ['BRIDGE STREET', 'East: the bridge to FRENCHTOWN. West: the red covered bridge.'] },
-    { x: 33, y: 3, text: ['UHLERSTOWN-FRENCHTOWN BRIDGE', 'CLOSED FOR CONSTRUCTION.', 'Across the river: FRENCHTOWN, N.J.'] },
-    ...[4, 5, 6].map((y) => ({ x: 34, y, text: ['A striped barricade blocks the bridge.', 'Past it, the steel deck runs out over the DELAWARE, but nobody\'s working on it today.'] })),
+    { x: 33, y: 3, until: 'asa', text: ['UHLERSTOWN-FRENCHTOWN BRIDGE', 'WORK STOPPED: OSPREYS NESTING ON THE TRUSS.', 'Questions? Ask the nest monitor, A. COOPER, up the towpath in UPPER BLACK EDDY.'] },
+    { x: 33, y: 3, after: 'asa', text: ['UHLERSTOWN-FRENCHTOWN BRIDGE', 'OPEN! The osprey chicks have fledged. Thanks for your patience!', 'Across the river: FRENCHTOWN, N.J.'] },
     { x: 7, y: 11, text: ['CANAL TOWPATH', 'East: up to BRIDGE STREET. South: TINICUM PARK.'] },
     { x: 24, y: 7, text: ['The mailbox says MARSHALL.'] },
     { x: 26, y: 7, text: ['A rusty mailbox. The name painted on it wore off long ago.'] },

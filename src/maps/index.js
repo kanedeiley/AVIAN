@@ -16,18 +16,23 @@ import generalStore from './generalStore.js';
 import erwinna from './erwinna.js';
 import tinicum from './tinicum.js';
 import riverbank from './riverbank.js';
+import blackEddy from './blackEddy.js';
+import coffeeShop from './coffeeShop.js';
+import frenchtown from './frenchtown.js';
+import sunbeamShop from './sunbeamShop.js';
 import { TILES, LEGEND } from '../assets/tiles.js';
 import { PROPS } from '../assets/coastTiles.js'; // storefronts too (storeTiles.js)
 import { VOYAGES } from '../data/voyages.js';
 import { REGIONS } from '../data/regions.js';
 import { NEMESES } from '../data/nemeses.js';
+import { RIVALS } from '../data/rivals.js';
 import { FLAGS } from '../data/flags.js';
 import { BIRDS } from '../data/birds.js';
 import { COLLECTIBLES } from '../data/collectibles.js';
 import { ITEMS } from '../data/items.js';
 import { COLLECTIBLE_SPRITES, TELLS } from '../assets/collectibles.js';
 
-const MAPS = { village, house, shrine, hannahville, hannahHouse, cave, mountain, van, farm, leisterHouse, grandparentsHouse, pasture, airport, generalStore, erwinna, tinicum, riverbank };
+const MAPS = { village, house, shrine, hannahville, hannahHouse, cave, mountain, van, farm, leisterHouse, grandparentsHouse, pasture, airport, generalStore, erwinna, tinicum, riverbank, blackEddy, coffeeShop, frenchtown, sunbeamShop };
 export const MAP_IDS = Object.keys(MAPS);
 const cache = {};
 
@@ -48,11 +53,21 @@ export function doorTo(id) {
   return null;
 }
 
-/** An npc or sign that's only there `after` (or `until`) you beat a nemesis has to name a real one. */
+/** An npc, sign, prop or warp that's only there `after` (or `until`) something is done has to name a real nemesis, rival or flag. */
 function checkShown(thing, at) {
   for (const key of ['after', 'until']) {
-    if (thing[key] && !NEMESES[thing[key]]) throw new Error(`${at} is there ${key} unknown nemesis "${thing[key]}" (see data/nemeses.js)`);
+    if (thing[key] && !NEMESES[thing[key]] && !RIVALS[thing[key]] && !FLAGS[thing[key]]) {
+      throw new Error(`${at} is there ${key} unknown nemesis, rival or flag "${thing[key]}" (see data/nemeses.js, rivals.js, flags.js)`);
+    }
   }
+}
+
+/** A `locked` warp or gate opens when its `nemesis` (or `rival`) is beaten: it has to name a real one. */
+function checkLock(locked, at) {
+  if (locked.nemesis ? !NEMESES[locked.nemesis] : !RIVALS[locked.rival]) {
+    throw new Error(`${at} is locked by unknown ${locked.nemesis ? `nemesis "${locked.nemesis}"` : `rival "${locked.rival}"`} (see data/nemeses.js, data/rivals.js)`);
+  }
+  if (!TILES[locked.tile]) throw new Error(`${at} is locked with unknown tile "${locked.tile}"`);
 }
 
 /** Load a map by id, turning its character rows into a grid of tile ids. */
@@ -84,8 +99,11 @@ export function getMap(id) {
     if (!inside(p.x, p.y) || !inside(p.x + w - 1, p.y + h - 1)) throw new Error(`${at} (${w}x${h}) doesn't fit on the map`);
     if (p.voyage && !VOYAGES[p.voyage]) throw new Error(`${at} books unknown voyage "${p.voyage}"`);
     if (p.voyage && !REGIONS[VOYAGES[p.voyage].region]) throw new Error(`${at}: voyage "${p.voyage}" has unknown region "${VOYAGES[p.voyage].region}"`);
+    checkShown(p, at);
+    // A prop that's only there some of the time remembers what's under it (see Overworld.tileAt).
+    const under = p.after || p.until ? parts.map((row, dy) => row.map((_, dx) => grid[p.y + dy][p.x + dx])) : null;
     parts.forEach((row, dy) => row.forEach((tileId, dx) => (grid[p.y + dy][p.x + dx] = tileId)));
-    return { ...p, w, h };
+    return { ...p, w, h, under };
   });
 
   for (const w of raw.warps ?? []) {
@@ -101,8 +119,15 @@ export function getMap(id) {
       const row = dest.rows[w.toY];
       if (!row || w.toX < 0 || w.toX >= row.length) throw new Error(`${at} lands outside map "${w.to}" at ${w.toX},${w.toY}`);
     }
-    if (w.locked && !NEMESES[w.locked.nemesis]) throw new Error(`${at} is locked by unknown nemesis "${w.locked.nemesis}" (see data/nemeses.js)`);
-    if (w.locked && !TILES[w.locked.tile]) throw new Error(`${at} is locked with unknown tile "${w.locked.tile}"`);
+    if (w.locked) checkLock(w.locked, at);
+    checkShown(w, at);
+  }
+
+  // Gates: like a locked warp that goes nowhere. A barricade (or whatever `locked.tile` is) until its nemesis or rival is beaten.
+  for (const g of raw.gates ?? []) {
+    const at = `Map "${id}": gate at ${g.x},${g.y}`;
+    if (!inside(g.x, g.y)) throw new Error(`${at} is outside the map`);
+    checkLock(g.locked, at);
   }
 
   for (const s of raw.signs ?? []) {
@@ -118,9 +143,10 @@ export function getMap(id) {
     checkShown(n, at);
   }
 
-  for (const [nid, n] of Object.entries(NEMESES)) {
+  const perches = [...Object.entries(NEMESES).map(([k, n]) => [`nemesis "${k}"`, n]), ...Object.entries(RIVALS).map(([k, r]) => [`rival "${k}"`, r])];
+  for (const [who, n] of perches) {
     if (n.map !== id) continue;
-    const at = `Map "${id}": nemesis "${nid}" at ${n.x},${n.y}`;
+    const at = `Map "${id}": ${who} at ${n.x},${n.y}`;
     if (!inside(n.x, n.y)) throw new Error(`${at} is outside the map`);
     if (TILES[grid[n.y][n.x]].solid) throw new Error(`${at} perches on a solid tile`);
     if (!BIRDS[n.bird]) throw new Error(`${at} is unknown bird "${n.bird}" (see data/birds.js)`);
@@ -139,6 +165,7 @@ export function getMap(id) {
   return (cache[id] = {
     id, ...raw, grid, width, height: grid.length,
     warps: raw.warps ?? [],
+    gates: raw.gates ?? [],
     signs: raw.signs ?? [],
     npcs: raw.npcs ?? [],
     props,

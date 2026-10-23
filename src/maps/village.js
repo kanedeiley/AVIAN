@@ -4,8 +4,9 @@
 //   rows        one string per row, one character per tile (see LEGEND in tiles.js)
 //   legend      optional extra/overridden characters for this map only
 //   warps       tiles that move you somewhere else when you step on them; a `locked` warp
-//               ({ nemesis, tile, text }) is covered by `tile` (solid, `text` when you face it)
-//               and left off the world map until you've beaten that nemesis bird
+//               ({ nemesis or rival, tile, text }) is covered by `tile` (solid, `text` when you
+//               face it) and left off the world map until you've beaten that nemesis or rival
+//   gates       like locked warps that go nowhere: { x, y, locked } (a barricade until then)
 //   signs       text shown when you face a tile and press A
 //   birds       how many birds are out on the map at once, and which species (`table`), plus
 //               optional `rare` ones picked `rareChance` of the time (doubled at dawn and dusk)
@@ -13,7 +14,11 @@
 //               (species' `times` and `weather` in data/birds.js decide who's out right now)
 //   dark        true for caves: only your lantern and tiles with `glow` light the map
 //   npcs        characters who wander a box of tiles and talk when you press A (see scenes/npcs.js)
+//   props       big multi-tile objects stamped over the rows (maps/index.js)
+//   banks       true to draw muddy banks where water meets land (assets/banks.js)
 //
+// Any npc, sign, prop or warp can have `after: <id>` or `until: <id>` to only be there
+// once (or until) that id is done: a nemesis or rival you've beaten, or a story flag.
 // Coordinates are (x, y) in tiles, counted from the top-left, starting at 0.
 
 export default {

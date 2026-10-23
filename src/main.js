@@ -91,7 +91,7 @@ async function mergeOnlineSave() {
       game.journal[id] = Math.max(game.journal[id] ?? 0, stars);
     }
     game.money = online.money;
-    const { flags = {}, nemeses = {}, collectibles = {}, items = {}, player } = online.progress ?? {};
+    const { flags = {}, nemeses = {}, rivals = {}, collectibles = {}, items = {}, player } = online.progress ?? {};
     if (player) game.progress.player = player;
     for (const [id, n] of Object.entries(items)) {
       game.progress.items[id] = Math.max(game.progress.items[id] ?? 0, n);
@@ -100,6 +100,9 @@ async function mergeOnlineSave() {
     Object.assign(game.progress.collectibles, collectibles);
     for (const [id, stars] of Object.entries(nemeses)) {
       game.progress.nemeses[id] = Math.max(game.progress.nemeses[id] ?? 0, stars);
+    }
+    for (const [id, stars] of Object.entries(rivals)) {
+      game.progress.rivals[id] = Math.max(game.progress.rivals[id] ?? 0, stars);
     }
     if (online.location && !(game.location?.at >= online.location.at)) game.location = online.location;
   }

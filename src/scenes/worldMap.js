@@ -9,7 +9,7 @@ import { MAP_IDS, getMap, doorTo } from '../maps/index.js';
 import { TILES } from '../assets/tiles.js';
 import { input } from '../input.js';
 import { drawBox, drawText } from '../gfx/ui.js';
-import { warpOpen } from '../progress.js';
+import { warpOpen, shown } from '../progress.js';
 
 const CELL = 4;        // screen px per map tile; each tile is shown as 2x2 colors
 const PAN_SPEED = 120; // px/s
@@ -62,9 +62,15 @@ function colorsOf(id) {
   return (tileColors[id] = quarters);
 }
 
-/** Which locked warps are open, as a string to tell when the world needs drawing again. */
+/** A map's locked warps and gates. */
+const locksOf = (map) => [...map.warps.filter((w) => w.locked), ...map.gates];
+
+/** Which locked warps and gates are open (and props are gone), as a string to tell when the world needs drawing again. */
 function openLocks(game) {
-  return MAP_IDS.flatMap((id) => getMap(id).warps.filter((w) => w.locked && warpOpen(game, w)).map((w) => `${id}:${w.x},${w.y}`)).join(' ');
+  return MAP_IDS.flatMap((id) => [
+    ...locksOf(getMap(id)).filter((w) => warpOpen(game, w)).map((w) => `${id}:${w.x},${w.y}`),
+    ...getMap(id).props.filter((o) => !shown(game, o)).map((o) => `${id}:${o.id}`),
+  ]).join(' ');
 }
 
 /** Draw the whole world once into a canvas, CELL px per tile (a shut locked warp as its `tile`). */
@@ -83,11 +89,14 @@ function renderWorld(layout, game) {
     const map = getMap(id);
     const ox = layout[id].x - minX;
     const oy = layout[id].y - minY;
-    const locks = map.warps.filter((w) => w.locked && !warpOpen(game, w));
+    const locks = locksOf(map).filter((w) => !warpOpen(game, w));
+    const gone = map.props.filter((o) => !shown(game, o));
     for (let y = 0; y < map.height; y++) {
       for (let x = 0; x < map.width; x++) {
         const lock = locks.find((w) => w.x === x && w.y === y);
-        colorsOf(lock ? lock.locked.tile : map.grid[y][x]).forEach((color, q) => {
+        const prop = gone.find((o) => x >= o.x && x < o.x + o.w && y >= o.y && y < o.y + o.h);
+        const id = lock ? lock.locked.tile : prop ? prop.under[y - prop.y][x - prop.x] : map.grid[y][x];
+        colorsOf(id).forEach((color, q) => {
           ctx.fillStyle = color;
           ctx.fillRect((ox + x) * CELL + (q % 2) * half, (oy + y) * CELL + (q >> 1) * half, half, half);
         });
