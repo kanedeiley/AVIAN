@@ -4,8 +4,9 @@
 //   rows        one string per row, one character per tile (see LEGEND in tiles.js)
 //   legend      optional extra/overridden characters for this map only
 //   warps       tiles that move you somewhere else when you step on them; a `locked` warp
-//               ({ nemesis or rival, tile, text }) is covered by `tile` (solid, `text` when you
-//               face it) and left off the world map until you've beaten that nemesis or rival
+//               ({ nemesis, rival or flag, tile, text }) is covered by `tile` (solid, `text` when
+//               you face it) and left off the world map until that nemesis or rival is beaten,
+//               or that story flag is set
 //   gates       like locked warps that go nowhere: { x, y, locked } (a barricade until then)
 //   signs       text shown when you face a tile and press A
 //   birds       how many birds are out on the map at once, and which species (`table`), plus

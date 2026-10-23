@@ -15,6 +15,8 @@
 //   locked    what you see while you don't meet the requirements yet
 //   challenge what it does when you're ready (followed by a yes/no)
 //   won, lost what you're told after the fight
+//   wonTalk   optional: a DIALOGUE (data/dialogue.js) that follows `won`, like a phone call
+//   scene     optional: 'river' for the river backdrop in the fight (default: the summit)
 export const NEMESES = {
   baldEagle: {
     bird: 'baldEagle',
@@ -71,6 +73,38 @@ export const NEMESES = {
     lost: [
       'The GREAT BLUE HERON lifted off with a deep croak... and landed right back on the towpath.',
       'It isn\'t going anywhere. Try again!',
+    ],
+  },
+  // The RIVERSHORE's: on the platform at Milford Station, down from the Arctic, holding up the trains north.
+  // Nobody mentions it before you get to Milford: the station agent tells you about it.
+  gyrfalcon: {
+    bird: 'gyrfalcon',
+    map: 'milford', x: 12, y: 17,
+    region: 'rivershore',
+    requires: { flags: ['metMilfordAgent'], species: 12 },
+    scene: 'river',
+    film: 8,
+    patience: 50,
+    hits: 5,
+    hitStars: 2,
+    rage: 1.1,
+    locked: [
+      'A huge white falcon sits at the end of the platform, still as a statue.',
+      'It turns its head and fixes you with one dark eye. You freeze.',
+    ],
+    challenge: [
+      'Your NEMESIS BIRD, the GYRFALCON, stares you down from the platform...',
+      'Land 5 sharp photos (2 stars or better) before it loses patience. It gets faster with every one!',
+    ],
+    won: [
+      'You photographed the GYRFALCON, the NEMESIS BIRD of the RIVERSHORE!',
+      'It spreads its pale wings and sweeps away north, up the tracks.',
+      'Down the line, a train whistle blows. Then your phone buzzes...',
+    ],
+    wonTalk: 'hannahCall',
+    lost: [
+      'The GYRFALCON lifted off, circled the station... and landed right back on the platform.',
+      'It isn\'t done with you. Try again!',
     ],
   },
 };

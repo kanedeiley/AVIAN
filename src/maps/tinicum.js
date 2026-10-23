@@ -122,7 +122,8 @@ export default {
   ],
   npcs: [
     // Hannah came up here to play ball after you beat the heron (she was painting in maps/erwinna.js).
-    { id: 'hannah', x: 37, y: 26, area: [35, 24, 41, 28], talk: 'hannahTinicum', sets: 'metHannahTinicum' },
+    // Once you've beaten the GYRFALCON in Milford she's gone north by train, to VERMONT (data/dialogue.js hannahCall).
+    { id: 'hannah', x: 37, y: 26, area: [35, 24, 41, 28], talk: 'hannahTinicum', sets: 'metHannahTinicum', until: 'gyrfalcon' },
     { id: 'ballplayer', x: 38, y: 23, area: [33, 22, 43, 23], text: [
       'BALLPLAYER: Your friend HANNAH throws harder than anybody out here.',
       'Then a bird flies over, and she stops the whole game to look at it.',

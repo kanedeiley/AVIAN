@@ -1,6 +1,7 @@
 // Upper Black Eddy, up the towpath north of Tinicum Riverbank. The canal and
 // towpath run up the west side; the road to Milford crosses the top of the map
-// to the Milford bridge over the Delaware (closed for now). South of the road:
+// to the Milford bridge over the Delaware (barricaded until WYATT has gone north,
+// flag wyattWentNorth; then it's open to Milford, maps/milford.js). South of the road:
 // HOMESTEAD COFFEE ROASTERS, a red barn by the towpath where you can buy
 // COFFEE (maps/coffeeShop.js), and the COOPERS' yellow house, with its flowery
 // backyard running down to a dock on the river. That's where ASA, your rival,
@@ -60,9 +61,9 @@ export default {
     'TT~~~STTTTTTTTTTTTTTTTTTTTTTTTTTTTTT~~~~~~~~~~~~~~~~~~~~~',
     'TT~~~tt...T.............T..*......T.~~~~~~~~~~~~~~~~~~~~~',
     'TT~~~tt.S....*...T............T..STT~~~~~~~~~~~~~~~~~~~~~',
-    'TT~~~tt############################xvvvvvvvvvvvvvvvvvvvvv',
-    'TT~~~tt----------------------------x=====================',
-    'TT~~~tt############################xwwwwwwwwwwwwwwwwwwwww',
+    'TT~~~tt#############################vvvvvvvvvvvvvvvvvvvvv',
+    'TT~~~tt-----------------------------=====================',
+    'TT~~~tt#############################wwwwwwwwwwwwwwwwwwwww',
     'TT~~~tt.........:..g..............TT~~~~~~~~~~~~~~~~~~~~~',
     'TT~~~tt.........:..g*........**.**cT~~~~~~~~~~~~~~~~~~~~~',
     'TT~~~tt..qqqqqqq:..g.AACAAAA.6*..1.T~~~~~~~~~~~~~~~~~~~~~',
@@ -96,12 +97,22 @@ export default {
     { x: 6, y: 31, to: 'riverbank', toX: 6, toY: 1, facing: 'down' },
     // Homestead Coffee Roasters. Arrive inside just above the doormat, facing up.
     { x: 12, y: 12, to: 'coffeeShop', toX: 5, toY: 6, facing: 'up' },
+    // The far end of the Milford bridge: Milford, N.J. Barricaded (and off the world map) until Wyatt has gone north.
+    {
+      x: 56, y: 4, to: 'milford', toX: 1, toY: 14, facing: 'right',
+      locked: { flag: 'wyattWentNorth', tile: 'barricade', text: ['A barricade at the far end: INSPECTION. NO CROSSING.'] },
+    },
   ],
+  // Barricades across the Milford bridge, until Wyatt has gone north.
+  gates: [3, 4, 5].map((y) => ({
+    x: 35, y,
+    locked: { flag: 'wyattWentNorth', tile: 'barricade', text: ['A barricade blocks the MILFORD BRIDGE.', 'A clipboard zip-tied to it says: INSPECTION. NO CROSSING.'] },
+  })),
   signs: [
     { x: 5, y: 0, text: ['TOWPATH CLOSED', 'The towpath north is closed for repairs.'] },
     { x: 8, y: 2, text: ['UPPER BLACK EDDY', 'East: the bridge to MILFORD, N.J. South: the towpath to TINICUM.'] },
-    { x: 33, y: 2, text: ['MILFORD BRIDGE', 'CLOSED. Bridge inspection in progress.'] },
-    ...[3, 4, 5].map((y) => ({ x: 35, y, text: ['A barricade blocks the MILFORD BRIDGE.', 'A clipboard zip-tied to it says: INSPECTION. NO CROSSING.'] })),
+    { x: 33, y: 2, until: 'wyattWentNorth', text: ['MILFORD BRIDGE', 'CLOSED. Bridge inspection in progress.'] },
+    { x: 33, y: 2, after: 'wyattWentNorth', text: ['MILFORD BRIDGE', 'OPEN. Inspection passed!', 'Across the river: MILFORD, N.J.'] },
     { x: 12, y: 11, text: ['HOMESTEAD COFFEE ROASTERS', 'Roasted in the barn, poured on the porch.'] },
     { x: 24, y: 12, text: ['THE COOPERS', 'A hand-lettered card in the window: OSPREY NEST MONITOR. DO NOT KNOCK BEFORE 9.'] },
     { x: 31, y: 11, text: ['A stone birdbath. A goldfinch flicks water everywhere and doesn\'t care who sees.'] },

@@ -127,6 +127,27 @@ const DISPLAYS = {
     '..kuuk....kaak..',
     '..kkkk....kkkk..',
   ]),
+  // A striped barber pole, combs and scissors (the barber shop).
+  barber: display([
+    '..kk...k.k..k...',
+    '..pw...kkk..k...',
+    '..wp....k...k...',
+    '..pw...k.k..k...',
+  ]),
+  // Mugs of beer with foam on top (Descendents Brew).
+  mugs: display([
+    '..ww..ww..ww....',
+    '..ffk.ffk.ffk...',
+    '..ffk.ffk.ffk...',
+    '..kk..kk..kk....',
+  ]),
+  // Train timetables (Milford Station).
+  timetable: display([
+    '..kkkkk.kkkkk...',
+    '..kwkwk.kwkwk...',
+    '..kwwwk.kwwwk...',
+    '..kkkkk.kkkkk...',
+  ]),
   // Snacks and drinks (the Citgo).
   snacks: display([
     '..kkk.kkk.kkk...',
@@ -203,6 +224,10 @@ storefront('bridgeCafeFront', 'BRIDGE CAFE', 4, ['coffee'], true);
 storefront('cocinaFront', 'COCINA DEL SOL', 5, ['peppers'], true);
 storefront('napoliFront', 'NAPOLI PIZZA', 4, ['pizza'], true);
 storefront('citgoFront', 'CITGO', 3, ['snacks'], true);
+// Milford's. All shut for now: the station's door opens when the trains run again.
+storefront('barberFront', 'BARBER SHOP', 5, ['barber'], true);
+storefront('descendentsFront', 'DESCENDENTS BREW', 6, ['mugs'], true);
+storefront('milfordStationFront', 'MILFORD STATION', 5, ['timetable'], true);
 
 // ---------- inside ----------
 

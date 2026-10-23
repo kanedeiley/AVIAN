@@ -79,9 +79,9 @@ export function perchBeaten(game, perch) {
   return perch.kind === 'rival' ? beatRival(game, perch.id) : beatNemesis(game, perch.id);
 }
 
-/** False while a `locked` warp (or a map's gate) is still shut: until its `nemesis` or `rival` is beaten (see maps/village.js). */
+/** False while a `locked` warp (or a map's gate) is still shut: until its `nemesis` or `rival` is beaten, or its `flag` is set (see maps/village.js). */
 export function warpOpen(game, warp) {
-  return !warp.locked || done(game, warp.locked.nemesis ?? warp.locked.rival);
+  return !warp.locked || done(game, warp.locked.nemesis ?? warp.locked.rival ?? warp.locked.flag);
 }
 
 export function setFlag(game, flag) {

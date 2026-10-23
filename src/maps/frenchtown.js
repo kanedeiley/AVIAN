@@ -3,14 +3,14 @@
 // the river on the west side run a canal and its path; WYATT has parked his
 // van across the path north (he moved here from Hannahville) and won't budge
 // until you show him a photo of a PEREGRINE FALCON. The main road runs east
-// from the bridge past the Frenchtown Inn to two roads north (both closed:
-// one to Milford), with houses between them, and on to the Citgo and the
+// from the bridge past the Frenchtown Inn to two roads north to Milford (both
+// open once Wyatt has gone north, like the canal path), with houses between them, and on to the Citgo and the
 // bridge over Nishisakawick Creek; across it are Frenchtown Park (a playground,
 // benches and a fountain among flower beds), Napoli Pizza
 // and KATHLEEN'S general store (the general store inside: maps/generalStore.js).
 // South of the main road: Bridge Cafe, Cocina del Sol, and SUNBEAM, where you
-// can buy hats and shirts (maps/sunbeamShop.js), around a loop road. Every road
-// out of town is closed for now. Shop fronts are storefront() props
+// can buy hats and shirts (maps/sunbeamShop.js), around a loop road. Every other
+// road out of town is closed for now. Shop fronts are storefront() props
 // (assets/storeTiles.js). The rows were painted with a script.
 export default {
   name: 'FRENCHTOWN',
@@ -75,7 +75,7 @@ export default {
     'k': 'seesaw',
   },
   rows: [
-    '~~~~.~~STTTTTTTTxxxTTTTTTTTxxxTTTT~~TTTTTTTTTTTTTT',
+    '~~~~.~~ttTTTTTTT#|#TTTTTTTT#|#TTTT~~TTTTTTTTTTTTTT',
     '~~~~T~~tt.TTTTTT#|#........#|#....~~T...l.....T.TT',
     '~~~~T~~tt,TTTTTT#|#TAAAAA..#|#.T..~~.uuuuuLu.*.*.T',
     '~~~~c~~tt,TTTTTT#|#.rrrrrT.#|#....~~.uyyyuKu..o..T',
@@ -119,6 +119,21 @@ export default {
     { x: 22, y: 28, to: 'sunbeamShop', toX: 5, toY: 6, facing: 'up' },
     // Wyatt's van door, while it's parked here.
     { x: 8, y: 7, to: 'van', toX: 5, toY: 3, facing: 'up', until: 'wyattWentNorth' },
+    // The canal path north, to Milford: blocked by Wyatt's van until he's gone north.
+    ...[7, 8].map((x) => ({
+      x, y: 0, to: 'milford', toX: x, toY: 22, facing: 'up',
+      locked: { flag: 'wyattWentNorth', tile: 'sign', text: ['CANAL PATH CLOSED', 'North to MILFORD. A tree is down across the path.'] },
+    })),
+    // The east road north, to Milford too, once Wyatt has gone north.
+    ...[27, 28, 29].map((x) => ({
+      x, y: 0, to: 'milford', toX: x, toY: 22, facing: 'up',
+      locked: { flag: 'wyattWentNorth', tile: 'barricade', text: ['ROAD CLOSED', 'North: water main repair. Sorry for the mess!'] },
+    })),
+    // The west road north, to Milford (maps/milford.js). Barricaded (and off the world map) until Wyatt has gone north.
+    ...[16, 17, 18].map((x) => ({
+      x, y: 0, to: 'milford', toX: x, toY: 22, facing: 'up',
+      locked: { flag: 'wyattWentNorth', tile: 'barricade', text: ['ROAD CLOSED', 'The road to MILFORD is being repaved.'] },
+    })),
   ],
   props: [
     // Wyatt's van, across the canal path north, until you show him a peregrine.
@@ -132,10 +147,7 @@ export default {
   ],
   signs: [
     { x: 9, y: 21, text: ['FRENCHTOWN, N.J.', 'Shops, food and river views. West: the bridge back to PENNSYLVANIA.'] },
-    { x: 7, y: 0, text: ['CANAL PATH CLOSED', 'North to MILFORD. A tree is down across the path.'] },
     { x: 7, y: 33, text: ['CANAL PATH CLOSED', 'The bank washed out south of here.'] },
-    ...[16, 17, 18].map((x) => ({ x, y: 0, text: ['ROAD CLOSED', 'The road to MILFORD is being repaved.'] })),
-    ...[27, 28, 29].map((x) => ({ x, y: 0, text: ['ROAD CLOSED', 'North: water main repair. Sorry for the mess!'] })),
     ...[14, 15, 16].map((y) => ({ x: 49, y, text: ['ROAD CLOSED', 'East: bridge work ahead.'] })),
     ...[26, 27].map((x) => ({ x, y: 33, text: ['ROAD CLOSED', 'South: detour. Use the river road.'] })),
     { x: 12, y: 21, text: ['FRENCHTOWN INN', 'Rooms by the river since 1838.', 'A sign on the door: NO VACANCY.'] },
