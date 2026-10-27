@@ -17,6 +17,7 @@
 //   npcs        characters who wander a box of tiles and talk when you press A (see scenes/npcs.js)
 //   props       big multi-tile objects stamped over the rows (maps/index.js)
 //   banks       true to draw muddy banks where water meets land (assets/banks.js)
+//   trees       a mix of trees (TREE_MIXES in assets/treeTiles.js) to turn the map's plain trees into
 //
 // Any npc, sign, prop or warp can have `after: <id>` or `until: <id>` to only be there
 // once (or until) that id is done: a nemesis or rival you've beaten, or a story flag.

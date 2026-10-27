@@ -12,6 +12,7 @@
 export default {
   name: 'ERWINNA',
   region: 'plains',
+  trees: 'riverside', // oaks, maples, sycamores and hemlocks (assets/treeTiles.js)
   banks: true, // muddy river banks where the water meets land (assets/banks.js)
   legend: {
     // the houses: fieldstone with slate roofs (farmTiles.js)

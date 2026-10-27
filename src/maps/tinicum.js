@@ -15,6 +15,7 @@
 export default {
   name: 'TINICUM PARK',
   region: 'rivershore',
+  trees: 'delaware', // oaks, maples, sycamores and hemlocks (assets/treeTiles.js)
   banks: true, // muddy river banks where the water meets land (assets/banks.js)
   legend: {
     // the canal, towpath, creek and river bank

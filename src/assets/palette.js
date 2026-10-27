@@ -57,4 +57,7 @@ export const PALETTE = {
   F: '#363244',    // cave floor
   H: '#2a2636',    // cave floor shade
   W: '#d0d8ec',    // snow shade
+  '%': '#b4e070',  // new leaves (maples, sycamores)
+  '&': '#3d7a4a',  // hemlock needles
+  '@': '#1f4d34',  // deep woods shade
 };

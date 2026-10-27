@@ -11,6 +11,7 @@
 export default {
   name: 'UPPER BLACK EDDY',
   region: 'rivershore',
+  trees: 'delaware', // oaks, maples, sycamores and hemlocks (assets/treeTiles.js)
   banks: true, // muddy river banks where the water meets land (assets/banks.js)
   legend: {
     't': 'towpath',

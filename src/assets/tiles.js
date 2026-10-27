@@ -34,6 +34,7 @@ import { CANAL_DEFS } from './canalTiles.js';
 import { PARK_DEFS } from './parkTiles.js';
 import { FRENCHTOWN_DEFS } from './frenchtownTiles.js';
 import { MILFORD_DEFS } from './milfordTiles.js';
+import { TREE_DEFS } from './treeTiles.js';
 
 // ---------- outdoor ----------
 
@@ -710,6 +711,7 @@ const DEFS = {
   ...PARK_DEFS,    // Tinicum Park's ball fields, polo grounds and playground: see parkTiles.js
   ...FRENCHTOWN_DEFS, // Frenchtown's gas pumps, and the racks inside SunBeam: see frenchtownTiles.js
   ...MILFORD_DEFS, // Milford's railroad: see milfordTiles.js
+  ...TREE_DEFS,    // oaks, maples, sycamores and hemlocks for the Delaware valley: see treeTiles.js
   hillTree:  { art: TREE, base: 'hill', solid: true },
 
   floor:     { art: FLOOR },

@@ -22,6 +22,7 @@ import frenchtown from './frenchtown.js';
 import sunbeamShop from './sunbeamShop.js';
 import milford from './milford.js';
 import { TILES, LEGEND } from '../assets/tiles.js';
+import { TREE_MIXES } from '../assets/treeTiles.js';
 import { PROPS } from '../assets/coastTiles.js'; // storefronts too (storeTiles.js)
 import { VOYAGES } from '../data/voyages.js';
 import { REGIONS } from '../data/regions.js';
@@ -73,6 +74,15 @@ function checkLock(locked, at) {
   if (!TILES[locked.tile]) throw new Error(`${at} is locked with unknown tile "${locked.tile}"`);
 }
 
+/** A kind of tree for this spot, picked by `mix`'s weights: always the same one for the same spot. */
+function pickTree(mix, x, y) {
+  let h = Math.imul(x, 374761393) + Math.imul(y, 668265263);
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  let roll = (((h ^ (h >>> 16)) >>> 0) / 2 ** 32) * Object.values(mix).reduce((a, b) => a + b);
+  for (const [tree, weight] of Object.entries(mix)) if ((roll -= weight) < 0) return tree;
+  return 'tree';
+}
+
 /** Load a map by id, turning its character rows into a grid of tile ids. */
 export function getMap(id) {
   if (cache[id]) return cache[id];
@@ -92,6 +102,15 @@ export function getMap(id) {
   });
 
   const inside = (x, y) => x >= 0 && y >= 0 && x < width && y < grid.length;
+
+  // A map with `trees` mixes its plain trees into a woods of different kinds (assets/treeTiles.js).
+  if (raw.trees) {
+    const mix = TREE_MIXES[raw.trees];
+    if (!mix) throw new Error(`Map "${id}": unknown trees "${raw.trees}" (see TREE_MIXES in assets/treeTiles.js)`);
+    grid.forEach((row, y) => row.forEach((tileId, x) => {
+      if (tileId === 'tree') row[x] = pickTree(mix, x, y);
+    }));
+  }
 
   // Big props are stamped over the grid; each tile of one is its own tile id.
   const props = (raw.props ?? []).map((p) => {
