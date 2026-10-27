@@ -159,8 +159,8 @@ export const DIALOGUE = {
   stationAgent(game) {
     if (beatNemesis(game, 'gyrfalcon')) {
       return [
-        'STATION AGENT: You did it! That falcon took off up the tracks, and the last train north pulled out right behind it.',
-        'There\'s track work up the line now, so no more trains to VERMONT for a while. Check back soon!',
+        'STATION AGENT: You did it! That falcon took off up the tracks, and the trains are running again.',
+        'Head on inside: the train north to RUTLAND, VERMONT leaves from the platform.',
       ];
     }
     if (game.progress.flags.metMilfordAgent) {

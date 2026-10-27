@@ -1,5 +1,6 @@
 // Walking around a map: grid movement, collisions, warps, signs, boats you can
-// book a voyage on (see voyage.js), the birds you sneak up on (see fieldBirds.js),
+// book a voyage on (see voyage.js), trains you ride to another station (see
+// train.js), the birds you sneak up on (see fieldBirds.js),
 // the nemesis bird (or a rival's bird) guarding its perch (see nemesis.js), and the collectibles
 // hidden around (see data/collectibles.js). Outdoors the light follows the
 // real time of day and weather (time.js, gfx/lighting.js), and beds and
@@ -20,6 +21,7 @@ import { Npcs } from './npcs.js';
 import { WorldMapScene } from './worldMap.js';
 import { JournalScene } from './journal.js';
 import { VoyageScene } from './voyage.js';
+import { TrainScene } from './train.js';
 import { NemesisScene } from './nemesis.js';
 import { ShopScene, BagScene } from './shop.js';
 import { VOYAGES } from '../data/voyages.js';
@@ -412,8 +414,22 @@ export class Overworld {
       const facing = warp.facing ?? p.facing;
       const to = warp.to === 'back' ? this.wayBack(facing) : { map: warp.to, x: warp.toX, y: warp.toY };
       // Remember the tile you stepped onto the warp from, so a shared interior can send you back out the right door.
-      if (warp.to !== 'back') this.back = { map: this.map.id, x: p.x - p.dx, y: p.y - p.dy };
-      this.game.transition(() => this.loadMap(to.map, to.x, to.y, facing));
+      const back = warp.to !== 'back' ? { map: this.map.id, x: p.x - p.dx, y: p.y - p.dy } : this.back;
+      const go = () => {
+        this.back = back;
+        this.loadMap(to.map, to.x, to.y, facing);
+      };
+      // A `train` warp asks first, then rides (scenes/train.js) before you get off at the other end.
+      if (warp.train) {
+        p.walking = false;
+        this.dialog = {
+          pages: [[`Board the train to ${warp.train}?`, 'A:YES  B:NO']],
+          page: 0,
+          onYes: () => this.game.transition(() => this.game.setScene(new TrainScene(this.game, warp.train, this, go))),
+        };
+        return true;
+      }
+      this.game.transition(go);
       return true;
     }
     this.rememberLocation();

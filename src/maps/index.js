@@ -21,6 +21,8 @@ import coffeeShop from './coffeeShop.js';
 import frenchtown from './frenchtown.js';
 import sunbeamShop from './sunbeamShop.js';
 import milford from './milford.js';
+import milfordStation from './milfordStation.js';
+import rutlandStation from './rutlandStation.js';
 import { TILES, LEGEND } from '../assets/tiles.js';
 import { PROPS } from '../assets/coastTiles.js'; // storefronts too (storeTiles.js)
 import { VOYAGES } from '../data/voyages.js';
@@ -33,7 +35,7 @@ import { COLLECTIBLES } from '../data/collectibles.js';
 import { ITEMS } from '../data/items.js';
 import { COLLECTIBLE_SPRITES, TELLS } from '../assets/collectibles.js';
 
-const MAPS = { village, house, shrine, hannahville, hannahHouse, cave, mountain, van, farm, leisterHouse, grandparentsHouse, pasture, airport, generalStore, erwinna, tinicum, riverbank, blackEddy, coffeeShop, frenchtown, sunbeamShop, milford };
+const MAPS = { village, house, shrine, hannahville, hannahHouse, cave, mountain, van, farm, leisterHouse, grandparentsHouse, pasture, airport, generalStore, erwinna, tinicum, riverbank, blackEddy, coffeeShop, frenchtown, sunbeamShop, milford, milfordStation, rutlandStation };
 export const MAP_IDS = Object.keys(MAPS);
 const cache = {};
 

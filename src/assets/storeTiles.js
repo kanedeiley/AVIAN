@@ -14,7 +14,7 @@
 // units, and things on display. Any shop's interior can use them.
 import { stamp } from '../gfx/sprite.js';
 import { TINY } from '../gfx/ui.js';
-import { bigProp } from './coastTiles.js';
+import { bigProp, COAST_DEFS } from './coastTiles.js';
 import { BIKE_SIDE, SEED_SACK } from './items.js';
 
 export const STORE_DEFS = {};
@@ -224,10 +224,10 @@ storefront('bridgeCafeFront', 'BRIDGE CAFE', 4, ['coffee'], true);
 storefront('cocinaFront', 'COCINA DEL SOL', 5, ['peppers'], true);
 storefront('napoliFront', 'NAPOLI PIZZA', 4, ['pizza'], true);
 storefront('citgoFront', 'CITGO', 3, ['snacks'], true);
-// Milford's. All shut for now: the station's door opens when the trains run again.
+// Milford's. The station has an inside (maps/milfordStation.js); the rest are shut for now.
 storefront('barberFront', 'BARBER SHOP', 5, ['barber'], true);
 storefront('descendentsFront', 'DESCENDENTS BREW', 6, ['mugs'], true);
-storefront('milfordStationFront', 'MILFORD STATION', 5, ['timetable'], true);
+storefront('milfordStationFront', 'MILFORD STATION', 5, ['timetable']);
 
 // ---------- inside ----------
 
@@ -387,6 +387,80 @@ const TAG = [
   ...Array(10).fill(BLANK),
 ];
 
+// ---------- inside a train station ----------
+
+// Glass double doors out to the platform, under a yellow transom.
+const PLATFORM_DOORS = [
+  '.NNNNNNNNNNNNNN.',
+  '.NffffffffffffN.',
+  '.NkkkkkkkkkkkkN.',
+  '.NkcwcckkcwcckN.',
+  ...Array(4).fill('.NkcccckkcccckN.'),
+  '.NkcccNkkNccckN.',
+  ...Array(5).fill('.NkcccckkcccckN.'),
+  '.NkkkkkkkkkkkkN.',
+  '.NNNNNNNNNNNNNN.',
+];
+// A striped barrier across them while no trains run.
+const BARRIER = [
+  ...Array(7).fill(BLANK),
+  '.kppwwppwwppwwk.',
+  '.kwwppwwppwwppk.',
+  ...Array(7).fill(BLANK),
+];
+
+// The departures board: yellow lines on a dark slate.
+const DEPARTURES = [
+  BLANK,
+  '.kkkkkkkkkkkkkk.',
+  '.kCCCCCCCCCCCCk.',
+  '.kCfffCffCCfCCk.',
+  '.kCCCCCCCCCCCCk.',
+  '.kCffCfffCCffCk.',
+  '.kCCCCCCCCCCCCk.',
+  '.kCfCCffffCfCCk.',
+  '.kCCCCCCCCCCCCk.',
+  '.kkkkkkkkkkkkkk.',
+  ...Array(6).fill(BLANK),
+];
+
+// A barred ticket window with a little shelf.
+const TICKET_WINDOW = [
+  BLANK,
+  '..NNNNNNNNNNNN..',
+  '..NffffffffffN..',
+  '..NNNNNNNNNNNN..',
+  ...Array(5).fill('..NcqcqcqcqcqN..'),
+  '.NOOOOOOOOOOOON.',
+  ...Array(6).fill(BLANK),
+];
+
+// The station clock.
+const CLOCK = [
+  BLANK,
+  '.....kkkkkk.....',
+  '....kwwwwwwk....',
+  '...kwwwkwwwwk...',
+  '...kwwwkwwwwk...',
+  '...kwwwkkkwwk...',
+  '...kwwwwwwwwk...',
+  '....kwwwwwwk....',
+  '.....kkkkkk.....',
+  ...Array(7).fill(BLANK),
+];
+
+// Brass posts with a red rope between them, to keep you out of somewhere.
+const STANCHION = [
+  ...Array(6).fill(BLANK),
+  '.kfk........kfk.',
+  '.kfkPPPPPPPPkfk.',
+  '.kfkpPPPPPPpkfk.',
+  ...Array(4).fill('.kfk........kfk.'),
+  'kkfkk......kkfkk',
+  'kffffk....kffffk',
+  BLANK,
+];
+
 Object.assign(STORE_DEFS, {
   storeWallTop: { art: WALL_TOP, solid: true },
   storeWall: { art: WALL, solid: true },
@@ -405,4 +479,12 @@ Object.assign(STORE_DEFS, {
   seedSacks: { art: [BLANK, BLANK, ...SEED_SACK.slice(0, 14)], base: 'floor', solid: true },
   seedBarrel: { art: BARREL, base: 'floor', solid: true },
   storePlant: { art: PLANT, base: 'floor', solid: true },
+  // Train stations (maps/milfordStation.js, rutlandStation.js).
+  platformDoors: { art: stamp(WALL, PLATFORM_DOORS) },  // walkable: the map puts a `train` warp on it
+  platformDoorsShut: { art: stamp(WALL, stamp(PLATFORM_DOORS, BARRIER)), solid: true },  // a locked warp's `tile`
+  departures: { art: stamp(WALL, DEPARTURES), solid: true },
+  ticketWindow: { art: stamp(WALL, TICKET_WINDOW), solid: true },
+  stationClock: { art: stamp(WALL, CLOCK), solid: true },
+  stanchion: { art: STANCHION, base: 'floor', solid: true },  // give it sign text
+  benchFloor: { ...COAST_DEFS.bench, base: 'floor' },
 });

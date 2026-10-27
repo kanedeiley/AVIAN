@@ -4,8 +4,11 @@
 // it), so a new map shows up here as soon as it's connected to the others.
 // Maps marked `indoor` are left off; inside one, the marker sits on its door.
 // Maps you can only reach through a `locked` warp that's still shut stay off too.
+// Maps that aren't joined edge to edge (like Vermont, a train ride away) go on
+// pages of their own: A flips through the pages you can get to.
 import { VIEW_W, VIEW_H } from '../config.js';
 import { MAP_IDS, getMap, doorTo } from '../maps/index.js';
+import { REGIONS } from '../data/regions.js';
 import { TILES } from '../assets/tiles.js';
 import { input } from '../input.js';
 import { drawBox, drawText } from '../gfx/ui.js';
@@ -16,9 +19,37 @@ const PAN_SPEED = 120; // px/s
 const TOP = 24;        // the title bar's height
 const INK = '#283050';
 
-/** Each outdoor map's top-left corner in world tiles, found by walking the open edge warps. */
+/**
+ * The world map's pages, home first: each is the outdoor maps joined edge to
+ * edge, as each map's top-left corner in world tiles. Only maps you can get to
+ * from home through open warps (doors and trains too) are on them.
+ */
 export function layoutWorld(game) {
-  const root = MAP_IDS.find((id) => !getMap(id).indoor);
+  const home = MAP_IDS.find((id) => !getMap(id).indoor);
+  const open = reachable(game, home);
+  const pages = [];
+  for (const id of MAP_IDS) {
+    if (open.has(id) && !getMap(id).indoor && !pages.some((page) => page[id])) pages.push(layoutPage(game, id));
+  }
+  return pages;
+}
+
+/** Every map you can get to from `root` through open warps. */
+function reachable(game, root) {
+  const seen = new Set([root]);
+  const queue = [root];
+  while (queue.length) {
+    for (const w of getMap(queue.shift()).warps) {
+      if (w.to === 'back' || seen.has(w.to) || !warpOpen(game, w)) continue;
+      seen.add(w.to);
+      queue.push(w.to);
+    }
+  }
+  return seen;
+}
+
+/** Each outdoor map's top-left corner in world tiles, found by walking the open edge warps out from `root`. */
+function layoutPage(game, root) {
   const placed = { [root]: { x: 0, y: 0 } };
   const queue = [root];
   while (queue.length) {
@@ -107,7 +138,7 @@ function renderWorld(layout, game) {
 }
 
 // Maps don't change while playing, so build it once, and again only when a locked warp opens.
-let world = null;
+let world = null; // { open, pages: [{ layout, canvas, minX, minY }] }
 
 export class WorldMapScene {
   constructor(game, returnTo) {
@@ -116,32 +147,43 @@ export class WorldMapScene {
     this.time = 0;
     const open = openLocks(game);
     if (world?.open !== open) {
-      const layout = layoutWorld(game);
-      world = { open, layout, ...renderWorld(layout, game) };
+      world = { open, pages: layoutWorld(game).map((layout) => ({ layout, ...renderWorld(layout, game) })) };
     }
 
-    // Where the player is in world tiles. Indoors, that's the door that leads in.
+    // Where the player is in world tiles, and on which page. Indoors, that's the door that leads in.
     const { map, player } = returnTo;
+    const pageOf = (id) => world.pages.findIndex((page) => page.layout[id]);
     let at = { mapId: map.id, x: player.x, y: player.y };
-    if (!world.layout[map.id]) {
+    if (pageOf(map.id) < 0) {
       // A shared interior (like the general store) has many doors: use the one you came in by.
-      const door = returnTo.back && world.layout[returnTo.back.map] ? returnTo.back : doorTo(map.id);
-      at = door && world.layout[door.map] ? { mapId: door.map, x: door.x, y: door.y } : null;
+      const door = returnTo.back && pageOf(returnTo.back.map) >= 0 ? returnTo.back : doorTo(map.id);
+      at = door && pageOf(door.map) >= 0 ? { mapId: door.map, x: door.x, y: door.y } : null;
     }
+    this.herePage = at ? pageOf(at.mapId) : -1;
+    const page = world.pages[this.herePage];
     this.here = at && {
       name: getMap(at.mapId).name,
-      x: (world.layout[at.mapId].x - world.minX + at.x) * CELL,
-      y: (world.layout[at.mapId].y - world.minY + at.y) * CELL,
+      x: (page.layout[at.mapId].x - page.minX + at.x) * CELL,
+      y: (page.layout[at.mapId].y - page.minY + at.y) * CELL,
     };
+    this.showPage(Math.max(0, this.herePage));
+  }
 
-    // Start centered on the player.
-    this.camX = (this.here?.x ?? 0) - VIEW_W / 2;
-    this.camY = (this.here?.y ?? 0) - (VIEW_H + TOP) / 2 + TOP;
+  /** Turn to page `i`, centered on the player if they're on it (or else on its first map). */
+  showPage(i) {
+    this.pageIndex = i;
+    this.page = world.pages[i];
+    const { layout, minX, minY } = this.page;
+    const [first] = Object.keys(layout);
+    const middle = { x: (layout[first].x - minX + getMap(first).width / 2) * CELL, y: (layout[first].y - minY + getMap(first).height / 2) * CELL };
+    const at = i === this.herePage ? this.here : middle;
+    this.camX = at.x - VIEW_W / 2;
+    this.camY = at.y - (VIEW_H + TOP) / 2 + TOP;
     this.clampCamera();
   }
 
   clampCamera() {
-    const { width, height } = world.canvas;
+    const { width, height } = this.page.canvas;
     const viewH = VIEW_H - TOP;
     this.camX = width <= VIEW_W ? (width - VIEW_W) / 2 : Math.max(0, Math.min(width - VIEW_W, this.camX));
     this.camY = height <= viewH ? (height - viewH) / 2 : Math.max(0, Math.min(height - viewH, this.camY));
@@ -153,6 +195,7 @@ export class WorldMapScene {
       this.game.transition(() => this.game.setScene(this.returnTo));
       return;
     }
+    if (input.wasPressed('a') && world.pages.length > 1) this.showPage((this.pageIndex + 1) % world.pages.length);
     if (input.isDown('left')) this.camX -= PAN_SPEED * dt;
     if (input.isDown('right')) this.camX += PAN_SPEED * dt;
     if (input.isDown('up')) this.camY -= PAN_SPEED * dt;
@@ -165,21 +208,22 @@ export class WorldMapScene {
     ctx.fillRect(0, 0, VIEW_W, VIEW_H);
     const ox = Math.round(-this.camX);
     const oy = Math.round(TOP - this.camY);
-    ctx.drawImage(world.canvas, ox, oy);
+    const page = this.page;
+    ctx.drawImage(page.canvas, ox, oy);
 
     // Map names, along the top edge of each map.
-    for (const [id, pos] of Object.entries(world.layout)) {
+    for (const [id, pos] of Object.entries(page.layout)) {
       const map = getMap(id);
       const w = map.name.length * 8 + 8;
-      const x = Math.round(ox + (pos.x - world.minX + map.width / 2) * CELL - w / 2);
-      const y = Math.round(oy + (pos.y - world.minY) * CELL + 2);
+      const x = Math.round(ox + (pos.x - page.minX + map.width / 2) * CELL - w / 2);
+      const y = Math.round(oy + (pos.y - page.minY) * CELL + 2);
       ctx.fillStyle = 'rgba(248,248,248,0.8)';
       ctx.fillRect(x, y, w, 12);
       drawText(ctx, map.name, x + 4, y + 2);
     }
 
     // You are here: a blinking marker.
-    if (this.here && Math.floor(this.time * 3) % 2 === 0) {
+    if (this.here && this.pageIndex === this.herePage && Math.floor(this.time * 3) % 2 === 0) {
       const x = ox + this.here.x;
       const y = oy + this.here.y;
       ctx.fillStyle = INK;
@@ -188,7 +232,20 @@ export class WorldMapScene {
       ctx.fillRect(x - 1, y - 1, CELL + 2, CELL + 2);
     }
 
+    // The title: where you are, or on another page, its region. With more than one page, a dot for each.
     drawBox(ctx, 0, 0, VIEW_W, TOP);
-    drawText(ctx, this.here ? `WORLD - ${this.here.name}` : 'WORLD', 8, 8);
+    const name = this.pageIndex === this.herePage ? this.here.name : REGIONS[getMap(Object.keys(page.layout)[0]).region].name;
+    drawText(ctx, this.herePage < 0 && this.pageIndex === 0 ? 'WORLD' : `WORLD - ${name}`, 8, 8);
+    if (world.pages.length > 1) {
+      world.pages.forEach((_, i) => {
+        const x = VIEW_W - 10 - (world.pages.length - i) * 6;
+        ctx.fillStyle = INK;
+        ctx.fillRect(x, 10, 4, 4);
+        if (i !== this.pageIndex) {
+          ctx.fillStyle = '#f8f8f8';
+          ctx.fillRect(x + 1, 11, 2, 2);
+        }
+      });
+    }
   }
 }
