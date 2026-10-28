@@ -81,6 +81,25 @@ const ART = {
     '....kkkkkkkk....',
     '................',
   ],
+  // A pair of red knit mittens with white cuffs, thumbs out.
+  danielsMittens: [
+    '................',
+    '................',
+    '...kkkk..kkkk...',
+    '..kppppkkppppk..',
+    '..kpPppkkppPpk..',
+    '.kkppppkkppppkk.',
+    'kppkpppkkpppkppk',
+    'kppkpppkkpppkppk',
+    'kpppppPkkPpppppk',
+    '.kppppPkkPppppk.',
+    '.kppppPkkPppppk.',
+    '.kkkkkkkkkkkkkk.',
+    '.kwwwwwkkwwwwwk.',
+    '.kwqwqwkkwqwqwk.',
+    '.kkkkkkkkkkkkkk.',
+    '................',
+  ],
 };
 
 export const COLLECTIBLE_SPRITES = Object.fromEntries(Object.entries(ART).map(([id, art]) => [id, {
@@ -169,5 +188,54 @@ export function drawSmoke(ctx, x, y, time) {
   }
 }
 
+// A red mitten stuck up out of a snowdrift, thumb out, with a white cuff.
+const MITTEN = [
+  '...kkkk.',
+  '..kppppk',
+  '.kkppppk',
+  'kpkpppPk',
+  'kppppppk',
+  '.kppppPk',
+  '.kwwwwwk',
+  '.kkkkkkk',
+];
+// The drift it's stuck in: piled over the cuff, shadowed underneath.
+const DRIFT = [
+  '...wwwwwwww...',
+  '.wwwwwwwwwwww.',
+  'wwwwwwwwwwwwww',
+  '.WWWWWWWWWWWW.',
+];
+const MITTEN_COLORS = { k: '#202028', p: '#e04040', P: '#a82828', w: '#f8f8f8', W: '#b8c0d8' };
+
+/** Draw rows of palette letters (MITTEN_COLORS) at (x, y). */
+function pixels(ctx, rows, x, y) {
+  rows.forEach((row, py) => [...row].forEach((ch, px) => {
+    if (ch === '.') return;
+    ctx.fillStyle = MITTEN_COLORS[ch];
+    ctx.fillRect(x + px, y + py, 1, 1);
+  }));
+}
+
+/**
+ * A mitten half buried in the snow (x, y in screen px): it sticks up out of a
+ * drift, now and then gives a little wave, and a twinkle blinks over it.
+ */
+export function drawMitten(ctx, x, y, time) {
+  const t = time % 2.4;
+  const wave = t < 0.6 ? Math.round(Math.sin(t * Math.PI * 5)) : 0; // a quick wiggle side to side
+  const bob = t < 0.6 ? -1 : 0;
+  pixels(ctx, MITTEN, x + 4 + wave, y + 2 + bob);
+  pixels(ctx, DRIFT, x + 1, y + 8);
+  // The twinkle: a little four-pointed star that grows and shrinks.
+  const glint = Math.sin(time * 3.5);
+  if (glint > 0) {
+    const sx = x + 13, sy = y + 1, arm = glint > 0.7 ? 2 : 1;
+    ctx.fillStyle = `rgba(255,248,200,${glint})`;
+    ctx.fillRect(sx - arm, sy, arm * 2 + 1, 1);
+    ctx.fillRect(sx, sy - arm, 1, arm * 2 + 1);
+  }
+}
+
 /** What gives each kind of collectible away on the map: data/collectibles.js picks one with `tell`. */
-export const TELLS = { stench: drawStench, music: drawMusic, feathers: drawFeathers, smoke: drawSmoke };
+export const TELLS = { stench: drawStench, music: drawMusic, feathers: drawFeathers, smoke: drawSmoke, mitten: drawMitten };

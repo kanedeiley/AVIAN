@@ -27,19 +27,38 @@ import { ShopScene, BagScene } from './shop.js';
 import { VOYAGES } from '../data/voyages.js';
 import { DIALOGUE } from '../data/dialogue.js';
 import { ITEMS } from '../data/items.js';
-import { ITEM_SPRITES, BIKE_SPRITES } from '../assets/items.js';
+import { ITEM_SPRITES, BIKE_SPRITES, SLIDE_SPRITES } from '../assets/items.js';
 import { saveMoney, saveLocation } from '../save.js';
 import { perchNeeds, perchOn, perchBeaten, toggleWear, setFlag, collectiblesOn, collect, warpOpen, spendItem, shown } from '../progress.js';
 import { timeUntil } from '../time.js';
-import { drawLighting, tintPanes, drawClock } from '../gfx/lighting.js';
+import { drawLighting, tintPanes, drawClock, snowyWeather } from '../gfx/lighting.js';
+import { REGIONS } from '../data/regions.js';
+import { drawTipsy } from '../gfx/tipsy.js';
 
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const TURN_DELAY = 0.09; // a quick tap turns in place instead of walking
 const LANTERN = 4.5;     // tiles your lantern lights up on a `dark` map
 const DARKNESS = 'rgba(10,8,20,0.9)';
+const DIM_GLOW = 2.5;  // tiles of light around you in a `dim` room
 const PERCH_FLAP = [3, 0.4]; // a nemesis (or rival's bird) on its perch flaps for 0.4s every 3s
 const REST_UNTIL = ['dawn', 'dusk', 'night']; // what a bed or bench lets you rest until
 const REST_DARK = 0.85;        // how dark the screen gets while you rest
+const SLIDE_START = 1;         // times walking speed, the first step down a slope
+const SLIDE_ACCEL = 0.1;       // faster with each step after that, up to the gear's `top`
+const SLIDE_SLOW = 0.6;        // holding up: you dig in and ease down to this crawl
+const SLIDE_BRAKE = 0.3;       // speed lost per step while you hold up
+const MOGUL_SPEED = 1.1;       // moguls slow you to this, at most
+const JUMP_SPEED = 1.3;        // how fast you have to be going to get air off a jump
+const AIR_HEIGHT = 12;         // px you fly up off a jump
+const AIR_SLOW = 0.6;          // the jump covers two tiles in one step, so it goes at this share of your speed
+const CRASH_TIME = 1;          // seconds you tumble in the snow after a wipeout, before you get up
+const SHOUT_TIME = 1.2;        // seconds WIPEOUT! (or a trick's name) floats up over you
+const GEAR_WALK = 0.75;        // walking in ski boots, off the slopes
+const GEAR_LIFT = 2;           // px you stand up on your skis
+const TIPSY_FADE = 3;          // seconds a beer takes to come on (and to wear off)
+const STUMBLE = 0.2;           // chance a step lurches sideways while fully tipsy
+const SPIN = ['down', 'left', 'up', 'right']; // the way you face, turn by turn, spinning in the air
+const SIDEWAYS = { up: ['left', 'right'], down: ['left', 'right'], left: ['up', 'down'], right: ['up', 'down'] };
 
 export class Overworld {
   constructor(game, mapId, x, y, facing = 'down', back = null) {
@@ -47,6 +66,8 @@ export class Overworld {
     this.time = 0;
     this.back = back; // where a `back` warp takes you: the tile you took your last warp from
     this.riding = false; // on your bike
+    this.gear = null;    // skis on your feet (data/items.js `slide`), or null
+    this.slide = { speed: 0, air: false, trick: false, snap: false, crash: 0, shout: null }; // sliding down a slope: see slideStep
     this.inUse = {};     // item id -> seconds until it wears off (binoculars)
     this.player = { x, y, facing, moving: false, progress: 0, dx: 0, dy: 0, steps: 0, walking: false, turnTimer: 0 };
     this.loadMap(mapId, x, y, facing);
@@ -55,6 +76,9 @@ export class Overworld {
   loadMap(id, x, y, facing) {
     this.map = getMap(id);
     if (this.map.indoor) this.riding = false; // you leave your bike at the door
+    if (this.map.indoor || !REGIONS[this.map.region].snowy) this.gear = null; // and you carry your skis inside
+    this.slide.speed = 0;
+    this.snowy = Boolean(REGIONS[this.map.region].snowy); // winter: snowfall, and photos in the snow
     Object.assign(this.player, { x, y, facing, moving: false, progress: 0 });
     this.perch = perchOn(this.game, id); // a nemesis bird, or a rival's (data/rivals.js)
     this.goneProps = this.map.props.filter((o) => !shown(this.game, o)); // props only there `after`/`until` something
@@ -109,10 +133,22 @@ export class Overworld {
     this.time += dt;
     this.bannerTime = Math.max(0, this.bannerTime - dt);
     this.tickItems(dt);
+    if (this.slide.shout && (this.slide.shout.time -= dt) <= 0) this.slide.shout = null;
     const p = this.player;
     if (this.rest) return this.updateRest(dt);
     this.birds.update(dt);
     this.npcs.update(dt);
+    // Someone walking over to say hello: wait for them (see Npcs.greet).
+    if (this.npcs.greeter && !this.dialog) {
+      p.walking = false;
+      return;
+    }
+    // Wiped out: tumble in the snow for a moment, then get up beside whatever you hit.
+    if (this.slide.crash) {
+      p.walking = false;
+      if ((this.slide.crash = Math.max(0, this.slide.crash - dt)) === 0) this.getUp();
+      return;
+    }
 
     // While a text box is open, A/B only advance it. A yes/no question
     // (`onYes`, and optionally `onNo`) on the last page: A says yes, B says no.
@@ -135,8 +171,12 @@ export class Overworld {
     }
 
     if (p.moving) {
+      // In the air off a jump, A does a spin; skiing along, it snaps a bird at the next tile.
+      if (this.slide.air && input.wasPressed('a')) this.slide.trick = true;
+      else if (this.slide.speed && input.wasPressed('a')) this.slide.snap = true;
       p.progress += (dt / STEP_TIME) * this.speed();
       if (p.progress < 1) return;
+      if (this.slide.air) this.land();
       p.x += p.dx;
       p.y += p.dy;
       p.moving = false;
@@ -159,6 +199,21 @@ export class Overworld {
       p.walking = false;
       this.game.transition(() => this.game.setScene(new Screen(this.game, this)));
       return;
+    }
+
+    // Skiing past a bird, A snaps the nearest one, whichever way it is (and you stop to take it).
+    if (this.slide.speed && (this.slide.snap || input.wasPressed('a'))) {
+      this.slide.snap = false;
+      const bird = this.birds.nearest(this.photoRange());
+      if (bird) {
+        this.slide.speed = 0;
+        p.walking = false;
+        this.game.transition(() => {
+          this.birds.remove(bird);
+          this.game.setScene(new PhotoScene(this.game, bird.id, this, bird.alert, 'snow'));
+        });
+        return;
+      }
     }
 
     // A: read the sign in front of you, or photograph the bird in front of you.
@@ -193,21 +248,7 @@ export class Overworld {
         return;
       }
       if (npc) {
-        this.npcs.listen(npc);
-        // Pick the lines before setting the flag, so a first meeting says hello.
-        const text = npc.talk ? DIALOGUE[npc.talk](this.game) : npc.text;
-        if (npc.sets) setFlag(this.game, npc.sets);
-        this.dialog = { pages: paginate(text), page: 0 };
-        // Someone who `leaves` once you show them a photo of a bird: after they've had their say,
-        // the screen fades, their flag is set, and they're gone (and anything that was there `until` it).
-        const { leaves } = npc;
-        if (leaves && this.game.journal[leaves.photo] && !this.game.progress.flags[leaves.flag]) {
-          this.dialog.then = () => this.game.transition(() => {
-            setFlag(this.game, leaves.flag);
-            this.loadMap(this.map.id, p.x, p.y, p.facing);
-          });
-        }
-        p.walking = false;
+        this.talkTo(npc);
         return;
       }
       if (this.perchAt(p.x + dx, p.y + dy)) {
@@ -226,11 +267,14 @@ export class Overworld {
         p.walking = false;
         this.game.transition(() => {
           this.birds.remove(bird);
-          this.game.setScene(new PhotoScene(this.game, bird.id, this, bird.alert));
+          this.game.setScene(new PhotoScene(this.game, bird.id, this, bird.alert, this.snowy ? 'snow' : 'field'));
         });
         return;
       }
     }
+
+    // Skis on a slope: you slide downhill on your own.
+    if (this.slideStep()) return;
 
     const dir = input.dir();
     if (!dir) {
@@ -249,14 +293,127 @@ export class Overworld {
     }
 
     p.walking = true;
-    const [dx, dy] = DIRS[dir];
+    let [dx, dy] = DIRS[dir];
+    // Tipsy, now and then a step lurches off to one side.
+    if (Math.random() < STUMBLE * this.tipsy()) {
+      const lurch = DIRS[SIDEWAYS[dir][Math.floor(Math.random() * 2)]];
+      if (!this.isBlocked(p.x + lurch[0], p.y + lurch[1])) [dx, dy] = lurch;
+    }
     if (this.isBlocked(p.x + dx, p.y + dy)) return;
     Object.assign(p, { moving: true, dx, dy, progress: 0 });
   }
 
-  /** How much faster than walking you're going: on the bike, or on foot with a coffee in you. */
+  /** Talk to an NPC: their lines (`talk` or `text`), and any flag they give you. */
+  talkTo(npc) {
+    const p = this.player;
+    this.npcs.listen(npc);
+    // Pick the lines before setting the flag, so a first meeting says hello.
+    const text = npc.talk ? DIALOGUE[npc.talk](this.game) : npc.text;
+    if (npc.sets) setFlag(this.game, npc.sets);
+    this.dialog = { pages: paginate(text), page: 0 };
+    // Someone who `leaves` once you show them a photo of a bird: after they've had their say,
+    // the screen fades, their flag is set, and they're gone (and anything that was there `until` it).
+    const { leaves } = npc;
+    if (leaves && this.game.journal[leaves.photo] && !this.game.progress.flags[leaves.flag]) {
+      this.dialog.then = () => this.game.transition(() => {
+        setFlag(this.game, leaves.flag);
+        this.loadMap(this.map.id, p.x, p.y, p.facing);
+      });
+    }
+    p.walking = false;
+  }
+
+  /** How tipsy you are (a `tipsy` item like beer), 0 to 1: it comes on over a couple of seconds and fades at the end. */
+  tipsy() {
+    const id = Object.keys(this.inUse).find((i) => ITEMS[i].tipsy);
+    if (!id) return 0;
+    const left = this.inUse[id];
+    return Math.max(0, Math.min(1, left / TIPSY_FADE, (ITEMS[id].lasts - left) / TIPSY_FADE));
+  }
+
+  /**
+   * On a `slope` tile with skis on, take the next step downhill (south), steering with
+   * left/right; holding up digs in and slows you to a crawl. Speed builds up step by step to the
+   * gear's `top`. Skis can `sidestep` around a tree. Off a `jump` with some speed, you fly two tiles in one step (A in the air: a
+   * spin); `moguls` slow you down. Nowhere to go: a WIPEOUT (and you walk off it). Returns true if
+   * it took the step.
+   */
+  slideStep() {
+    const p = this.player;
+    const s = this.slide;
+    const gear = this.gear && ITEMS[this.gear].slide;
+    const here = this.tileAt(p.x, p.y);
+    if (!gear || !here?.slope) {
+      s.speed = 0;
+      return false;
+    }
+    const dir = input.dir();
+    const braking = dir === 'up';
+    const dx = dir === 'left' ? -1 : dir === 'right' ? 1 : 0;
+    // Off a jump: two tiles at once, if there's somewhere to land.
+    const air = here.jump && s.speed >= JUMP_SPEED && !braking;
+    const down = air ? 2 : 1;
+    const tries = [...(dx ? [[dx, down]] : []), [0, down], ...(air ? [[0, 1]] : []), ...(dx && gear.sidestep ? [[dx, 0]] : [])];
+    const step = tries.find(([sx, sy]) => !this.isBlocked(p.x + sx, p.y + sy));
+    if (!step) {
+      if (!s.speed) return false; // standing still: walk your way out of it
+      this.shout(s.speed > SLIDE_START ? 'WIPEOUT!' : 'OOF!');
+      Object.assign(s, { speed: 0, crash: CRASH_TIME });
+      p.walking = false;
+      return true;
+    }
+    s.speed = braking ? Math.max(SLIDE_SLOW, s.speed - SLIDE_BRAKE) : Math.min(gear.top, Math.max(SLIDE_START, s.speed + SLIDE_ACCEL));
+    if (this.tileAt(p.x + step[0], p.y + step[1])?.moguls) s.speed = Math.min(s.speed, MOGUL_SPEED);
+    s.air = step[1] === 2;
+    s.trick = false;
+    // You face downhill, or the way you turn.
+    p.facing = step[0] < 0 ? 'left' : step[0] > 0 ? 'right' : 'down';
+    p.walking = true;
+    Object.assign(p, { moving: true, dx: step[0], dy: step[1], progress: 0 });
+    return true;
+  }
+
+  /** Back on the snow after a jump: say so if you pulled off a spin. */
+  land() {
+    this.slide.air = false;
+    if (this.slide.trick) this.shout(Math.random() < 0.5 ? '360!' : 'SPIN!');
+    this.slide.trick = false;
+  }
+
+  /** Words that float up over you for a moment: WIPEOUT!, or a trick. */
+  /** Up out of the snow after a wipeout: step aside onto the nearest open bit of the run, so you can carry on down. */
+  getUp() {
+    const p = this.player;
+    const open = (x, y) => this.tileAt(x, y)?.slope && !this.isBlocked(x, y) && !this.isBlocked(x, y + 1);
+    const dx = [1, -1, 2, -2, 3, -3].find((d) => open(p.x + d, p.y));
+    if (dx) p.x += dx;
+    p.facing = 'down';
+  }
+
+  /** A wipeout's mess at (x, y) on screen: a burst of snow, and your skis thrown off to one side. `t` runs 0-1. */
+  drawCrash(ctx, x, y, t) {
+    const skis = SLIDE_SPRITES[this.gear]?.right;
+    if (skis) ctx.drawImage(skis, x + 4 + Math.round(Math.min(t, 0.4) * 20), y + 2);
+    for (let i = 0; i < 10; i++) {
+      const a = (i / 10) * Math.PI * 2 + 0.3;
+      const r = 3 + t * 16;
+      const sx = Math.round(x + 8 + Math.cos(a) * r), sy = Math.round(y + 12 + Math.sin(a) * r * 0.6 - t * 6);
+      ctx.fillStyle = `rgba(104,112,140,${(1 - t) * 0.7})`;
+      ctx.fillRect(sx + 1, sy + 1, 2, 2);
+      ctx.fillStyle = `rgba(248,248,248,${1 - t})`;
+      ctx.fillRect(sx, sy, 2, 2);
+    }
+  }
+
+  shout(text) {
+    this.slide.shout = { text, time: SHOUT_TIME };
+  }
+
+  /** How much faster than walking you're going: on the bike, sliding downhill, clomping in ski boots, or on foot with a coffee in you. */
   speed() {
     if (this.riding) return ITEMS.bike.speed;
+    if (this.slide.speed) return this.slide.speed * (this.slide.air ? AIR_SLOW : 1);
+    if (this.gear) return GEAR_WALK;
     return this.inUse.coffee ? ITEMS.coffee.walk : 1;
   }
 
@@ -281,7 +438,18 @@ export class Overworld {
     if (item.ride) {
       if (this.map.indoor) return ['No riding indoors!'];
       this.riding = !this.riding;
+      if (this.riding) this.gear = null;
       return [this.riding ? `You hop on your ${item.name}. Birds will hear you coming!` : `You get off your ${item.name}.`];
+    }
+    if (item.slide) {
+      if (this.gear === id) {
+        this.gear = null;
+        return [`You take off your ${item.name}.`];
+      }
+      if (this.map.indoor || !this.snowy) return [`You need snow for your ${item.name}! Try the slopes at OKEMO.`];
+      this.gear = id;
+      this.riding = false;
+      return [`${item.name} on! Now find a slope.`];
     }
     if (item.wear) {
       // Clothes go on over that part of your look (assets/player.js); use them again to take them off.
@@ -425,8 +593,16 @@ export class Overworld {
         this.dialog = {
           pages: [[`Board the train to ${warp.train}?`, 'A:YES  B:NO']],
           page: 0,
-          onYes: () => this.game.transition(() => this.game.setScene(new TrainScene(this.game, warp.train, this, go))),
+          // A ride to or from a snowy region goes through the snow.
+          onYes: () => this.game.transition(() => this.game.setScene(new TrainScene(this.game, warp.train, this, go, this.snowy || Boolean(REGIONS[getMap(warp.to).region].snowy)))),
         };
+        return true;
+      }
+      // A warp that `ask`s first (the chairlift): yes takes you, no leaves you standing there.
+      if (warp.ask) {
+        p.walking = false;
+        this.slide.speed = 0;
+        this.dialog = { pages: [[warp.ask, 'A:YES  B:NO']], page: 0, onYes: () => this.game.transition(go) };
         return true;
       }
       this.game.transition(go);
@@ -477,7 +653,10 @@ export class Overworld {
     const py = (p.y + p.dy * t) * TILE;
 
     // Camera follows the player, clamped to the map; small maps are centered.
-    const camX = Math.round(cameraAxis(px, this.map.width * TILE, VIEW_W));
+    // A wipeout shakes the screen for a moment.
+    const crash = this.slide.crash ? 1 - this.slide.crash / CRASH_TIME : null; // 0-1 through the tumble
+    const shake = crash !== null && crash < 0.35 ? Math.round(Math.sin(this.time * 70) * 2) : 0;
+    const camX = Math.round(cameraAxis(px, this.map.width * TILE, VIEW_W)) + shake;
     const camY = Math.round(cameraAxis(py, this.map.height * TILE, VIEW_H));
 
     ctx.fillStyle = '#000';
@@ -496,19 +675,41 @@ export class Overworld {
       if (b.x < x0 || b.x >= x1 || b.y < y0 || b.y >= y1) continue;
       for (const s of b.sprites) ctx.drawImage(s, b.x * TILE - camX, b.y * TILE - camY);
     }
-    const { phase, weather } = this.game;
+    const { phase } = this.game;
+    const weather = this.snowy ? snowyWeather(this.game.weather) : this.game.weather;
     if (this.panes.length) tintPanes(ctx, phase, this.panes.map((r) => ({ ...r, x: r.x - camX, y: r.y - camY })));
 
     this.npcs.draw(ctx, camX, camY, false, this.time);
     this.birds.draw(ctx, camX, camY, false, this.time);
     this.drawPerch(ctx, camX, camY, false);
 
-    // Player
-    const frames = this.playerSprites()[p.facing];
+    // Player. Spinning off a jump, you turn all the way around.
+    // Wiping out, you tumble head over heels, then sit up.
+    const tumbling = crash !== null && crash < 0.6;
+    const spin = tumbling ? SPIN[Math.floor(crash * 12) % 4]
+      : this.slide.air && this.slide.trick ? SPIN[Math.floor(p.progress * 8) % 4] : p.facing;
+    const frames = this.playerSprites()[spin];
     let sprite = frames.stand;
-    if (p.moving && p.progress < 0.5 && !this.riding) sprite = p.steps % 2 ? frames.stepB : frames.stepA;
+    if (p.moving && p.progress < 0.5 && !this.riding && !this.slide.speed) sprite = p.steps % 2 ? frames.stepB : frames.stepA;
+    // Skis go under your feet, and you stand up on them a little. Facing you, the ski tips come out in front of your boots.
+    // In the air you rise and fall over your shadow; on moguls you bounce.
+    const air = this.slide.air ? Math.round(Math.sin(p.progress * Math.PI) * AIR_HEIGHT)
+      : tumbling ? Math.round(Math.sin((crash / 0.6) * Math.PI) * 6) : 0;
+    const bump = p.moving && this.slide.speed && this.tileAt(p.x + p.dx, p.y + p.dy)?.moguls ? Math.round(Math.abs(Math.sin(p.progress * Math.PI * 2)) * 2) : 0;
+    if (air) {
+      ctx.fillStyle = 'rgba(40,48,80,0.25)';
+      ctx.fillRect(Math.round(px - camX) + 3, Math.round(py - camY) + 13, 10, 3);
+    }
+    if (crash !== null) this.drawCrash(ctx, Math.round(px - camX), Math.round(py - camY), crash);
+    // Mid-wipeout your skis have come off: they're lying in the snow beside you.
+    const gear = this.gear && crash === null && SLIDE_SPRITES[this.gear][spin];
+    const tipsFront = spin === 'down';
+    const gx = Math.round(px - camX), gy = Math.round(py - camY) - air - bump;
+    if (gear && !tipsFront) ctx.drawImage(gear, gx, gy);
+    const lift = (this.gear ? GEAR_LIFT : 0) + air + bump;
     // People are taller than a tile: feet on the tile, head over the one above.
-    ctx.drawImage(sprite, Math.round(px - camX), Math.round(py - camY) - (sprite.height - TILE));
+    ctx.drawImage(sprite, Math.round(px - camX), Math.round(py - camY) - (sprite.height - TILE) - lift);
+    if (gear && tipsFront) ctx.drawImage(gear, gx, gy);
     if (this.riding) ctx.drawImage(BIKE_SPRITES[p.facing], Math.round(px - camX), Math.round(py - camY));
 
     // Tall grass hides the player's feet
@@ -542,10 +743,24 @@ export class Overworld {
       const r = LANTERN * TILE + Math.sin(this.time * 9) * 1.5 + Math.sin(this.time * 23) * 0.8;
       const lantern = { x: px + TILE / 2, y: py + TILE / 2, r };
       drawDarkness(ctx, [lantern, ...this.lights].map((l) => ({ ...l, x: l.x - camX, y: l.y - camY })));
+    } else if (this.map.dim) {
+      // A dim room (a cellar bar): only its lamps, candles and neon light it, and a little glow around you so you can see your feet.
+      const you = { x: px + TILE / 2, y: py + TILE / 2, r: DIM_GLOW * TILE };
+      const lights = this.lights.map((l) => ({ ...l, r: l.flicker ? l.r + Math.sin(this.time * 11 + l.seed * 20) * 1.5 : l.r }));
+      drawDarkness(ctx, [you, ...lights].map((l) => ({ ...l, x: l.x - camX, y: l.y - camY })), `rgba(14,6,4,${this.map.dim})`);
+      drawWarmth(ctx, lights.map((l) => ({ ...l, x: l.x - camX, y: l.y - camY })));
     } else if (!this.map.indoor) {
       // Caves keep their own darkness, and indoors the light never changes.
       const lights = this.lights.map((l) => ({ ...l, x: l.x - camX, y: l.y - camY }));
       drawLighting(ctx, phase, { weather, time: this.time, lights, camX, camY });
+    }
+    const tipsy = this.tipsy();
+    if (tipsy) drawTipsy(ctx, tipsy, this.time);
+    const { shout } = this.slide;
+    if (shout) {
+      const x = Math.round(px - camX) + 8 - shout.text.length * 4, y = Math.round(py - camY) - 30 - Math.round((SHOUT_TIME - shout.time) * 8);
+      drawText(ctx, shout.text, x + 1, y + 1, '#202028');
+      drawText(ctx, shout.text, x, y, '#f8f8f8');
     }
 
     const target = !this.dialog && !this.rest && this.birds.target(...DIRS[p.facing], this.photoRange());
@@ -585,12 +800,12 @@ function formatWait(ms, seconds) {
 let shade = null; // reused offscreen canvas for drawDarkness
 
 /** Cover the screen in darkness, with soft holes cut out at each light ({ x, y, r } in screen px). */
-function drawDarkness(ctx, lights) {
+function drawDarkness(ctx, lights, darkness = DARKNESS) {
   shade ??= Object.assign(document.createElement('canvas'), { width: VIEW_W, height: VIEW_H });
   const s = shade.getContext('2d');
   s.globalCompositeOperation = 'source-over';
   s.clearRect(0, 0, VIEW_W, VIEW_H);
-  s.fillStyle = DARKNESS;
+  s.fillStyle = darkness;
   s.fillRect(0, 0, VIEW_W, VIEW_H);
   s.globalCompositeOperation = 'destination-out';
   for (const { x, y, r } of lights) {
@@ -603,6 +818,20 @@ function drawDarkness(ctx, lights) {
     s.fillRect(x - r, y - r, r * 2, r * 2);
   }
   ctx.drawImage(shade, 0, 0);
+}
+
+/** A soft amber glow around each light in a dim room, so lamplight looks warm, not just bright. */
+function drawWarmth(ctx, lights) {
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  for (const { x, y, r } of lights) {
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, 'rgba(120,60,10,0.35)');
+    g.addColorStop(1, 'rgba(120,60,10,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+  ctx.restore();
 }
 
 function cameraAxis(playerPx, mapPx, viewPx) {

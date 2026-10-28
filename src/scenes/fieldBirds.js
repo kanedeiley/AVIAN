@@ -5,7 +5,10 @@
 // it's calm, face it and press A to start the photo minigame; a calmer bird
 // sticks around longer there. Gear changes things (data/items.js): binoculars
 // reach farther, a bike is noisy, and birds near scattered seed calm down and
-// hop over to eat it.
+// hop over to eat it. A map's `birds` can also have `zones`: patches of the
+// map (by tile id, `tiles`, or a box, `area: [x0, y0, x1, y1]`) with their own
+// `count` and species. Birds there only perch in their zone, and the map's
+// other birds stay out of it.
 import { TILE } from '../config.js';
 import { BIRDS } from '../data/birds.js';
 import { ITEMS } from '../data/items.js';
@@ -18,6 +21,7 @@ const NOTICE = 5;          // tiles: birds only react to you inside this distanc
 const RANGE = 2;           // tiles: how close you need to be to raise the camera
 const ALERT_RATE = 1.2;    // alert gained per second walking at the edge of NOTICE (doubles right next to it)
 const CALM_RATE = 0.4;     // alert lost per second while you're still or out of range
+const SKI_NOISE = 0.6;     // skis on snow are quieter than walking (but you come up on birds fast)
 const COVER = 0.35;        // walking through cover is only this noticeable
 const NERVOUS = 0.5;       // above this a bird shows '?' and only hops away from you
 const HOP_TIME = 0.25;     // seconds for one hop between tiles
@@ -48,13 +52,19 @@ export class FieldBirds {
 
     const { map } = world;
     const taken = new Set([...map.warps, ...map.signs].map((t) => `${t.x},${t.y}`));
-    this.perches = [];
+    const zones = this.config.zones ?? [];
+    this.groups = [...zones, this.config].map((config) => ({ config, perches: [], spots: new Set() }));
+    const inZone = (zone, x, y) => (zone.tiles ? zone.tiles.includes(map.grid[y][x])
+      : x >= zone.area[0] && y >= zone.area[1] && x <= zone.area[2] && y <= zone.area[3]);
     for (let y = 0; y < map.height; y++) {
       for (let x = 0; x < map.width; x++) {
-        if (TILES[map.grid[y][x]].perch && !taken.has(`${x},${y}`)) this.perches.push({ x, y });
+        if (!TILES[map.grid[y][x]].perch || taken.has(`${x},${y}`)) continue;
+        const group = this.groups[zones.findIndex((z) => inZone(z, x, y))] ?? this.groups.at(-1);
+        group.perches.push({ x, y });
+        group.spots.add(`${x},${y}`);
       }
     }
-    for (let i = 0; i < this.config.count; i++) this.spawn();
+    for (const group of this.groups) for (let i = 0; i < group.config.count; i++) this.spawn(group);
   }
 
   /** The player's position in tiles, part way between tiles while walking. */
@@ -73,15 +83,16 @@ export class FieldBirds {
     return !this.birds.some((b) => b.x === x && b.y === y);
   }
 
-  spawn() {
+  /** A new bird somewhere in `group` (a zone, or the rest of the map), not too close to you. */
+  spawn(group) {
     const pos = this.playerPos();
-    const spots = this.perches.filter((s) => this.isFree(s.x, s.y) && Math.hypot(s.x - pos.x, s.y - pos.y) >= SPAWN_DIST);
-    if (!spots.length) return this.respawns.push(rand(...RESPAWN)); // try again later
+    const spots = group.perches.filter((s) => this.isFree(s.x, s.y) && Math.hypot(s.x - pos.x, s.y - pos.y) >= SPAWN_DIST);
+    if (!spots.length) return this.respawns.push({ group, time: rand(...RESPAWN) }); // try again later
     const { x, y } = pick(spots);
     const { phase, weather } = this.world.game;
-    const id = pickSpecies(this.config, phase, weather);
+    const id = pickSpecies(group.config, phase, weather);
     this.birds.push({
-      id, species: BIRDS[id], x, y, fromX: x, fromY: y,
+      id, species: BIRDS[id], group, x, y, fromX: x, fromY: y,
       hop: 1, idle: rand(...IDLE), facing: Math.random() < 0.5 ? -1 : 1,
       alert: 0, flying: false, flyTime: 0,
     });
@@ -100,21 +111,22 @@ export class FieldBirds {
   /** Take a bird off the map (it flew away or was photographed); another comes later. */
   remove(bird) {
     this.birds = this.birds.filter((b) => b !== bird);
-    this.respawns.push(rand(...RESPAWN));
+    this.respawns.push({ group: bird.group, time: rand(...RESPAWN) });
   }
 
   update(dt) {
     if (!this.config) return;
 
-    this.respawns = this.respawns.map((t) => t - dt);
-    for (const t of this.respawns) if (t <= 0) this.spawn();
-    this.respawns = this.respawns.filter((t) => t > 0);
+    for (const r of this.respawns) r.time -= dt;
+    const due = this.respawns.filter((r) => r.time <= 0);
+    this.respawns = this.respawns.filter((r) => r.time > 0);
+    for (const r of due) this.spawn(r.group);
     if (this.seed && (this.seed.time -= dt) <= 0) this.seed = null;
 
     const pos = this.playerPos();
     const p = this.world.player;
     const inCover = this.world.tileAt(p.x, p.y)?.cover;
-    const noise = this.world.riding ? ITEMS.bike.noise : 1;
+    const noise = this.world.riding ? ITEMS.bike.noise : this.world.slide?.speed ? SKI_NOISE : 1;
 
     for (const b of [...this.birds]) {
       if (b.flying) {
@@ -152,7 +164,7 @@ export class FieldBirds {
     const dist = (x, y) => Math.hypot(x - pos.x, y - pos.y);
     const options = STEPS
       .map(([dx, dy]) => ({ x: b.x + dx, y: b.y + dy }))
-      .filter(({ x, y }) => this.world.tileAt(x, y)?.perch && this.isFree(x, y))
+      .filter(({ x, y }) => b.group.spots.has(`${x},${y}`) && this.isFree(x, y))
       .filter(({ x, y }) => b.alert < NERVOUS || dist(x, y) > dist(b.x, b.y));
     const seed = this.seed;
     const toSeed = this.fed(b) && b.alert < NERVOUS
@@ -174,6 +186,13 @@ export class FieldBirds {
       const side = Math.abs(dx ? b.y - p.y : b.x - p.x);
       return along >= 1 && along <= range && side <= 1;
     }) ?? null;
+  }
+
+  /** Skiing past: the nearest bird within `range` tiles you could snap, whichever way it is. */
+  nearest(range = RANGE) {
+    const pos = this.playerPos();
+    const dist = (b) => Math.hypot(b.x - pos.x, b.y - pos.y);
+    return this.birds.filter((b) => !b.flying && b.hop >= 1 && dist(b) <= range + 0.5).sort((a, b) => dist(a) - dist(b))[0] ?? null;
   }
 
   /** Draw birds in front of (`front`) or behind the player's row. */

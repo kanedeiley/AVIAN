@@ -6,7 +6,7 @@
 // Nishisakawick Creek and on to a barricade (closed east); a road north (closed)
 // branches off by the Citgo. The road from Frenchtown comes up from the south
 // into the middle of town. West of it, the railroad (north to VERMONT) ends at
-// a bumper by MILFORD STATION (maps/milfordStation.js: the train to RUTLAND, VT), where the RIVERSHORE's nemesis bird, the
+// a bumper by MILFORD STATION (maps/milfordStation.js: the train to LUDLOW, VT), where the RIVERSHORE's nemesis bird, the
 // GYRFALCON, sits on the platform holding up the trains (data/nemeses.js); the
 // station agent tells you about it. Beat it and HANNAH calls from the train
 // north (data/dialogue.js hannahCall). East of the road: a yellow house, and

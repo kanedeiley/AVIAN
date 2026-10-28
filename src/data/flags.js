@@ -8,5 +8,6 @@ export const FLAGS = {
   metAsa: 'Talk to ASA in the COOPERS\' backyard in UPPER BLACK EDDY, up the towpath north of TINICUM.',
   wyattWentNorth: 'Show WYATT a photo of a PEREGRINE FALCON, by his van on the canal path in FRENCHTOWN.',
   metMilfordAgent: 'Talk to the STATION AGENT at MILFORD STATION.',
+  metHannahLudlow: 'Find HANNAH at EIGHT OH BREW, down the cellar stairs by the hotel in LUDLOW.',
   metHannahTinicum: 'Find HANNAH on the ball fields at TINICUM PARK, up the towpath north of ERWINNA.',
 };

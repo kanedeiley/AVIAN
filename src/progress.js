@@ -12,12 +12,18 @@ import { ITEMS } from './data/items.js';
 import { MAP_IDS, getMap } from './maps/index.js';
 import { saveProgress, saveMoney } from './save.js';
 
+/** Every species that can turn up on a map, its `zones` included. */
+export function mapSpecies(map) {
+  const { table = [], rare = [], zones = [] } = map.birds ?? {};
+  return [...table, ...rare, ...zones.flatMap((z) => [...z.table, ...(z.rare ?? [])])];
+}
+
 /** Every species found on the region's maps and voyages. */
 export function regionSpecies(regionId) {
   const maps = MAP_IDS.map(getMap).filter((m) => m.region === regionId && m.birds);
   const voyages = Object.values(VOYAGES).filter((v) => v.region === regionId);
   return new Set([
-    ...maps.flatMap((m) => [...m.birds.table, ...(m.birds.rare ?? [])]),
+    ...maps.flatMap(mapSpecies),
     ...voyages.flatMap((v) => [...v.table, ...(v.rare ?? [])]),
   ]);
 }
@@ -129,11 +135,12 @@ export function cantBuy(game, id) {
   return null;
 }
 
-/** Pay for one of an item and put it in your bag (check cantBuy first). */
+/** Pay for one of an item and put it in your bag (check cantBuy first). A `drink` is drunk on the spot: just pay. */
 export function buyItem(game, id) {
   game.money -= ITEMS[id].price;
-  game.progress.items[id] = itemCount(game, id) + 1;
   saveMoney(game.money);
+  if (ITEMS[id].kind === 'drink') return;
+  game.progress.items[id] = itemCount(game, id) + 1;
   saveProgress(game.progress);
 }
 

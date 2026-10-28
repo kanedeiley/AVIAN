@@ -232,10 +232,11 @@ export class WorldMapScene {
       ctx.fillRect(x - 1, y - 1, CELL + 2, CELL + 2);
     }
 
-    // The title: where you are, or on another page, its region. With more than one page, a dot for each.
+    // The title: where you are, or on another page, its region (if it's all one). With more than one page, a dot for each.
     drawBox(ctx, 0, 0, VIEW_W, TOP);
-    const name = this.pageIndex === this.herePage ? this.here.name : REGIONS[getMap(Object.keys(page.layout)[0]).region].name;
-    drawText(ctx, this.herePage < 0 && this.pageIndex === 0 ? 'WORLD' : `WORLD - ${name}`, 8, 8);
+    const regions = new Set(Object.keys(page.layout).map((id) => getMap(id).region));
+    const name = this.pageIndex === this.herePage ? this.here.name : regions.size === 1 ? REGIONS[[...regions][0]].name : null;
+    drawText(ctx, name ? `WORLD - ${name}` : 'WORLD', 8, 8);
     if (world.pages.length > 1) {
       world.pages.forEach((_, i) => {
         const x = VIEW_W - 10 - (world.pages.length - i) * 6;

@@ -34,6 +34,7 @@ import { CANAL_DEFS } from './canalTiles.js';
 import { PARK_DEFS } from './parkTiles.js';
 import { FRENCHTOWN_DEFS } from './frenchtownTiles.js';
 import { MILFORD_DEFS } from './milfordTiles.js';
+import { LUDLOW_DEFS } from './ludlowTiles.js';
 
 // ---------- outdoor ----------
 
@@ -506,6 +507,16 @@ const TABLE = [
   '................',
 ];
 
+// A candle in a jar, set on a table (Eight Oh Brew); the flame flickers.
+const CANDLE = [
+  '.......f........',
+  '.......e........',
+  '......kwk.......',
+  '......kwk.......',
+  '......kkk.......',
+  ...Array(11).fill('................'),
+];
+
 const BED = [
   '.kkkkkkkkkkkkkk.',
   '.kwwwwwwwwwwwwk.',
@@ -677,16 +688,19 @@ const DEFS = {
   bridge:    { art: BRIDGE },
   cobble:    { art: COBBLE, perch: true },
   fence:     { art: FENCE, base: 'grass', solid: true },
+  fenceSnow: { art: FENCE, base: 'snow', solid: true },
   fenceSide: { art: FENCE_SIDE, base: 'grass', solid: true },
   fountain:  { frames: [FOUNTAIN, recolor(FOUNTAIN, { c: 'b', w: 'c' })], frameTime: 0.4, base: 'cobble', solid: true },
   lampPost:  { art: LAMP_POST, base: 'cobble', solid: true, glow: 2 },
   lampPostGrass:  { art: LAMP_POST, base: 'grass', solid: true, glow: 2 },
   lampPostPaving: { art: LAMP_POST, base: 'paving', solid: true, glow: 2 },
+  lampPostSnow: { art: LAMP_POST, base: 'snow', solid: true, glow: 2 },
   pinkBed:   { art: recolor(FLOWER_BED, { x: 'i', z: 'f' }), perch: true },
   violetBed: { art: recolor(FLOWER_BED, { x: 'v', z: 'w' }), perch: true },
   yellowBed: { art: recolor(FLOWER_BED, { x: 'f', z: 'e' }), perch: true },
   tree:      { art: TREE, base: 'grass', solid: true },
   sign:      { art: SIGN, base: 'grass', solid: true },  // the map's `signs` list holds its text
+  signSnow:  { art: SIGN, base: 'snow', solid: true },
 
   roof:      { art: ROOF, solid: true },
   wall:      { art: WALL, solid: true },
@@ -710,12 +724,14 @@ const DEFS = {
   ...PARK_DEFS,    // Tinicum Park's ball fields, polo grounds and playground: see parkTiles.js
   ...FRENCHTOWN_DEFS, // Frenchtown's gas pumps, and the racks inside SunBeam: see frenchtownTiles.js
   ...MILFORD_DEFS, // Milford's railroad: see milfordTiles.js
+  ...LUDLOW_DEFS,  // snowy Vermont: see ludlowTiles.js
   hillTree:  { art: TREE, base: 'hill', solid: true },
 
   floor:     { art: FLOOR },
   innerWall: { art: INNER_WALL, solid: true },
   rug:       { art: RUG },
   table:     { art: TABLE, base: 'floor', solid: true },
+  candleTable: { frames: [stamp(TABLE, CANDLE), stamp(TABLE, recolor(CANDLE, { f: 'e', e: 'f' }))], frameTime: 0.25, base: 'cellarFloor', solid: true, glow: 1.6, flicker: true },
   bed:       { art: BED, base: 'floor', solid: true, rest: true },
   mat:       { art: MAT, base: 'floor' },  // the map puts the exit warp on it
   glyphs:    { art: GLYPHS, solid: true },

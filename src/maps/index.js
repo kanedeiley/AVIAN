@@ -22,7 +22,11 @@ import frenchtown from './frenchtown.js';
 import sunbeamShop from './sunbeamShop.js';
 import milford from './milford.js';
 import milfordStation from './milfordStation.js';
-import rutlandStation from './rutlandStation.js';
+import ludlowStation from './ludlowStation.js';
+import ludlow from './ludlow.js';
+import eightOhBrew from './eightOhBrew.js';
+import okemo from './okemo.js';
+import skiShop from './skiShop.js';
 import { TILES, LEGEND } from '../assets/tiles.js';
 import { PROPS } from '../assets/coastTiles.js'; // storefronts too (storeTiles.js)
 import { VOYAGES } from '../data/voyages.js';
@@ -35,7 +39,7 @@ import { COLLECTIBLES } from '../data/collectibles.js';
 import { ITEMS } from '../data/items.js';
 import { COLLECTIBLE_SPRITES, TELLS } from '../assets/collectibles.js';
 
-const MAPS = { village, house, shrine, hannahville, hannahHouse, cave, mountain, van, farm, leisterHouse, grandparentsHouse, pasture, airport, generalStore, erwinna, tinicum, riverbank, blackEddy, coffeeShop, frenchtown, sunbeamShop, milford, milfordStation, rutlandStation };
+const MAPS = { village, house, shrine, hannahville, hannahHouse, cave, mountain, van, farm, leisterHouse, grandparentsHouse, pasture, airport, generalStore, erwinna, tinicum, riverbank, blackEddy, coffeeShop, frenchtown, sunbeamShop, milford, milfordStation, ludlowStation, ludlow, eightOhBrew, okemo, skiShop };
 export const MAP_IDS = Object.keys(MAPS);
 const cache = {};
 

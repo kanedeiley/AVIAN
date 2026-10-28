@@ -31,6 +31,24 @@ const TIN_ROOF = [
   'NNNNNNNNNNNNNNNN',
 ];
 
+// The same roof under a heap of snow, with icicles off the eave.
+const SNOWY_ROOF = [
+  'kkkkkkkkkkkkkkkk',
+  'wwwwwwwwwwwwwwww',
+  'wwwWwwwwwwwwwwww',
+  'wwwwwwwwwwWwwwww',
+  'WwwwwwWwwwwwwwwW',
+  'WWwwwWWWwwwWwwWW',
+  'WWWWWWWWWWWWWWWW',
+  'WWWWWWWWWWWWWWWW',
+  'qWWWWqWWWWWqWWWW',
+  'rprWWprRrWWRrprR',
+  ...Array(3).fill('rprRrprRrprRrprR'),
+  'RRRRRRRRRRRRRRRR',
+  'kkkkkkkkkkkkkkkk',
+  'NcNNNNNcNNNNcNNN',
+];
+
 // Wooden boards, four to a tile.
 const SIDING = Array.from({ length: 16 }, (_, y) => (y % 4 === 3 ? 'OOOOOOOOOOOOOOOO' : 'oooooooooooooooo'));
 
@@ -148,6 +166,27 @@ const DISPLAYS = {
     '..kwwwk.kwwwk...',
     '..kkkkk.kkkkk...',
   ]),
+  // Skis and poles standing up (Ludlow's ski shop).
+  skis: display([
+    '..p..u..t...k.k.',
+    '..p..u..t...k.k.',
+    '..p..u..t...k.k.',
+    '..P..U..T...k.k.',
+  ]),
+  // Jugs of maple syrup.
+  syrup: display([
+    '...k....k....k..',
+    '..kak..kak..kak.',
+    '..kAk..kAk..kAk.',
+    '..kkk..kkk..kkk.',
+  ]),
+  // A lamp glowing between red curtains (the hotel).
+  lodge: display([
+    '..PP...ff...PP..',
+    '..PP...ff...PP..',
+    '..PP...nn...PP..',
+    '..PP...NN...PP..',
+  ]),
   // Snacks and drinks (the Citgo).
   snacks: display([
     '..kkk.kkk.kkk...',
@@ -197,22 +236,24 @@ function signboard(name, cols) {
 /**
  * A shop's front `cols` tiles wide (and 4 tall) as the prop `id`, with `name`
  * on the sign and `goods` (DISPLAYS ids) in the windows either side of the door.
- * A `shut` shop's door is solid (no inside yet): give it sign text.
+ * A `shut` shop's door is solid (no inside yet): give it sign text. A `snowy` one has snow on its roof,
+ * and `floors` (normally 1) is how many rows of upper windows it has: a taller building, like a hotel.
  */
-export function storefront(id, name, cols, goods = Object.keys(DISPLAYS), shut = false) {
+export function storefront(id, name, cols, goods = Object.keys(DISPLAYS), shut = false, { snowy = false, floors = 1 } = {}) {
   const door = Math.floor(cols / 2);
   const each = (fn) => Array.from({ length: cols }, (_, col) => fn(col));
   const side = (tiles) => tiles[0].map((_, y) => tiles.map((t) => t[y]).join('')); // tiles side by side
   const windows = each((col) => col).filter((col) => col !== door);
   const ground = (col) => (col === door ? SHOP_DOOR : DISPLAYS[goods[windows.indexOf(col) % goods.length]]);
   const art = [
-    ...side(each(() => TIN_ROOF)),
+    ...side(each(() => (snowy ? SNOWY_ROOF : TIN_ROOF))),
     ...signboard(name, cols),
-    ...side(each((col) => (col % 2 === door % 2 ? stamp(SIDING, UPPER_WINDOW) : SIDING))),
+    ...Array(floors).fill(side(each((col) => (col % 2 === door % 2 ? stamp(SIDING, UPPER_WINDOW) : SIDING)))).flat(),
     ...side(each((col) => stamp(SIDING, stamp(ground(col), AWNING)))),
   ];
   const overrides = {};
-  for (let col = 0; col < cols; col++) overrides[`${col}_3`] = col === door ? { solid: shut, glow: 1 } : { glow: 1.5 };
+  const doorRow = 2 + floors;
+  for (let col = 0; col < cols; col++) overrides[`${col}_${doorRow}`] = col === door ? { solid: shut, glow: 1 } : { glow: 1.5 };
   bigProp(id, art, { solid: true }, overrides, STORE_DEFS);
 }
 
@@ -228,6 +269,16 @@ storefront('citgoFront', 'CITGO', 3, ['snacks'], true);
 storefront('barberFront', 'BARBER SHOP', 5, ['barber'], true);
 storefront('descendentsFront', 'DESCENDENTS BREW', 6, ['mugs'], true);
 storefront('milfordStationFront', 'MILFORD STATION', 5, ['timetable']);
+// Ludlow's, in the snow.
+storefront('ludlowStationFront', 'LUDLOW STATION', 5, ['timetable'], false, { snowy: true });
+storefront('ludlowInnFront', 'LUDLOW INN', 9, ['lodge'], true, { snowy: true, floors: 3 });
+storefront('skiShopFront', 'SKI SHOP', 6, ['skis'], false, { snowy: true });
+storefront('mapleFront', 'MAPLE SUGAR', 6, ['syrup', 'snacks'], true, { snowy: true });
+storefront('ludlowBooksFront', 'BOOKSTORE', 5, ['books'], true, { snowy: true });
+storefront('ludlowCafeFront', 'COCOA CAFE', 5, ['coffee'], true, { snowy: true });
+storefront('outfitterFront', 'OUTFITTER', 5, ['clothes', 'optics'], true, { snowy: true });
+// The base lodge at Okemo.
+storefront('okemoLodgeFront', 'OKEMO LODGE', 7, ['skis', 'coffee'], true, { snowy: true });
 
 // ---------- inside ----------
 
@@ -276,6 +327,7 @@ const GOODS = {
   film: ['..ff.pp.ff.pp...', '..ff.pp.ff.pp...', '..kk.kk.kk.kk...'],
   jars: ['..qq.qq..qq.qq..', '..ff.dd..ff.dd..', '..fD.dD..fD.dD..'],
   books: ['..p.u.f.i.g.v...', '..pwuffiiggvv...', '..pwuffiiggvv...'],
+  bottles: ['..G..a..t..G..a.', '.GG.aa.tt.GG.aa.', '.GG.aa.tt.GG.aa.'],
 };
 
 /** Shelves of `goods` (GOODS ids, top to bottom) in a wooden case starting at row `top`. */
@@ -461,6 +513,91 @@ const STANCHION = [
   BLANK,
 ];
 
+// ---------- inside the ski shop (Ludlow) ----------
+
+// Skis standing in a wall rack: red, blue and teal pairs with curled tips.
+const SKI_RACK = Array.from({ length: 16 }, (_, y) => {
+  if (y === 0 || y > 13) return BLANK;
+  return [...BLANK].map((_, x) => {
+    const pair = [[1, 'p'], [6, 'u'], [11, 't']].find(([c]) => x === c || x === c + 2);
+    if (!pair) return '.';
+    return y === 1 || y === 13 ? 'k' : pair[1];
+  }).join('');
+});
+
+// ---------- inside a speakeasy (Eight Oh Brew) ----------
+
+// Rough fieldstone, dark and damp: the cellar's walls.
+const STONE_WALL = Array.from({ length: 16 }, (_, y) => {
+  if (y === 14) return 'kkkkkkkkkkkkkkkk';
+  if (y === 15) return 'HHHHHHHHHHHHHHHH';
+  const course = Math.floor(y / 5);
+  if (y % 5 === 4) return 'kkkkkkkkkkkkkkkk';
+  return [...BLANK].map((_, x) => ((x + course * 5) % 7 === 0 ? 'k' : (x * 3 + y) % 11 === 0 ? 'K' : 'C')).join('');
+});
+
+// Big dark flagstones, with black seams.
+const FLAGSTONES = Array.from({ length: 16 }, (_, y) => [...BLANK].map((_, x) => {
+  if (y % 8 === 7) return 'H';
+  if (x % 8 === (Math.floor(y / 8) % 2 ? 3 : 7)) return 'H';
+  return (x * 5 + y * 3) % 17 === 0 ? 'C' : 'F';
+}).join(''));
+
+// An iron lantern on a bracket, lit.
+export const WALL_LANTERN = [
+  BLANK,
+  BLANK,
+  '.......kk.......',
+  '......kkkk......',
+  '.....kfwwfk.....',
+  '.....kffffk.....',
+  '.....kffffk.....',
+  '......kkkk......',
+  '.......NN.......',
+  '.......NN.......',
+  ...Array(6).fill(BLANK),
+];
+
+// A pink neon "802" (Vermont's area code) on a black board.
+const NEON = [
+  BLANK,
+  BLANK,
+  '.kkkkkkkkkkkkkk.',
+  '.kkiiikiiikiiik.',
+  '.kkikikikikkkik.',
+  '.kkiiikikikiiik.',
+  '.kkikikikikikkk.',
+  '.kkiiikiiikiiik.',
+  '.kkkkkkkkkkkkkk.',
+  ...Array(7).fill(BLANK),
+];
+
+// Three beer taps on the bar, with colored handles.
+const TAPS = [
+  '...p...f...t....',
+  '...p...f...t....',
+  '...q...q...q....',
+  '...q...q...q....',
+  ...Array(12).fill(BLANK),
+];
+
+// A bar stool with a red seat.
+const STOOL = [
+  ...Array(7).fill(BLANK),
+  '.....kkkkkk.....',
+  '....kppppppk....',
+  '....kPPPPPPk....',
+  '.....kkkkkk.....',
+  '.......kk.......',
+  '.......NN.......',
+  '.....kNNNNk.....',
+  '......kkkk......',
+  BLANK,
+];
+
+// Wooden stairs up and out, at the bottom of the room.
+const STAIRS = Array.from({ length: 16 }, (_, y) => (y % 4 === 0 ? 'NkkkkkkkkkkkkkkN' : y % 4 === 3 ? 'NOOOOOOOOOOOOOON' : 'NooooooooooooooN'));
+
 Object.assign(STORE_DEFS, {
   storeWallTop: { art: WALL_TOP, solid: true },
   storeWall: { art: WALL, solid: true },
@@ -479,7 +616,7 @@ Object.assign(STORE_DEFS, {
   seedSacks: { art: [BLANK, BLANK, ...SEED_SACK.slice(0, 14)], base: 'floor', solid: true },
   seedBarrel: { art: BARREL, base: 'floor', solid: true },
   storePlant: { art: PLANT, base: 'floor', solid: true },
-  // Train stations (maps/milfordStation.js, rutlandStation.js).
+  // Train stations (maps/milfordStation.js, ludlowStation.js).
   platformDoors: { art: stamp(WALL, PLATFORM_DOORS) },  // walkable: the map puts a `train` warp on it
   platformDoorsShut: { art: stamp(WALL, stamp(PLATFORM_DOORS, BARRIER)), solid: true },  // a locked warp's `tile`
   departures: { art: stamp(WALL, DEPARTURES), solid: true },
@@ -487,4 +624,17 @@ Object.assign(STORE_DEFS, {
   stationClock: { art: stamp(WALL, CLOCK), solid: true },
   stanchion: { art: STANCHION, base: 'floor', solid: true },  // give it sign text
   benchFloor: { ...COAST_DEFS.bench, base: 'floor' },
+  // The ski shop (maps/skiShop.js).
+  skiRack: { art: stamp(WALL, SKI_RACK), solid: true },
+  // Eight Oh Brew (maps/eightOhBrew.js): a stone cellar, lit by lanterns, candles and neon.
+  cellarFloor: { art: FLAGSTONES },
+  cellarWall: { art: STONE_WALL, solid: true },
+  cellarLantern: { art: stamp(STONE_WALL, WALL_LANTERN), solid: true, glow: 2.5, flicker: true },
+  bottleShelf: { art: stamp(STONE_WALL, shelves(['bottles', 'bottles'])), solid: true, glow: 1 },
+  neonSign: { art: stamp(STONE_WALL, NEON), solid: true, glow: 2 },
+  barCounter: { art: COUNTER, base: 'cellarFloor', solid: true, counter: true },
+  tapCounter: { art: stamp(COUNTER, TAPS), base: 'cellarFloor', solid: true, counter: true, glow: 1.5 },
+  barStool: { art: STOOL, base: 'cellarFloor', solid: true },
+  cellarBarrel: { art: BARREL, base: 'cellarFloor', solid: true },
+  stairsUp: { art: STAIRS, glow: 2 },  // walkable: the map puts the way-out warp on it; daylight comes down them
 });

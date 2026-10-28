@@ -6,7 +6,7 @@
 //   name      shown in the journal's details, which has room for 15 letters
 //   short     the journal list's name, which has room for about 10 letters
 //   map, x, y where it's hidden
-//   tell      what rises off its tile: 'stench' (the default), 'music', 'feathers' or 'smoke'
+//   tell      what rises off its tile: 'stench' (the default), 'music', 'feathers', 'smoke' or 'mitten'
 //   about     the journal's note on it, once you've found it: 4 lines of 14 letters
 //   found     what you're told when you pick it up
 // The art is in assets/collectibles.js, under the same id.
@@ -55,6 +55,19 @@ export const COLLECTIBLES = {
     found: [
       'The grill is still warm, and something smells amazing...',
       "You found DAVID'S FAMOUS CHEESEBURGER!",
+      'New collectible! Open your journal and press RIGHT to see it.',
+    ],
+  },
+  // Up at Okemo, in a pocket of snow you can only get to off the kicker on Easy Street's side spur.
+  danielsMittens: {
+    name: "DANIEL'S MITTS",
+    short: 'MITTENS',
+    map: 'okemo', x: 4, y: 99,
+    tell: 'mitten',
+    about: 'Name tag sewn in the cuff: DANIEL. Still damp.',
+    found: [
+      'Something red is sticking up out of the snow...',
+      "You found DANIEL'S LOST MITTENS!",
       'New collectible! Open your journal and press RIGHT to see it.',
     ],
   },
