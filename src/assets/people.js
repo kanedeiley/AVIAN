@@ -32,6 +32,12 @@ const PEOPLE = {
   sunbeamClerk: personSprites('sunbeamClerk', { hair: 'long', hat: 'bucket', legs: 'pants' }, { hat: '#8a7a58', hatShade: '#6a5a40', top: '#f8b028', topShade: '#c87c10', bottoms: '#4060b0', hair: '#303038', hairShade: '#18181f' }),
   // The station agent at Milford Station: a navy conductor's cap and vest.
   stationAgent: personSprites('stationAgent', 'male', { hat: '#283c60', hatShade: '#182840', top: '#304878', topShade: '#203058', bottoms: '#404050', hair: '#c8c8c8', hairShade: '#909098' }),
+  // Hannah in Ludlow, after a day on the slopes: a navy beanie and a raspberry ski jacket.
+  hannahSki: personSprites('hannahSki', { hair: 'long', hat: 'beanie', legs: 'pants' }, { hat: '#283c80', hatShade: '#182850', top: '#d04078', topShade: '#982850', bottoms: '#303038', hair: '#a0502c', hairShade: '#6a3018' }),
+  // The bartender at Eight Oh Brew: a black vest and short brown hair.
+  bartender: personSprites('bartender', { hair: 'short', hat: 'none', legs: 'pants' }, { top: '#303038', topShade: '#18181f', bottoms: '#404050', hair: '#5a3818', hairShade: '#3a2410' }),
+  // The ski tech at Ludlow's SKI SHOP: an orange beanie and a teal shell jacket.
+  skiTech: personSprites('skiTech', { hair: 'short', hat: 'beanie', legs: 'pants' }, { hat: '#e88030', hatShade: '#b05818', top: '#3a9088', topShade: '#286060', bottoms: '#303038', hair: '#e8c860', hairShade: '#b89838' }),
   pilot: personSprites('pilot', 'male', { hat: '#7a4a28', hatShade: '#4a2c18', top: '#8a5a30', topShade: '#5a3818', bottoms: '#4a68a0', hair: '#c8c8c8', hairShade: '#909098' }),
 };
 

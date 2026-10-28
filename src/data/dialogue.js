@@ -159,8 +159,8 @@ export const DIALOGUE = {
   stationAgent(game) {
     if (beatNemesis(game, 'gyrfalcon')) {
       return [
-        'STATION AGENT: You did it! That falcon took off up the tracks, and the last train north pulled out right behind it.',
-        'There\'s track work up the line now, so no more trains to VERMONT for a while. Check back soon!',
+        'STATION AGENT: You did it! That falcon took off up the tracks, and the trains are running again.',
+        'Head on inside: the train north to LUDLOW, VERMONT leaves from the platform.',
       ];
     }
     if (game.progress.flags.metMilfordAgent) {
@@ -184,6 +184,25 @@ export const DIALOGUE = {
       'This train runs north on the railroad out of MILFORD, all the way up to VERMONT.',
       'They say there are birds up in those mountains you\'ll never see down here. I couldn\'t resist!',
       'When the line opens again, catch a train north and come find me. I\'ll save you a seat!',
+    ];
+  },
+  // HANNAH at EIGHT OH BREW in Ludlow, after a day skiing. The first time you come down the
+  // stairs she walks right over (npc `greets`): she saved you a seat, like she said on the phone.
+  hannahLudlow(game) {
+    const name = playerName(game);
+    if (!game.progress.flags.metHannahLudlow) {
+      return [
+        `HANNAH: ${name}!! You made it to VERMONT! I told you I'd save you a seat. Well... a barstool.`,
+        'Ugh, I\'ve had the LONGEST day on the slopes. First chair up the mountain this morning, last run down at sunset.',
+        'My legs are SO weary. When they get like this, there\'s nothing I love more than ending the day down here with a few drinks.',
+        'Welcome to EIGHT OH BREW! Grab a BEER at the bar. Fair warning: they pour them strong up here.',
+        'Oh, and the birds! CHICKADEES on every chairlift, WOODPECKERS drumming in the pines... I heard an OWL on the way down, too.',
+      ];
+    }
+    return [
+      `HANNAH: My legs are jelly, ${name}. Pull up a stool!`,
+      'The bar\'s right there if you want another round. I\'m not going anywhere.',
+      'If you want to hit the slopes tomorrow, the SKI SHOP on Main Street has skis. OKEMO is right up the road west!',
     ];
   },
   // ASA COOPER, your rival, in his backyard in Upper Black Eddy. He's the volunteer

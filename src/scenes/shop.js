@@ -90,18 +90,21 @@ export class ShopScene extends ItemMenu {
   }
 
   choose(id) {
-    const why = cantBuy(this.game, id);
+    const item = ITEMS[id];
+    const why = item.kind === 'drink' && this.world.inUse[id] ? item.busy : cantBuy(this.game, id);
     if (why) {
       this.message = [why];
       return;
     }
     buyItem(this.game, id);
+    // A drink goes down right here at the counter, not in your bag.
+    if (item.kind === 'drink') return this.close(this.world.useItem(id));
     const { name, kind } = ITEMS[id];
     this.message = [kind === 'supply' ? `Bought ${name}! You have ${itemCount(this.game, id)} now.` : `Bought ${name}! Press I to open your BAG.`];
   }
 
-  close() {
-    super.close(['Thanks for stopping by! Happy birding!']);
+  close(lines = ['Thanks for stopping by! Happy birding!']) {
+    super.close(lines);
   }
 }
 
@@ -119,6 +122,7 @@ export class BagScene extends ItemMenu {
   note(id) {
     const { world } = this;
     if (ITEMS[id].ride) return world.riding ? ['RIDING'] : [''];
+    if (ITEMS[id].slide) return world.gear === id ? ['ON'] : [''];
     if (ITEMS[id].wear) return wearing(this.game, id) ? ['WEARING'] : [''];
     if (world.inUse[id]) return [`${Math.ceil(world.inUse[id])}S x${itemCount(this.game, id)}`];
     return ITEMS[id].kind === 'supply' ? [`x${itemCount(this.game, id)}`] : [''];

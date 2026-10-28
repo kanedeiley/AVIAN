@@ -18,6 +18,13 @@ const LIGHTING = {
 // Indoors the light is always the same; only the windows show the time.
 const PANE_ALPHA = 0.7;
 const RAIN_DROPS = 48;
+const SNOWFLAKES = { snow: 64, flurries: 18 };
+const SNOWY = { clear: 'flurries', overcast: 'snow', rain: 'snow' };
+
+/** The day's weather in a `snowy` region (data/regions.js): it comes down as snow, light flurries when it's clear. */
+export function snowyWeather(weather) {
+  return SNOWY[weather] ?? weather;
+}
 const FOG_HAZE = 'rgba(232,236,240,0.1)'; // the thin, even haze under the patches
 const FOG_LAYERS = [                      // dithered patches drifting at different speeds, for depth
   { alpha: 0.2, speed: 5, flip: false },
@@ -111,7 +118,7 @@ function drawGlows(ctx, lights, time) {
 }
 
 function drawWeather(ctx, weather, time, h, camX, camY, fogDim) {
-  if (weather === 'overcast' || weather === 'rain') {
+  if (weather === 'overcast' || weather === 'rain' || weather === 'snow') {
     ctx.globalCompositeOperation = 'multiply';
     ctx.fillStyle = weather === 'rain' ? '#a8b0c0' : '#c8c8d0';
     ctx.fillRect(0, 0, VIEW_W, h);
@@ -125,6 +132,16 @@ function drawWeather(ctx, weather, time, h, camX, camY, fogDim) {
       const x = (i * 53 + 400 - time * 40) % (VIEW_W + 8);
       ctx.fillRect(Math.round(x), Math.round(y), 1, 4);
       ctx.fillRect(Math.round(x) - 1, Math.round(y) + 4, 1, 2);
+    }
+  }
+  if (SNOWFLAKES[weather]) {
+    ctx.fillStyle = 'rgba(248,248,255,0.9)';
+    for (let i = 0; i < SNOWFLAKES[weather]; i++) {
+      // Each flake drifts down on its own track, swaying side to side; every third one is bigger (nearer).
+      const size = i % 3 === 0 ? 2 : 1;
+      const y = (i * 89 + time * (14 + (i % 5) * 4) * size) % (h + 4) - 4;
+      const x = (i * 61 + Math.sin(time * 1.3 + i) * 6 - time * 6) % (VIEW_W + 4);
+      ctx.fillRect(Math.round(x < 0 ? x + VIEW_W + 4 : x), Math.round(y), size, size);
     }
   }
   if (weather === 'fog') {

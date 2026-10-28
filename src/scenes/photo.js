@@ -7,8 +7,10 @@
 // `alert` (0-1) is how nervous the bird already was when you raised the
 // camera; a nervous bird runs out of patience up to twice as fast.
 //
-// `setting` picks the backdrop: 'field' (a branch in front of the trees) or
-// 'ocean' (the bird floats and paddles along the water, seen from the boat).
+// `setting` picks the backdrop: 'field' (a branch in front of the trees),
+// 'snow' (a snowy branch in front of snowy pines, with snow falling: a `snowy`
+// region, data/regions.js) or 'ocean' (the bird floats and paddles along the
+// water, seen from the boat).
 // When it's done it calls `returnTo.resume(stars)` if the scene it returns to has one.
 //
 // A photo earns money: more for more stars, a new species or a better photo
@@ -21,7 +23,7 @@ import { input } from '../input.js';
 import { drawBox, drawText, drawDialog, paginate } from '../gfx/ui.js';
 import { saveJournal, saveMoney } from '../save.js';
 import { drawOcean, drawWater } from '../gfx/ocean.js';
-import { drawLighting, tintSky } from '../gfx/lighting.js';
+import { drawLighting, tintSky, snowyWeather } from '../gfx/lighting.js';
 import { phaseMultiplier } from '../time.js';
 
 const BRANCH_Y = 92;      // top edge of the branch the bird stands on (or the waterline at sea)
@@ -49,13 +51,14 @@ export class PhotoScene {
     this.game = game;
     this.returnTo = returnTo;
     this.swimming = setting === 'ocean';
+    this.snowy = setting === 'snow';
     this.id = birdId;
     this.species = BIRDS[birdId];
     this.sprites = BIRD_SPRITES[birdId];
     this.time = 0;
     // The time of day and weather when the bird landed: they set the light, and the pay.
     this.timeOfDay = game.phase;
-    this.weather = game.weather;
+    this.weather = this.snowy ? snowyWeather(game.weather) : game.weather;
 
     // phase: 'arrive' -> 'aim' -> 'leave' -> 'result'
     this.phase = 'arrive';
@@ -247,18 +250,23 @@ export class PhotoScene {
       drawOcean(ctx, this.time, HORIZON, 116);
       return tintSky(ctx, this.timeOfDay, 0, 0, VIEW_W, HORIZON);
     }
-    ctx.fillStyle = '#b8e0f8';
+    ctx.fillStyle = this.snowy ? '#c8d8e8' : '#b8e0f8';
     ctx.fillRect(0, 0, VIEW_W, 116);
     tintSky(ctx, this.timeOfDay, 0, 0, VIEW_W, 40);
+    const [tree, ground] = this.snowy ? ['snowyPine', 'snow'] : ['tree', 'grass'];
     for (let x = 0; x < VIEW_W; x += TILE) {
-      ctx.drawImage(TILES.tree.sprites[0], x, 24);
-      for (let y = 40; y < 116; y += TILE) ctx.drawImage(TILES.grass.sprites[0], x, y);
+      ctx.drawImage(TILES[tree].sprites[0], x, 24);
+      for (let y = 40; y < 116; y += TILE) ctx.drawImage(TILES[ground].sprites[0], x, y);
     }
-    // The branch
+    // The branch, with a line of snow along the top in winter.
     ctx.fillStyle = '#5a3818';
     ctx.fillRect(0, BRANCH_Y, VIEW_W, 6);
     ctx.fillStyle = '#8a5a30';
     ctx.fillRect(0, BRANCH_Y, VIEW_W, 2);
+    if (this.snowy) {
+      ctx.fillStyle = '#f8f8f8';
+      for (let x = 0; x < VIEW_W; x += 6) ctx.fillRect(x, BRANCH_Y - 1 - (x % 18 === 0 ? 1 : 0), 5, 2);
+    }
   }
 
   drawBird(ctx) {
@@ -303,7 +311,8 @@ export class PhotoScene {
     drawBox(ctx, 0, 116, VIEW_W, 44);
 
     if (this.phase === 'arrive') {
-      drawText(ctx, `A ${this.species.name} landed nearby!`, 12, 132);
+      drawText(ctx, `A ${this.species.name}`, 12, 126);
+      drawText(ctx, 'landed nearby!', 12, 140);
       return;
     }
 

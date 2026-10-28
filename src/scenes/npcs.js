@@ -8,6 +8,8 @@
 // they're only around some of the time (see progress.js shown()). They block the player like any solid tile. Face one and press A
 // to say hi: it sits and looks at you while you talk. `leaves: { photo, flag }`: once a photo
 // of that bird is in your journal, talking to them sets `flag` and they're gone (scenes/overworld.js).
+// `greets: true` (with `sets`): the first time you come in, before their flag is set, they walk
+// right up to you and start talking (you wait while they come over).
 import { TILE } from '../config.js';
 import { DOG_SPRITES } from '../assets/dogs.js';
 import { PEOPLE_SPRITES } from '../assets/people.js';
@@ -19,6 +21,7 @@ const IDLE = [0.8, 3];   // seconds between moves
 const SIT_CHANCE = 0.3;  // chance to sit down instead of moving
 const LISTEN_TIME = 2;   // seconds it keeps sitting after you talk to it
 const STEPS = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+const GREET_DELAY = 0.6; // seconds after you come in before a greeter starts over
 
 const SPRITES = { ...DOG_SPRITES, ...PEOPLE_SPRITES, ...ANIMAL_SPRITES };
 
@@ -31,6 +34,9 @@ export class Npcs {
       ...n, fromX: n.x, fromY: n.y, step: 1, idle: rand(...IDLE),
       facing: Math.random() < 0.5 ? 'left' : 'right', sitting: true, listening: 0,
     }));
+    // Someone who comes over to say hello the first time (`greets`).
+    this.greeter = this.list.find((n) => n.greets && n.sets && !world.game.progress.flags[n.sets]) ?? null;
+    if (this.greeter) this.greeter.idle = GREET_DELAY;
     // Doorways stay clear: nobody wanders onto a warp, or the tiles right next to one.
     this.keepClear = new Set(world.map.warps.flatMap((w) => [[0, 0], ...STEPS].map(([dx, dy]) => `${w.x + dx},${w.y + dy}`)));
   }
@@ -61,6 +67,10 @@ export class Npcs {
         n.step = Math.min(1, n.step + dt / STEP_TIME);
         continue;
       }
+      if (n === this.greeter) {
+        if ((n.idle -= dt) <= 0) this.greet(n, playerOn);
+        continue;
+      }
       if (world.dialog || n.listening > 0) {
         n.listening = Math.max(0, n.listening - dt);
         continue;
@@ -83,6 +93,27 @@ export class Npcs {
       if (to.dx) n.facing = to.dx < 0 ? 'left' : 'right';
       Object.assign(n, { fromX: n.x, fromY: n.y, x: to.x, y: to.y, step: 0, sitting: false });
     }
+  }
+
+  /** A greeter's next move: a step toward you (whichever way closes the gap most), or, once next to you, hello. */
+  greet(n, playerOn) {
+    const world = this.world;
+    const p = world.player;
+    const gapX = p.x - n.x, gapY = p.y - n.y;
+    const tries = [[Math.sign(gapX), 0], [0, Math.sign(gapY)]].filter(([dx, dy]) => dx || dy);
+    if (Math.abs(gapY) > Math.abs(gapX)) tries.reverse();
+    const to = Math.abs(gapX) + Math.abs(gapY) <= 1 ? null : tries
+      .map(([dx, dy]) => ({ x: n.x + dx, y: n.y + dy, dx }))
+      .find(({ x, y }) => world.tileAt(x, y) && !world.tileAt(x, y).solid && !this.occupies(x, y) && !playerOn(x, y));
+    if (to) {
+      if (to.dx) n.facing = to.dx < 0 ? 'left' : 'right';
+      Object.assign(n, { fromX: n.x, fromY: n.y, x: to.x, y: to.y, step: 0, sitting: false });
+      return;
+    }
+    // Next to you (or with no way closer): you turn to face each other, and they start talking.
+    this.greeter = null;
+    if (gapX || gapY) p.facing = Math.abs(gapX) >= Math.abs(gapY) ? (gapX > 0 ? 'left' : 'right') : (gapY > 0 ? 'up' : 'down');
+    world.talkTo(n);
   }
 
   /** Draw NPCs in front of (`front`) or behind the player's row. */
