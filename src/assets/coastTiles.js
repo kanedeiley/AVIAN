@@ -1074,6 +1074,42 @@ bigProp('tourShip', TOUR_SHIP, { base: 'water', solid: true });
 bigProp('sprinterVan', SPRINTER_VAN, { base: 'sand', solid: true }, { '1_1': { solid: false } });
 // The same van parked on a towpath (Frenchtown).
 bigProp('sprinterVanTowpath', SPRINTER_VAN, { base: 'towpath', solid: true }, { '1_1': { solid: false } });
+// And snowed in at the bottom of Okemo (Vermont), with snow piled on the roof.
+const SNOWY_ROOF = 3; // the roof rows of SPRINTER_VAN
+const SNOWY_VAN = SPRINTER_VAN.map((r, y) => (y < SNOWY_ROOF ? r.replace(/[afeA]/g, (c) => (c === 'A' ? 'W' : 'w')) : r));
+bigProp('sprinterVanSnow', SNOWY_VAN, { base: 'snow', solid: true }, { '1_1': { solid: false } });
+
+// The bus to the WHITE MOUNTAINS, from the side, nose to the east: a green coach with a white stripe, a row of
+// windows, snow on the roof and the door just behind the windshield. Drawn by rectangles, 5 tiles by 2.
+const MOUNTAIN_BUS = (() => {
+  const rows = Array.from({ length: 32 }, () => [...'.'.repeat(80)]);
+  const fill = (x0, y0, x1, y1, c) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) rows[y][x] = c; };
+  fill(4, 3, 75, 3, 'W');   // snow heaped on the roof
+  fill(3, 4, 76, 4, 'w');
+  fill(2, 5, 77, 26, 'k');  // the outline
+  fill(3, 6, 76, 25, 'G');  // the green body
+  fill(3, 6, 76, 7, 'g');   // a highlight along the roof line
+  for (let x = 5; x < 48; x += 11) { fill(x, 9, x + 9, 16, 'k'); fill(x + 1, 10, x + 8, 15, 'c'); fill(x + 1, 10, x + 3, 11, 'w'); }
+  fill(66, 8, 76, 18, 'k');   // the windshield
+  fill(67, 9, 76, 17, 'c');
+  fill(68, 9, 70, 11, 'w');
+  fill(66, 6, 75, 7, 'f');    // the route sign over it
+  fill(3, 19, 76, 20, 'w');   // the white stripe
+  fill(3, 24, 76, 25, 'h');   // the skirt
+  fill(51, 8, 61, 25, 'k');   // the door: two glass panels
+  fill(52, 9, 55, 24, 'c');
+  fill(57, 9, 60, 24, 'c');
+  fill(73, 21, 76, 22, 'f');  // a headlight
+  fill(3, 21, 4, 22, 'p');    // a taillight
+  for (const cx of [15, 68]) { // wheels
+    fill(cx - 5, 23, cx + 5, 30, 'k');
+    fill(cx - 4, 22, cx + 4, 31, 'k');
+    fill(cx - 2, 25, cx + 2, 28, 'q');
+  }
+  return rows.map((r) => r.join(''));
+})();
+// The door (bottom row, fourth tile) is walkable: the map puts a `bus` warp on it.
+bigProp('mountainBus', MOUNTAIN_BUS, { base: 'plowedRoadEW', solid: true }, { '3_1': { solid: false } });
 
 for (const [color, swaps] of Object.entries(PLASTERS)) {
   for (const [part, { art, walk, ...rest }] of Object.entries(BUILDING_PARTS)) {

@@ -27,6 +27,9 @@ import ludlow from './ludlow.js';
 import eightOhBrew from './eightOhBrew.js';
 import okemo from './okemo.js';
 import skiShop from './skiShop.js';
+import tamarackBog from './tamarackBog.js';
+import blackRiverWoods from './blackRiverWoods.js';
+import pinkhamNotch from './pinkhamNotch.js';
 import { TILES, LEGEND } from '../assets/tiles.js';
 import { PROPS } from '../assets/coastTiles.js'; // storefronts too (storeTiles.js)
 import { VOYAGES } from '../data/voyages.js';
@@ -39,7 +42,7 @@ import { COLLECTIBLES } from '../data/collectibles.js';
 import { ITEMS } from '../data/items.js';
 import { COLLECTIBLE_SPRITES, TELLS } from '../assets/collectibles.js';
 
-const MAPS = { village, house, shrine, hannahville, hannahHouse, cave, mountain, van, farm, leisterHouse, grandparentsHouse, pasture, airport, generalStore, erwinna, tinicum, riverbank, blackEddy, coffeeShop, frenchtown, sunbeamShop, milford, milfordStation, ludlowStation, ludlow, eightOhBrew, okemo, skiShop };
+const MAPS = { village, house, shrine, hannahville, hannahHouse, cave, mountain, van, farm, leisterHouse, grandparentsHouse, pasture, airport, generalStore, erwinna, tinicum, riverbank, blackEddy, coffeeShop, frenchtown, sunbeamShop, milford, milfordStation, ludlowStation, ludlow, eightOhBrew, okemo, skiShop, tamarackBog, blackRiverWoods, pinkhamNotch };
 export const MAP_IDS = Object.keys(MAPS);
 const cache = {};
 
@@ -150,6 +153,7 @@ export function getMap(id) {
     if (TILES[grid[n.y][n.x]].solid) throw new Error(`${at} starts on a solid tile`);
     for (const item of n.shop ?? []) if (!ITEMS[item]) throw new Error(`${at} sells unknown item "${item}" (see data/items.js)`);
     checkShown(n, at);
+    if (n.leaves) checkShown({ after: n.leaves.after }, `${at} leaves`);
   }
 
   const perches = [...Object.entries(NEMESES).map(([k, n]) => [`nemesis "${k}"`, n]), ...Object.entries(RIVALS).map(([k, r]) => [`rival "${k}"`, r])];

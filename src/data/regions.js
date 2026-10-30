@@ -10,4 +10,5 @@ export const REGIONS = {
   plains: { name: 'OPEN PLAINS' },
   rivershore: { name: 'RIVERSHORE' },
   vermont: { name: 'GREEN MOUNTAINS', snowy: true },
+  whiteMountains: { name: 'WHITE MOUNTAINS', snowy: true },
 };

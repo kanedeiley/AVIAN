@@ -6,8 +6,9 @@
 // data/dialogue.js whose lines change as you progress, and `sets` is a story
 // flag (data/flags.js) you earn by talking to them. `after`/`until` a nemesis or rival is beaten (or a flag is set),
 // they're only around some of the time (see progress.js shown()). They block the player like any solid tile. Face one and press A
-// to say hi: it sits and looks at you while you talk. `leaves: { photo, flag }`: once a photo
-// of that bird is in your journal, talking to them sets `flag` and they're gone (scenes/overworld.js).
+// to say hi: it sits and looks at you while you talk. `leaves: { photo, after, flag }`: once a photo
+// of that bird is in your journal (if `photo`) and `after` is done (a nemesis, rival or flag, like
+// `after` above), talking to them sets `flag` and they're gone (scenes/overworld.js).
 // `greets: true` (with `sets`): the first time you come in, before their flag is set, they walk
 // right up to you and start talking (you wait while they come over).
 import { TILE } from '../config.js';

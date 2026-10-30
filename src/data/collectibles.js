@@ -6,7 +6,7 @@
 //   name      shown in the journal's details, which has room for 15 letters
 //   short     the journal list's name, which has room for about 10 letters
 //   map, x, y where it's hidden
-//   tell      what rises off its tile: 'stench' (the default), 'music', 'feathers', 'smoke' or 'mitten'
+//   tell      what rises off its tile: 'stench' (the default), 'music', 'feathers', 'smoke', or one of DANIEL's things poking out of the snow: 'mitten', 'page', 'steam' or 'glint'
 //   about     the journal's note on it, once you've found it: 4 lines of 14 letters
 //   found     what you're told when you pick it up
 // The art is in assets/collectibles.js, under the same id.
@@ -68,6 +68,47 @@ export const COLLECTIBLES = {
     found: [
       'Something red is sticking up out of the snow...',
       "You found DANIEL'S LOST MITTENS!",
+      'New collectible! Open your journal and press RIGHT to see it.',
+    ],
+  },
+  // DANIEL's trail (data/dialogue.js skiPatrol): each thing he dropped says a little more about
+  // the bird he was after and where he went. The THERMOS and BINOCULARS both point north, to the bog.
+  danielsNotebook: {
+    name: 'NOTEBOOK PAGE',
+    short: 'NOTEBOOK',
+    map: 'ludlow', x: 15, y: 26,
+    tell: 'page',
+    about: 'A huge round face, yellow eyes. BIG. GRAY. SILENT.',
+    found: [
+      'A page is flapping in the pine by the frozen pond...',
+      "You found a page from DANIEL'S NOTEBOOK!",
+      'A sketch of an enormous round-faced owl. Under it: "BIG. GRAY. SILENT. Not a BARRED."',
+      'New collectible! Open your journal and press RIGHT to see it.',
+    ],
+  },
+  danielsThermos: {
+    name: 'WARM THERMOS',
+    short: 'THERMOS',
+    map: 'okemo', x: 47, y: 0,
+    tell: 'steam',
+    about: 'Still warm. Boot tracks lead north past the rope.',
+    found: [
+      'Something is steaming in the pines past the rope...',
+      "You found DANIEL'S THERMOS! It's still a little warm.",
+      'Boot tracks lead from it north, under the rope and into the trees.',
+      'New collectible! Open your journal and press RIGHT to see it.',
+    ],
+  },
+  danielsBinoculars: {
+    name: 'BINOCULARS',
+    short: 'BINOCULARS',
+    map: 'okemo', x: 48, y: 8,
+    tell: 'glint',
+    about: 'Strap snapped. Taped on: HUNTS THE BOG AT DUSK.',
+    found: [
+      'Something is glinting in the pine at the top of THE GLADES...',
+      "You found DANIEL'S BINOCULARS! The strap is snapped.",
+      'A strip of tape on them, in pen: "NORTH OF THE SUMMIT. HUNTS THE BOG AT DUSK."',
       'New collectible! Open your journal and press RIGHT to see it.',
     ],
   },

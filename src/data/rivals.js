@@ -51,4 +51,41 @@ export const RIVALS = {
       'ASA: Not four. Again.',
     ],
   },
+  // WYATT, in VERMONT, still sore that you beat him to the GYRFALCON. A PILEATED WOODPECKER drums
+  // on the dead snag behind his van at the bottom of OKEMO: beat his record and he'll hear HANNAH
+  // out about her club (data/dialogue.js wyattOkemo; his npc `leaves` to EIGHT OH BREW).
+  wyatt: {
+    name: 'WYATT',
+    bird: 'pileatedWoodpecker',
+    map: 'okemo', x: 54, y: 138,
+    region: 'vermont',
+    requires: { flags: ['metWyattOkemo'], species: 10 },
+    // Busy with its snag, it sits longer than a pileated out in the woods, but it still hops a lot.
+    speed: 70,
+    hop: 70,
+    pause: [0.8, 1.8],
+    focusTime: 1.3,
+    film: 7,
+    patience: 45,
+    hits: 4,
+    hitStars: 2,
+    rage: 1.15,
+    locked: [
+      'A PILEATED WOODPECKER hammers at the dead snag. The whole parking lot echoes with it.',
+      'This is WYATT\'s bird. Better talk to him first.',
+    ],
+    challenge: [
+      'WYATT: Four sharp shots. That\'s the record. Took me all week.',
+      'WYATT: Loser buys the cocoa.',
+      'Land 4 sharp photos (2 stars or better) before the PILEATED WOODPECKER loses patience!',
+    ],
+    won: [
+      'You beat WYATT\'s record! The PILEATED WOODPECKER gives one last drumroll and bounds off into the pines.',
+      'WYATT is staring at your camera, shaking his head and grinning.',
+    ],
+    lost: [
+      'The PILEATED WOODPECKER swooped off into the pines... then came right back to its snag.',
+      'WYATT: Ha! The record stands. Run it back?',
+    ],
+  },
 };
