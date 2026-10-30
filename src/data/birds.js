@@ -72,10 +72,18 @@ export const BIRDS = {
   spruceGrouse: { name: 'SPRUCE GROUSE', shape: 'grouse', colors: { body: '#4a4a50', wing: '#5a4a3a', belly: '#2a2a30', face: '#d03030', bill: '#202028' }, speed: 35, hop: 40, pause: [1.0, 2.4], patience: 11, focusTime: 1.1, skittish: 0.9, times: ['dawn', 'morning', 'afternoon', 'dusk'] },
   pineGrosbeak: { name: 'PINE GROSBEAK', shape: 'songbird', colors: { body: '#c8506a', wing: '#404048', belly: '#b8a0a8', head: '#d05870', bill: '#303038' }, speed: 55, hop: 50, pause: [0.8, 1.8], patience: 13, focusTime: 1.0, skittish: 0.7, times: ['morning', 'midday', 'afternoon'] },
   northernShrike: { name: 'NORTHERN SHRIKE', shape: 'songbird', colors: { body: '#a8a8b0', wing: '#202028', belly: '#f0f0f0', head: '#a8a8b0', face: '#202028', bill: '#202028' }, speed: 100, hop: 90, pause: [0.3, 0.9], patience: 7, focusTime: 1.5, skittish: 1.4, times: ['morning', 'midday', 'afternoon'] },
+  // BLACK RIVER WOODS: the birds the club shows you on its first walk (maps/blackRiverWoods.js `zones`), one
+  // per member. WYATT's waxwings wander wherever the berries are, REESE's MERLIN hunts the meadow at full speed,
+  // and DANIEL's SAW-WHET, the littlest owl in the east, sits tight in the hemlocks all day.
+  bohemianWaxwing: { name: 'WAXWING', shape: 'crested', colors: { body: '#a89078', wing: '#5a5a64', belly: '#c8b8a0', head: '#b08a6a', face: '#202028', bill: '#202028' }, speed: 70, hop: 70, pause: [0.4, 1.2], patience: 10, focusTime: 1.2, skittish: 1.0 },
+  merlin: { name: 'MERLIN', shape: 'upright', colors: { body: '#5a6a80', wing: '#3a4658', belly: '#e0c8a0', head: '#5a6a80', face: '#e8e0d0', bill: '#f0c030' }, speed: 110, hop: 90, pause: [0.3, 0.8], patience: 7, focusTime: 1.5, skittish: 1.3 },
+  sawWhetOwl: { name: 'SAW-WHET OWL', shape: 'owl', colors: { body: '#8a5a38', wing: '#6a4228', belly: '#f0e0d0', face: '#f0e8e0', bill: '#202028' }, speed: 30, hop: 40, pause: [1.4, 3.0], patience: 14, focusTime: 0.9, skittish: 0.7 },
   // Nemesis birds: never out on the map, only fought at their perch (data/nemeses.js).
   baldEagle: { name: 'BALD EAGLE', shape: 'upright', colors: { body: '#4a3020', wing: '#302014', belly: '#5a3a24', head: '#f8f8f8', bill: '#f0c030' }, speed: 70, hop: 90, pause: [0.6, 1.4], patience: 40, focusTime: 1.4, skittish: 1 },
   // Stands perfectly still for ages, then strikes: long pauses, long hops.
   // Down from the Arctic: pale as snow, flecked with gray. Fast, but it sits and stares between moves.
   gyrfalcon: { name: 'GYRFALCON', shape: 'upright', colors: { body: '#e8e8ec', wing: '#a8a8b8', belly: '#f8f8f8', head: '#d8d8e0', face: '#404050', bill: '#f0c030' }, speed: 65, hop: 90, pause: [1.0, 2.2], patience: 50, focusTime: 1.3, skittish: 1 },
+  // The phantom of the north: huge, gray, silent. It sits for ages listening for voles under the snow, then glides.
+  greatGrayOwl: { name: 'GREAT GRAY OWL', shape: 'owl', colors: { body: '#8a8a94', wing: '#66666f', belly: '#b8b8c0', face: '#a8a8b2', bill: '#f0c030' }, speed: 45, hop: 80, pause: [1.8, 3.2], patience: 55, focusTime: 1.5, skittish: 1 },
   greatBlueHeron: { name: 'BLUE HERON', shape: 'heron', colors: { body: '#7888a0', wing: '#566880', belly: '#c8ccd8', head: '#f0f0f0', face: '#202028', bill: '#e8b840' }, speed: 65, hop: 90, pause: [1.0, 2.4], patience: 45, focusTime: 1.6, skittish: 1 },
 };

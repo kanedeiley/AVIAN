@@ -14,7 +14,7 @@ import { lookSprites } from '../assets/player.js';
 import { BIRD_SPRITES } from '../assets/birds.js';
 import { TELLS } from '../assets/collectibles.js';
 import { input } from '../input.js';
-import { drawBox, drawText, drawTinyText, drawDialog, paginate } from '../gfx/ui.js';
+import { drawBox, drawText, drawTinyText, drawDialog, drawChoices, paginate } from '../gfx/ui.js';
 import { PhotoScene } from './photo.js';
 import { FieldBirds } from './fieldBirds.js';
 import { Npcs } from './npcs.js';
@@ -25,11 +25,12 @@ import { TrainScene } from './train.js';
 import { NemesisScene } from './nemesis.js';
 import { ShopScene, BagScene } from './shop.js';
 import { VOYAGES } from '../data/voyages.js';
+import { RACES } from '../data/races.js';
 import { DIALOGUE } from '../data/dialogue.js';
 import { ITEMS } from '../data/items.js';
 import { ITEM_SPRITES, BIKE_SPRITES, SLIDE_SPRITES } from '../assets/items.js';
 import { saveMoney, saveLocation } from '../save.js';
-import { perchNeeds, perchOn, perchBeaten, toggleWear, setFlag, collectiblesOn, collect, warpOpen, spendItem, shown } from '../progress.js';
+import { perchNeeds, perchOn, perchBeaten, toggleWear, setFlag, collectiblesOn, collect, warpOpen, spendItem, shown, done } from '../progress.js';
 import { timeUntil } from '../time.js';
 import { drawLighting, tintPanes, drawClock, snowyWeather } from '../gfx/lighting.js';
 import { REGIONS } from '../data/regions.js';
@@ -53,6 +54,7 @@ const AIR_HEIGHT = 12;         // px you fly up off a jump
 const AIR_SLOW = 0.6;          // the jump covers two tiles in one step, so it goes at this share of your speed
 const CRASH_TIME = 1;          // seconds you tumble in the snow after a wipeout, before you get up
 const SHOUT_TIME = 1.2;        // seconds WIPEOUT! (or a trick's name) floats up over you
+const RACE_COUNTDOWN = 3;      // seconds of 3, 2, 1 before GO! at the start of a race
 const GEAR_WALK = 0.75;        // walking in ski boots, off the slopes
 const GEAR_LIFT = 2;           // px you stand up on your skis
 const TIPSY_FADE = 3;          // seconds a beer takes to come on (and to wear off)
@@ -69,6 +71,7 @@ export class Overworld {
     this.gear = null;    // skis on your feet (data/items.js `slide`), or null
     this.slide = { speed: 0, air: false, trick: false, snap: false, crash: 0, shout: null }; // sliding down a slope: see slideStep
     this.inUse = {};     // item id -> seconds until it wears off (binoculars)
+    this.race = null;    // a race down a slope you're in the middle of (data/races.js): see startRace
     this.player = { x, y, facing, moving: false, progress: 0, dx: 0, dy: 0, steps: 0, walking: false, turnTimer: 0 };
     this.loadMap(mapId, x, y, facing);
   }
@@ -78,6 +81,7 @@ export class Overworld {
     if (this.map.indoor) this.riding = false; // you leave your bike at the door
     if (this.map.indoor || !REGIONS[this.map.region].snowy) this.gear = null; // and you carry your skis inside
     this.slide.speed = 0;
+    this.race = null; // leaving the map calls off a race
     this.snowy = Boolean(REGIONS[this.map.region].snowy); // winter: snowfall, and photos in the snow
     Object.assign(this.player, { x, y, facing, moving: false, progress: 0 });
     this.perch = perchOn(this.game, id); // a nemesis bird, or a rival's (data/rivals.js)
@@ -138,6 +142,7 @@ export class Overworld {
     if (this.rest) return this.updateRest(dt);
     this.birds.update(dt);
     this.npcs.update(dt);
+    if (this.race && !this.dialog && this.updateRace(dt)) return;
     // Someone walking over to say hello: wait for them (see Npcs.greet).
     if (this.npcs.greeter && !this.dialog) {
       p.walking = false;
@@ -153,8 +158,17 @@ export class Overworld {
     // While a text box is open, A/B only advance it. A yes/no question
     // (`onYes`, and optionally `onNo`) on the last page: A says yes, B says no.
     if (this.dialog) {
+      const d = this.dialog;
+      // A question with a menu on its last page: up/down to choose, A to answer, B to back out.
+      if (d.choices && d.page === d.pages.length - 1) {
+        const n = d.choices.length;
+        if (input.wasPressed('up')) d.choice = (d.choice + n - 1) % n;
+        if (input.wasPressed('down')) d.choice = (d.choice + 1) % n;
+        if (input.wasPressed('a')) d.onPick(d.choices[d.choice]);
+        else if (input.wasPressed('b')) this.dialog = null;
+        return;
+      }
       if (input.wasPressed('a') || input.wasPressed('b')) {
-        const d = this.dialog;
         if (d.onYes && d.page === d.pages.length - 1) {
           this.dialog = null;
           if (input.wasPressed('a')) d.onYes();
@@ -201,8 +215,8 @@ export class Overworld {
       return;
     }
 
-    // Skiing past a bird, A snaps the nearest one, whichever way it is (and you stop to take it).
-    if (this.slide.speed && (this.slide.snap || input.wasPressed('a'))) {
+    // Skiing past a bird, A snaps the nearest one, whichever way it is (and you stop to take it). Not in a race!
+    if (this.slide.speed && !this.race && (this.slide.snap || input.wasPressed('a'))) {
       this.slide.snap = false;
       const bird = this.birds.nearest(this.photoRange());
       if (bird) {
@@ -303,24 +317,46 @@ export class Overworld {
     Object.assign(p, { moving: true, dx, dy, progress: 0 });
   }
 
-  /** Talk to an NPC: their lines (`talk` or `text`), and any flag they give you. */
+  /**
+   * Talk to an NPC: their lines (`talk` or `text`), and any flag they give you. A `talk` can
+   * also ask you to pick an answer: { lines, ask, choices: [{ label, pick }] }, where `pick()`
+   * gives the lines they say back (see ask()).
+   */
   talkTo(npc) {
     const p = this.player;
     this.npcs.listen(npc);
     // Pick the lines before setting the flag, so a first meeting says hello.
-    const text = npc.talk ? DIALOGUE[npc.talk](this.game) : npc.text;
+    const said = npc.talk ? DIALOGUE[npc.talk](this.game) : npc.text;
     if (npc.sets) setFlag(this.game, npc.sets);
-    this.dialog = { pages: paginate(text), page: 0 };
-    // Someone who `leaves` once you show them a photo of a bird: after they've had their say,
-    // the screen fades, their flag is set, and they're gone (and anything that was there `until` it).
+    if (said.choices) this.ask(said);
+    else this.dialog = { pages: paginate(said), page: 0 };
+    // Someone who `leaves` (once you show them a photo of a bird, if it names one, and once its `after` is done,
+    // if it names one): after they've had their say, the screen fades, their flag is set, and they're gone
+    // (and anything that was there `until` it).
     const { leaves } = npc;
-    if (leaves && this.game.journal[leaves.photo] && !this.game.progress.flags[leaves.flag]) {
+    const ready = (!leaves?.photo || this.game.journal[leaves.photo]) && (!leaves?.after || done(this.game, leaves.after));
+    if (leaves && ready && !this.game.progress.flags[leaves.flag]) {
       this.dialog.then = () => this.game.transition(() => {
         setFlag(this.game, leaves.flag);
         this.loadMap(this.map.id, p.x, p.y, p.facing);
       });
     }
     p.walking = false;
+  }
+
+  /** Their lines, then `ask` with a menu of `choices` to pick from (up/down, A); B backs out without answering. */
+  ask({ lines = [], ask, choices }) {
+    const pages = paginate([...lines, ask]);
+    this.dialog = {
+      pages, page: 0, choices, choice: 0,
+      // An answer can start a race once it's been said: { lines, race }. Without skis on, the racer just says so.
+      onPick: (c) => {
+        const said = c.pick();
+        if (said.race && !this.gear) said.lines = RACES[said.race].noSkis;
+        this.dialog = { pages: paginate(said.lines ?? said), page: 0 };
+        if (said.race && this.gear) this.dialog.then = () => this.startRace(said.race);
+      },
+    };
   }
 
   /** How tipsy you are (a `tipsy` item like beer), 0 to 1: it comes on over a couple of seconds and fades at the end. */
@@ -574,9 +610,78 @@ export class Overworld {
     ctx.drawImage(sprite, Math.round(x), Math.round(y), 32, 32);
   }
 
+  /**
+   * Line up at the start of a race (data/races.js), skis on (see ask()), facing down the hill: 3, 2, 1, GO!,
+   * and the clock runs until you finish, miss a gate or stop (updateRace, raceStep).
+   */
+  startRace(id) {
+    const race = RACES[id];
+    this.game.transition(() => {
+      Object.assign(this.player, { ...race.start, facing: 'down', moving: false, progress: 0, walking: false });
+      this.slide.speed = 0;
+      this.race = { ...race, time: 0, countdown: RACE_COUNTDOWN, gate: 0 };
+      this.shout(String(RACE_COUNTDOWN));
+    });
+  }
+
+  /** The clock, in a race: frozen on the countdown (returns true), then ticking. Off the run and off the start, you've stopped. */
+  updateRace(dt) {
+    const r = this.race;
+    const p = this.player;
+    if (r.countdown > 0) {
+      const before = Math.ceil(r.countdown);
+      r.countdown -= dt;
+      const now = Math.ceil(r.countdown);
+      if (now !== before) this.shout(now > 0 ? String(now) : 'GO!');
+      p.walking = false;
+      return true;
+    }
+    r.time += dt;
+    const atStart = p.y === r.start.y && Math.abs(p.x - r.start.x) <= 2; // shuffling around on the start line is fine
+    if (!p.moving && !this.slide.crash && !atStart && !this.tileAt(p.x, p.y)?.slope) return this.endRace('quit');
+    return false;
+  }
+
+  /** After each step in a race: through the gates you've come down past (out, if you went the wrong side of one), and over the finish. */
+  raceStep() {
+    const r = this.race;
+    const p = this.player;
+    for (; r.gate < r.gates.length && r.gates[r.gate].y <= p.y; r.gate++) {
+      const g = r.gates[r.gate];
+      if (g.pass === 'left' ? p.x >= g.x : p.x <= g.x) return this.endRace('missed');
+    }
+    if (p.y >= r.finish) return this.endRace(r.time <= r.record ? 'won' : 'slow');
+    return false;
+  }
+
+  /** The race is over: your time (if you finished) and what the racer says. A win sets the race's flag. */
+  endRace(result) {
+    const r = this.race;
+    this.race = null;
+    this.player.walking = false;
+    const times = `${raceTime(r.time)}. ${r.name}'s record: ${raceTime(r.record)}.`;
+    const head = { won: `FINISH! ${times}`, slow: `FINISH! ${times}`, missed: `MISSED GATE ${r.gate + 1}!`, quit: 'You stopped. The race is off.' }[result];
+    if (result === 'won') {
+      setFlag(this.game, r.flag);
+      this.npcs = new Npcs(this); // whoever's only around once you've won (the racer, down at the finish)
+    }
+    this.dialog = { pages: paginate([head, ...r[result]]), page: 0 };
+    return true;
+  }
+
+  /** In a race: your time so far, the time to beat, and how many gates you've made it through. */
+  drawRace(ctx) {
+    const r = this.race;
+    drawBox(ctx, 4, 4, 104, 42);
+    drawText(ctx, `TIME ${raceTime(r.time)}`, 10, 8, r.time > r.record ? '#c03030' : undefined);
+    drawText(ctx, `${r.name} ${raceTime(r.record)}`, 10, 20);
+    drawText(ctx, `GATES ${r.gate}/${r.gates.length}`, 10, 32);
+  }
+
   /** Called after each completed step. Returns true if it started a transition. */
   onStep() {
     const p = this.player;
+    if (this.race && this.raceStep()) return true;
     const warp = this.map.warps.find((w) => w.x === p.x && w.y === p.y && shown(this.game, w));
     if (warp) {
       const facing = warp.facing ?? p.facing;
@@ -587,14 +692,16 @@ export class Overworld {
         this.back = back;
         this.loadMap(to.map, to.x, to.y, facing);
       };
-      // A `train` warp asks first, then rides (scenes/train.js) before you get off at the other end.
-      if (warp.train) {
+      // A `train` (or `bus`) warp asks first, then rides (scenes/train.js) before you get off at the other end.
+      if (warp.train || warp.bus) {
+        const vehicle = warp.train ? 'train' : 'bus';
+        const dest = warp.train ?? warp.bus;
         p.walking = false;
         this.dialog = {
-          pages: [[`Board the train to ${warp.train}?`, 'A:YES  B:NO']],
+          pages: [[`Board the ${vehicle} to ${dest}?`, 'A:YES  B:NO']],
           page: 0,
           // A ride to or from a snowy region goes through the snow.
-          onYes: () => this.game.transition(() => this.game.setScene(new TrainScene(this.game, warp.train, this, go, this.snowy || Boolean(REGIONS[getMap(warp.to).region].snowy)))),
+          onYes: () => this.game.transition(() => this.game.setScene(new TrainScene(this.game, dest, this, go, this.snowy || Boolean(REGIONS[getMap(warp.to).region].snowy), vehicle))),
         };
         return true;
       }
@@ -780,13 +887,21 @@ export class Overworld {
     }
     drawClock(ctx, phase);
     this.drawItemTimers(ctx);
+    if (this.race) this.drawRace(ctx);
 
     if (this.rest) return this.drawRest(ctx);
     if (this.dialog) {
-      const { pages, page } = this.dialog;
+      const { pages, page, choices, choice } = this.dialog;
+      const asking = choices && page === pages.length - 1;
       drawDialog(ctx, pages[page], page < pages.length - 1, this.time);
+      if (asking) drawChoices(ctx, choices.map((c) => c.label), choice);
     }
   }
+}
+
+/** A race time in seconds, to a tenth: '24.6'. */
+function raceTime(secs) {
+  return secs.toFixed(1);
 }
 
 /** A wait in ms as '1H 20M' or, with `seconds`, a countdown like '1:20:05'. */

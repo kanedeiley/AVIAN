@@ -100,6 +100,63 @@ const ART = {
     '.kkkkkkkkkkkkkk.',
     '................',
   ],
+  // A page torn out of a spiral notebook: a pencil sketch of a huge round owl face with yellow eyes, notes under it.
+  danielsNotebook: [
+    '..kkkkkkkkkkk...',
+    '.kwkwkwkwkwkwk..',
+    '.kwwwwwwwwwwwk..',
+    '.kwwwQQQQQwwwk..',
+    '.kwwQwwwwwQwwk..',
+    '.kwQwfkwfkwQwk..',
+    '.kwQwwwwwwwQwk..',
+    '.kwQwwwkwwwQwk..',
+    '.kwwQwwwwwQwwk..',
+    '.kwwwQQQQQwwwk..',
+    '.kwwwwwwwwwwwk..',
+    '.kwqqqqqqqqwwk..',
+    '.kwqqqqqwwwwk...',
+    '.kwwwwwwwkkk....',
+    '.kkkkkkkk.......',
+    '................',
+  ],
+  // A dented green thermos, cup on top, a curl of steam still coming off it.
+  danielsThermos: [
+    '.......w.w......',
+    '......w.w.......',
+    '.......w........',
+    '.....kkkkkk.....',
+    '....kqqqqqQk....',
+    '....kQQQQQQk....',
+    '.....kkkkkk.....',
+    '....khGhhhhk....',
+    '....khGhhhhk....',
+    '....khGhhhhk....',
+    '....kqqqqqqk....',
+    '....khGhhhhk....',
+    '....khGhhhhk....',
+    '....khGhhhhk....',
+    '....khhhhhhk....',
+    '.....kkkkkk.....',
+  ],
+  // Binoculars, the strap snapped off one side, with a strip of tape written on.
+  danielsBinoculars: [
+    '................',
+    '................',
+    '................',
+    '..kkkk....kkkk..',
+    '.kKKKKk..kKKKKk.',
+    '.kCCCCkkkkCCCCk.',
+    '.kCCCCkKKkCCCCk.',
+    '.kCwwwwwwwwwwCk.',
+    '.kCCCCkKKkCCCCk.',
+    '.kCCCCkkkkCCCCk.',
+    '.kCCCCk..kCCCCk.',
+    '.kkkkkk..kkkkkk.',
+    'nkccbk....kccbk.',
+    'n.kkk......kkk..',
+    'n...............',
+    '.n..............',
+  ],
 };
 
 export const COLLECTIBLE_SPRITES = Object.fromEntries(Object.entries(ART).map(([id, art]) => [id, {
@@ -188,7 +245,18 @@ export function drawSmoke(ctx, x, y, time) {
   }
 }
 
-// A red mitten stuck up out of a snowdrift, thumb out, with a white cuff.
+// DANIEL's things, each poking up out of a little snowdrift (rows of BURIED_COLORS letters).
+const DRIFT = [
+  '...wwwwwwww...',
+  '.wwwwwwwwwwww.',
+  'wwwwwwwwwwwwww',
+  '.WWWWWWWWWWWW.',
+];
+const BURIED_COLORS = {
+  k: '#202028', p: '#e04040', P: '#a82828', w: '#f8f8f8', W: '#b8c0d8', q: '#a8a8b0',
+  h: '#307830', G: '#58a840', C: '#4a4658', K: '#686478', c: '#b8e0f8',
+};
+// A red mitten, thumb out, with a white cuff.
 const MITTEN = [
   '...kkkk.',
   '..kppppk',
@@ -199,43 +267,111 @@ const MITTEN = [
   '.kwwwwwk',
   '.kkkkkkk',
 ];
-// The drift it's stuck in: piled over the cuff, shadowed underneath.
-const DRIFT = [
-  '...wwwwwwww...',
-  '.wwwwwwwwwwww.',
-  'wwwwwwwwwwwwww',
-  '.WWWWWWWWWWWW.',
+// A notebook page caught on a twig, flat, then flapping up in the wind.
+const PAGE = [
+  '.kkkkkkk',
+  'kwqwwwwk',
+  'kwwqqwwk',
+  'kwqwwqwk',
+  'kwwwwwwk',
+  'kwqqqwwk',
+  'kwwwwwwk',
+  'kkkkkkkk',
 ];
-const MITTEN_COLORS = { k: '#202028', p: '#e04040', P: '#a82828', w: '#f8f8f8', W: '#b8c0d8' };
+const PAGE_FLAP = [
+  '........',
+  '.....kkk',
+  '..kkkwwk',
+  'kkwqwwk.',
+  'kwwwqwk.',
+  'kwqqwwwk',
+  'kwwwwwwk',
+  'kkkkkkkk',
+];
+// The cup and neck of a green thermos.
+const THERMOS = [
+  '........',
+  '..kkkk..',
+  '.kqqqQk.',
+  '.kkkkkk.',
+  '.khGhhk.',
+  '.khGhhk.',
+  '.khGhhk.',
+  '.khGhhk.',
+];
+// The tops of a pair of binoculars, lenses up.
+const BINOCULARS = [
+  '........',
+  '........',
+  '........',
+  'kkk..kkk',
+  'kcck.kcc',
+  'kCCkkkCC',
+  'kCCKKkCC',
+  'kCCkkkCC',
+];
 
-/** Draw rows of palette letters (MITTEN_COLORS) at (x, y). */
+/** Draw rows of BURIED_COLORS letters at (x, y). */
 function pixels(ctx, rows, x, y) {
   rows.forEach((row, py) => [...row].forEach((ch, px) => {
     if (ch === '.') return;
-    ctx.fillStyle = MITTEN_COLORS[ch];
+    ctx.fillStyle = BURIED_COLORS[ch];
     ctx.fillRect(x + px, y + py, 1, 1);
   }));
 }
 
-/**
- * A mitten half buried in the snow (x, y in screen px): it sticks up out of a
- * drift, now and then gives a little wave, and a twinkle blinks over it.
- */
-export function drawMitten(ctx, x, y, time) {
-  const t = time % 2.4;
-  const wave = t < 0.6 ? Math.round(Math.sin(t * Math.PI * 5)) : 0; // a quick wiggle side to side
-  const bob = t < 0.6 ? -1 : 0;
-  pixels(ctx, MITTEN, x + 4 + wave, y + 2 + bob);
-  pixels(ctx, DRIFT, x + 1, y + 8);
-  // The twinkle: a little four-pointed star that grows and shrinks.
-  const glint = Math.sin(time * 3.5);
-  if (glint > 0) {
-    const sx = x + 13, sy = y + 1, arm = glint > 0.7 ? 2 : 1;
-    ctx.fillStyle = `rgba(255,248,200,${glint})`;
-    ctx.fillRect(sx - arm, sy, arm * 2 + 1, 1);
-    ctx.fillRect(sx, sy - arm, 1, arm * 2 + 1);
-  }
+/** A little four-pointed star at (x, y) that grows and shrinks as `glint` (-1 to 1) rises. */
+function twinkle(ctx, x, y, glint) {
+  if (glint <= 0) return;
+  const arm = glint > 0.7 ? 2 : 1;
+  ctx.fillStyle = `rgba(255,248,200,${glint})`;
+  ctx.fillRect(x - arm, y, arm * 2 + 1, 1);
+  ctx.fillRect(x, y - arm, 1, arm * 2 + 1);
 }
 
+/**
+ * A tell for something half buried in the snow (x, y in screen px): `art(time)` gives the rows
+ * sticking up out of a drift (and how far to shift them), and `extra` draws anything on top.
+ */
+function buried(art, extra = (ctx, x, y, time) => twinkle(ctx, x + 13, y + 1, Math.sin(time * 3.5))) {
+  return (ctx, x, y, time) => {
+    const { rows, dx = 0, dy = 0 } = art(time);
+    pixels(ctx, rows, x + 4 + dx, y + 2 + dy);
+    pixels(ctx, DRIFT, x + 1, y + 8);
+    extra(ctx, x, y, time);
+  };
+}
+
+/** A mitten in a drift that gives a little wave now and then, with a twinkle over it. */
+export const drawMitten = buried((time) => {
+  const t = time % 2.4;
+  return t < 0.6 ? { rows: MITTEN, dx: Math.round(Math.sin(t * Math.PI * 5)), dy: -1 } : { rows: MITTEN };
+});
+
+/** A page in a drift that flaps up in the wind every couple of seconds. */
+export const drawPage = buried((time) => ({ rows: time % 2 < 0.5 && Math.floor(time * 8) % 2 ? PAGE_FLAP : PAGE }));
+
+/** A thermos in a drift, with a thin curl of steam rising off its cup. */
+export const drawSteam = buried(() => ({ rows: THERMOS }), (ctx, x, y, time) => {
+  for (let i = 0; i < 2; i++) {
+    const t = (time * 0.5 + i / 2) % 1;
+    const alpha = Math.min(1, (1 - t) * 1.4) * 0.9;
+    for (let k = 0; k < 4; k++) {
+      const py = Math.round(y + 2 - t * 14 - k);
+      const px = Math.round(x + 8 + Math.sin(py * 0.6 + time * 2) * 1.5);
+      ctx.fillStyle = `rgba(96,104,128,${alpha * 0.5})`;
+      ctx.fillRect(px + 1, py + 1, 1, 1);
+      ctx.fillStyle = `rgba(248,248,255,${alpha})`;
+      ctx.fillRect(px, py, 1, 1);
+    }
+  }
+});
+
+/** Binoculars in a drift, the sun flashing off one lens and then the other. */
+export const drawGlint = buried(() => ({ rows: BINOCULARS }), (ctx, x, y, time) => {
+  const t = time % 2;
+  twinkle(ctx, x + (t < 1 ? 6 : 10), y + 6, Math.sin((t % 1) * Math.PI) * 1.2 - 0.2);
+});
+
 /** What gives each kind of collectible away on the map: data/collectibles.js picks one with `tell`. */
-export const TELLS = { stench: drawStench, music: drawMusic, feathers: drawFeathers, smoke: drawSmoke, mitten: drawMitten };
+export const TELLS = { stench: drawStench, music: drawMusic, feathers: drawFeathers, smoke: drawSmoke, mitten: drawMitten, page: drawPage, steam: drawSteam, glint: drawGlint };

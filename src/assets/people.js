@@ -37,6 +37,12 @@ const PEOPLE = {
   // The bartender at Eight Oh Brew: a black vest and short brown hair.
   bartender: personSprites('bartender', { hair: 'short', hat: 'none', legs: 'pants' }, { top: '#303038', topShade: '#18181f', bottoms: '#404050', hair: '#5a3818', hairShade: '#3a2410' }),
   // The ski tech at Ludlow's SKI SHOP: an orange beanie and a teal shell jacket.
+  // Okemo's ski patroller: a red patrol jacket, black ski pants and a black beanie.
+  skiPatrol: personSprites('skiPatrol', { hair: 'short', hat: 'beanie', legs: 'pants' }, { hat: '#303038', hatShade: '#18181f', top: '#d03030', topShade: '#981c1c', bottoms: '#303038', hair: '#6a4a30', hairShade: '#4a3020' }),
+  // DANIEL, the quiet owl birder: a gray wool hat, a faded olive parka and brown work pants.
+  daniel: personSprites('daniel', { hair: 'short', hat: 'beanie', legs: 'pants' }, { hat: '#888890', hatShade: '#5a5a64', top: '#6a7048', topShade: '#4a5030', bottoms: '#6a5440', hair: '#3a2818', hairShade: '#241810' }),
+  // REESE, the ski-team kid: a gold race-team beanie and an electric-blue race suit, top to bottom.
+  reese: personSprites('reese', { hair: 'short', hat: 'beanie', legs: 'pants' }, { hat: '#f0c818', hatShade: '#b89010', top: '#2860e0', topShade: '#1840a8', bottoms: '#2860e0', hair: '#202028', hairShade: '#101018' }),
   skiTech: personSprites('skiTech', { hair: 'short', hat: 'beanie', legs: 'pants' }, { hat: '#e88030', hatShade: '#b05818', top: '#3a9088', topShade: '#286060', bottoms: '#303038', hair: '#e8c860', hairShade: '#b89838' }),
   pilot: personSprites('pilot', 'male', { hat: '#7a4a28', hatShade: '#4a2c18', top: '#8a5a30', topShade: '#5a3818', bottoms: '#4a68a0', hair: '#c8c8c8', hairShade: '#909098' }),
 };

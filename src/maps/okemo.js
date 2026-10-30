@@ -5,16 +5,20 @@
 // circle); SUGAR MAPLE and HARE HOLLOW (blue squares), which braid down the
 // middle, swapping sides over the lift line twice so they cross in an X each
 // time; THE CHUTE on the east (black diamond: narrow and twisty, with a field
-// of moguls); and past it THE GLADES (black diamond), ungroomed `powder`
+// of moguls, and REESE's slalom gates: data/races.js); and past it THE GLADES (black diamond), ungroomed `powder`
 // through scattered pines, which drains into the Chute. The groomed snow is
 // `slope`: with SKIS on (from the SKI SHOP in Ludlow) you slide downhill on
 // your own and steer around the trees; off a `jump` you fly, and A in the air
 // does a spin (Overworld.slideStep). A on the way down snaps the nearest bird.
 // Some birds live only up here (`zones`): out in the glades, and on the
 // summit. A side spur off Easy Street ends in a kicker over the pines into a
-// hidden pocket, where DANIEL'S MITTENS are (data/collectibles.js). At the
-// base: the OKEMO LODGE (shut for now) and the road east back to Ludlow, lined
-// up with Ludlow's Main St. Tiles are in assets/ludlowTiles.js; the lodge is a
+// hidden pocket, where DANIEL'S MITTENS are (data/collectibles.js); his
+// THERMOS is past the ski patrol's rope on the north edge of the summit, his
+// BINOCULARS at the top of the glades, and the rope (a gate) opens onto
+// TAMARACK BOG (maps/tamarackBog.js) once you tell SKI PATROL where he went. At the
+// base: the OKEMO LODGE (shut for now), the road east back to Ludlow, lined
+// up with Ludlow's Main St, and WYATT's van, snowed in by a dead snag where
+// his rival's bird drums (data/rivals.js wyatt). Tiles are in assets/ludlowTiles.js; the lodge is a
 // snowy storefront() prop (assets/storeTiles.js). The rows were painted with
 // a script.
 export default {
@@ -41,10 +45,15 @@ export default {
     // things on the runs
     'J': 'jump',
     'm': 'moguls',
+    // REESE's slalom gates down THE CHUTE (data/races.js): pass left of a red one, right of a blue one
+    '<': 'gateLeft',
+    '>': 'gateRight',
+    // the dead snag behind WYATT's van, where his PILEATED WOODPECKER drums
+    'n': 'snag',
   },
   rows: [
-    'pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp',
-    'pssssssssssssssssssssssssssssssssssssssssssssssssssssssssssp',
+    'ppppppppppppppppppppppppppppppppppppppppppppsspppppppppppppp',
+    'psssssssssssssssssssssssssssssssssssssssssSssssssssssssssssp',
     'psssssssssssssssssssssssssSssssssssssssssssssssssssssssssssp',
     'pssssssssssssssssssssssssssssssssssssssssssssssssssssssssssp',
     'pssssssssssssssssssssssssssssssssssssssssssssssssssssssssssp',
@@ -53,7 +62,7 @@ export default {
     'psssssssGssssssssssssssssBsssTsssBsssssssssKssssKssssssssssp',
     'pppppppppvvvvvvpppppvvvvvppppCppppvvvvvpppppvvvvpoooooooooop',
     'ppppppppppvvvvvvppppvvvvvppppCppppvvvvvppppvvvvppoooooooooop',
-    'ppppppppppvvvvvvppppvvvvvppppCppppvvvvvppppvvvvppoooooooooop',
+    'ppppppppppvvvvvvppppvvvvvppppCppppvvvvvppppvv<vppoooooooooop',
     'ppppppppppvvvvvvppppvvvvvppppCppppvvvvvppppvvvvppoooooooooop',
     'ppppppppppvvvvvvppppvvvvvppppCppppvvvvvppppvvvvppoooooooopop',
     'ppppppppppvvvvvvpppvvvvvpppppTppppvvvvvpppvvpvppppoooooopopp',
@@ -64,7 +73,7 @@ export default {
     'pppppppppppvvvvvvppvvvvvpppppCppppvvvvvpvvvvpppppoooooooooop',
     'pppppppppppvvvvvvpvvvvvppppppTppppvvvvvpvvvvpppppopopoopoopp',
     'pppppppppppvvvvvvpvvvvvppppppCppppvvvvvpvvvvpppppoopooopooop',
-    'pppppppppppvvvvvvpvvvvvppppppCppppvvvvvpvvvvpppppopoppoopopp',
+    'pppppppppppvvvvvvpvvvvvppppppCppppvvvvvpv>vvpppppopoppoopopp',
     'pppppppppppvvvvvvpvvvvvppppppCppppvvvvvpvvvvpppppoooooooooop',
     'pppppppppppvvvvvvpvvvvvppppppCppppvvvvvpvvvvppppppopooooooop',
     'pppppppppppvvvvvvpvvvvvppppppCppppvvvvvpvvvvpppppooooooopopp',
@@ -72,7 +81,7 @@ export default {
     'pppppppppppvvvvvvpvvvvvppppppCpppvvJvvppvvvvpppppooopopooopp',
     'ppppppppppvvJvvvppvpvvvppppppCpppvvvvvppvvvvpppppooopoooopop',
     'ppppppppppvvvvvvppvvvvvppppppCpppvvvvvppvvvvpppppoooopooopop',
-    'ppppppppppvvvvvvppvvvvvppppppCpppvvvvvppvvvvpppppooooppoooop',
+    'ppppppppppvvvvvvppvvvvvppppppCpppvvvvvppvv<vpppppooooppoooop',
     'ppppppppppvvvvvvppvvvvvppppppCpppvvvvvppvvvvpppppooooopoopop',
     'ppppppppppvvvvvvppvvvvvppppppTpppvvpvvppvvvvpppppoppooooooop',
     'ppppppppppvvvvvvppvvvvvppppppCppppvvvvvpvvvvpppppopooopoooop',
@@ -93,12 +102,12 @@ export default {
     'pppppvvvvvvppppppppppppppvvvvXpvvvvvppppppppvvvvpoooooooooop',
     'pppppvvvvvvpppppppppppppppvvvXvvvvvpppppppppvpvvpooopoooooop',
     'pppppvvvvvvppppppppppppppppvvTvvvvppppppppppvvvvpoooopoppoop',
-    'ppppvvvvvvppppppppppppppppppvXvvvpppppppppppvvvvpooopoopoopp',
+    'ppppvvvvvvppppppppppppppppppvXvvvpppppppppppv>vvpooopoopoopp',
     'ppppvvpvvvppppppppppppppppvvvXvvvpppppppppppvvvvpoooppooooop',
     'ppppvvvvvvpppppppppppppppvvvvXvvvvppppppppppvvvvppooopoppoop',
     'ppppvvvvvvppppppppppppppvvvvvCvvvvvppppppppvvvvppooooooooopp',
     'ppppvvvvvvpppppppppppppvvvvvpCpvvvvvpppppppvvvvppoooooooooop',
-    'pppvvvvvvpppppppppppppvvpvvppTppvvvvvppppppvvvvppoooopoooppp',
+    'pppvvvvvvpppppppppppppvvpvvppTppvvvvvppppppvv<vppoooopoooppp',
     'pppvvvvvvppppppppppppvvvvvpppCppvvvvvppppppvvvvppoppooooooop',
     'pppvvvvvvpppppppppppvvvvvppppCpppvvvvvppppvvvvpppoopoopoopop',
     'pppvvvvvvppppppppppvvvvvpppppCpppvvvvvppppmmmmpppooopoooooop',
@@ -118,7 +127,7 @@ export default {
     'ppppvvvvvvppppppppvvvvvppppppCppppvvvvvpvvvvpppppoooooooooop',
     'pppppvvvvvvpppppppvvvvvppppppTppppvvvvvpvvvvpppppoooopooooop',
     'pppppvvvvvvpppppppvvvvvppppppCppppvvvvvpvvvvpppppoooooopooop',
-    'pppppvvvvvvpppppppvvvvvppppppCppppvvvvvpvvvvpppppooooopooppp',
+    'pppppvvvvvvpppppppvvvvvppppppCppppvvvvvpv>vvpppppooooopooppp',
     'pppppvvvvvvppppppppvvvvvpppppCppppvvvvvpvvvvpppppoooooopooop',
     'ppppppvvvvvvpppppppvvvvvpppppCppppvvvvvpvvvvpppppooooooopoop',
     'ppppppvvvpvvpppppppvvvvvpppppCppppvvvvvpvvvvpppppoooooooooop',
@@ -134,7 +143,7 @@ export default {
     'pppppppppvvvvvvpppppvvvvvppppCppppvvvvvpppppvvvvpopoopoopoop',
     'pppppppppvvvvvvppppvvvvvpppppCppppvvvvvpppppvvvvpoopooooooop',
     'pppppppppvvvvvvppppvvvvvpppppCppppvvvvvpppppvpvvpoooooooooop',
-    'ppppppppppvvvvvvpppvvvvvpppppTppppvvpvvpppppvvvvpoooopooooop',
+    'ppppppppppvvvvvvpppvvvvvpppppTppppvvpvvpppppvv<vpoooopooooop',
     'ppppppppppvvvvvvpppvvvvvpppppCppppvvvvvpppppvvvvpppoooooooop',
     'pppppppppvvvvvvvpppvvvvvpppppCppppvvvvvpppppvvvvpooooooopoop',
     'ppppppppvvvvvvvvpppvvvvvpppppCppppvvvvvpppppvvvvpoooopooopop',
@@ -161,7 +170,7 @@ export default {
     'pppppppppvvvvvvppppvvpvvpppppTppppvvvvvpvvvvpppppppppppppppp',
     'pppppppppvvvvvvppppvvvvvpppppCppppvvvvvpvvvvpppppppppppppppp',
     'pppppppppvvvvvvppppvvvvvpppppCppppvvvvvpvvvvpppppppppppppppp',
-    'ppppppppvvvvvvpppppvvvvvpppppCppppvvvvvpvvvvpppppppppppppppp',
+    'ppppppppvvvvvvpppppvvvvvpppppCppppvvvvvpv>vvpppppppppppppppp',
     'ppppppppvvvvvvpppppvvvvvpppppCppppvvvvvpvvvvpppppppppppppppp',
     'ppppppppvvvvvvppppppvvvvvppppCppppvvvvvpvvvvpppppppppppppppp',
     'pppppppvvvvvvpppppppvvvvvppppTppppvvvvvpvvvvpppppppppppppppp',
@@ -177,11 +186,11 @@ export default {
     'pppppvvvvvvppppppppvvvpvpppppCppppvvvvvppppvvvvppppppppppppp',
     'ppppvpvvvvppppppppvvvvvppppppCppppvvvvvpppppvpvvpppppppppppp',
     'ppppvvvvvvppppppppvvvvvppppppTppppvvvvvpppppvvvvpppppppppppp',
-    'ppppvvvvvvppppppppvvvvvppppppCppppvvvvvpppppvvvvpppppppppppp',
+    'ppppvvvvvvppppppppvvvvvppppppCppppvvvvvpppppvv<vpppppppppppp',
     'ppppvvvvvvppppppppvvvvvppppppCppppvvvvvpppppvvvvpppppppppppp',
     'ppppvvvvvvppppppppvvvvvppppppCppppvvvvvpppppvvvvpppppppppppp',
     'pssssssssssssssssssssssssssssCsssssssssssssssssssssssssssssp',
-    'pssssssssssssssssssssssssssssLssssssssssMssssssssssssssssssp',
+    'pssssssssssssssssssssssssssssLssssssssssMssssssssssssssnsssp',
     'pssssssssssssssssssssssssssss,sssssssssssssssssssssssssssssp',
     'pssssssssssssssssssssssssssss,sssslssssssslssssssssslssssssp',
     'pssssssssssssssssssssssssssss,s,,,,,,,,,,,ssssSssssssssssssp',
@@ -199,21 +208,48 @@ export default {
     { x: 29, y: 138, to: 'okemo', toX: 30, toY: 5, facing: 'down', ask: 'Ride the lift to the top?' },
     // The road east, back down to Ludlow's Main St.
     ...[142, 143, 144].map((y) => ({ x: 59, y, to: 'ludlow', toX: 0, toY: y - 128, facing: 'right' })),
+    // North under the ski patrol's rope, into the backcountry (the rope is a gate, below).
+    ...[44, 45].map((x) => ({ x, y: 0, to: 'tamarackBog', toX: x - 24, toY: 28, facing: 'up' })),
+    // WYATT's van door. Arrive inside, in the gap between the cabinets.
+    { x: 49, y: 139, to: 'van', toX: 5, toY: 3, facing: 'up' },
+  ],
+  // The rope line across the way north: down once you've told SKI PATROL where DANIEL went.
+  gates: [44, 45].map((x) => ({
+    x, y: 1,
+    locked: { flag: 'searchBog', tile: 'skiRope', text: ['A rope line with red pennants: AREA CLOSED. BACKCOUNTRY BEYOND.', 'Boot tracks go under it, into the trees.'] },
+  })),
+  npcs: [
+    // Okemo's ski patroller, keeping watch over the rope line. Ask about DANIEL here (data/dialogue.js skiPatrol).
+    { id: 'skiPatrol', name: 'SKI PATROL', x: 41, y: 3, area: [38, 2, 43, 4], talk: 'skiPatrol' },
+    // WYATT, by his snowed-in van (data/dialogue.js wyattOkemo). Beat his record with the PILEATED WOODPECKER
+    // on the snag (data/rivals.js) and he heads down to EIGHT OH BREW to join HANNAH's club. The van stays put.
+    // REESE, the ski-team kid, at the top of THE CHUTE: race them down it (data/races.js chute, data/dialogue.js
+    // reeseChute). Beat their time and they're waiting at the finish (reeseBase), with a bird to tell you about,
+    // until the club's first meeting (then they're with the club: maps/blackRiverWoods.js, eightOhBrew.js).
+    { id: 'reese', name: 'REESE', x: 46, y: 6, area: [46, 5, 47, 6], talk: 'reeseChute', sets: 'metReese', until: 'beatReese' },
+    { id: 'reese', name: 'REESE', x: 45, y: 139, area: [43, 138, 46, 139], talk: 'reeseBase', after: 'beatReese', until: 'clubWalkCalled' },
+    { id: 'wyatt', x: 51, y: 140, area: [50, 140, 53, 141], talk: 'wyattOkemo', sets: 'metWyattOkemo', until: 'wyattJoined', leaves: { after: 'wyatt', flag: 'wyattJoined' } },
   ],
   props: [
     { x: 5, y: 139, id: 'okemoLodgeFront' },
+    // WYATT's van, snowed in at the east end of the lot.
+    { x: 48, y: 138, id: 'sprinterVanSnow' },
   ],
   signs: [
     { x: 26, y: 2, text: ['OKEMO SUMMIT', 'Elevation 3,343 feet. The whole Green Mountains, white as far as you can see.'] },
     { x: 8, y: 7, text: ['EASY STREET', 'Green circle: wide and gentle, all the way down the west side. A good first run!'] },
     { x: 25, y: 7, text: ['SUGAR MAPLE', 'Blue square: it crosses HARE HOLLOW under the lift, twice. Keep your eyes open!'] },
     { x: 33, y: 7, text: ['HARE HOLLOW', 'Blue square: it crosses SUGAR MAPLE under the lift, twice. Keep your eyes open!'] },
-    { x: 43, y: 7, text: ['THE CHUTE', 'Black diamond: narrow, twisty, moguls halfway down. Experts only!'] },
+    { x: 43, y: 7, text: ['THE CHUTE', 'Black diamond: narrow, twisty, moguls halfway down. Experts only!', 'Under it, in marker: SKI TEAM SLALOM COURSE. RED = KEEP LEFT. BLUE = KEEP RIGHT.'] },
     { x: 48, y: 7, text: ['THE GLADES', 'Black diamond: ungroomed powder through the trees. Odd birds back in there, they say.'] },
     { x: 8, y: 142, text: ['OKEMO LODGE', 'Closed for a private party. Through the window: a big stone fireplace and a lot of wet mittens.'] },
     { x: 46, y: 141, text: ['OKEMO MOUNTAIN', 'East: back down the road to LUDLOW.'] },
     { x: 40, y: 138, text: ['A snowman in a ski helmet and goggles.', 'It looks faster than you.'] },
     { x: 29, y: 5, text: ['The top of the chairlift. Off you go!'] },
+    { x: 42, y: 1, text: ['SKI PATROL', 'Stay inside the ropes! No patrol in the backcountry.'] },
+    { x: 48, y: 139, text: ['A grey SPRINTER VAN, snowed in up to the wheel arches.', 'Its side door is always open. Even up here.'] },
+    { x: 50, y: 139, text: ['A new sticker on the bumper, still shiny: VERMONT. A shovel is frozen to the back tire.'] },
+    { x: 55, y: 138, text: ['A dead snag, full of big rectangular holes.', 'Wood chips all over the snow under it.'] },
   ],
   // Canada jays begging at the lift, ravens over the summit, chickadees and woodpeckers in the pines.
   // Up top and out in the glades, birds you won't find anywhere else (see FieldBirds `zones`).
@@ -221,6 +257,8 @@ export default {
     count: 12, table: ['canadaJay', 'canadaJay', 'raven', 'raven', 'chickadee', 'chickadee', 'junco', 'downyWoodpecker', 'redpoll', 'ruffedGrouse', 'snowBunting'], rare: ['pileatedWoodpecker', 'snowyOwl'], rareChance: 0.15,
     zones: [
       { tiles: ['powder'], count: 5, table: ['blackBackedWoodpecker', 'borealChickadee', 'borealChickadee', 'whiteWingedCrossbill'], rare: ['spruceGrouse'], rareChance: 0.2 },
+      // THE CHUTE: the NORTHERN SHRIKE that races REESE down it every day hunts all along it.
+      { area: [40, 8, 47, 136], count: 3, table: ['northernShrike', 'chickadee', 'canadaJay', 'downyWoodpecker'] },
       { area: [1, 1, 58, 6], count: 3, table: ['pineGrosbeak', 'pineGrosbeak', 'canadaJay', 'raven'], rare: ['northernShrike'], rareChance: 0.2 },
     ],
   },

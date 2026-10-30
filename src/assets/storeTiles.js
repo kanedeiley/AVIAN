@@ -279,6 +279,8 @@ storefront('ludlowCafeFront', 'COCOA CAFE', 5, ['coffee'], true, { snowy: true }
 storefront('outfitterFront', 'OUTFITTER', 5, ['clothes', 'optics'], true, { snowy: true });
 // The base lodge at Okemo.
 storefront('okemoLodgeFront', 'OKEMO LODGE', 7, ['skis', 'coffee'], true, { snowy: true });
+// The lodge at PINKHAM NOTCH, in the WHITE MOUNTAINS.
+storefront('notchLodgeFront', 'NOTCH LODGE', 7, ['lodge', 'optics'], true, { snowy: true });
 
 // ---------- inside ----------
 

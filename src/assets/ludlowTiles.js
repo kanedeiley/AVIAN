@@ -93,6 +93,16 @@ const KICKER = [
   ...CORDUROY.slice(13),
 ];
 
+// A slalom gate on THE CHUTE (data/races.js): a pole with a pennant pointing the side you pass it on.
+// Red points left: keep LEFT of it. The blue one (gateRight) is this mirrored.
+const GATE_LEFT = Array.from({ length: 16 }, (_, y) => [...BLANK].map((_, x) => {
+  if (y <= 14 && (x === 7 || x === 8)) return x === 7 ? 'q' : 'k';
+  const reach = 7 - Math.abs(y - 4) * 2; // the pennant, rows 1-7, longest at row 4
+  if (y >= 1 && y <= 7 && x < 7 && x >= 7 - reach) return x === 7 - reach ? 'k' : y > 4 ? 'P' : 'p';
+  if (y === 15 && x >= 5 && x <= 10) return 'W';
+  return '.';
+}).join(''));
+
 // Moguls: a field of round bumps, each lit on top and shadowed below.
 const BUMP = ['.wwww.', 'wwwwww', 'WWWWWW', '.qqqq.'];
 const MOGULS = [[1, 1], [9, 3], [4, 8], [11, 11]].reduce((rows, [bx, by]) => rows.map((r, y) => {
@@ -226,6 +236,123 @@ const ICE = [
   'cccccccccccccccc',
 ];
 
+// The ski patrol's rope line across the way north off the summit: bamboo poles, a sagging orange rope, red pennants.
+const SKI_ROPE = [
+  '................',
+  '................',
+  '................',
+  '.kk..........kk.',
+  '.kfk........kfk.',
+  '.kak........kak.',
+  '.kfkee....eekfk.',
+  '.kak..eeeeeekak.',
+  '.kfk..p..p..kfk.',
+  '.kak..pp.pp.kak.',
+  '.kfk........kfk.',
+  '.kak........kak.',
+  '.kfk........kfk.',
+  '.WkW........WkW.',
+  '................',
+  '................',
+];
+
+// TAMARACK BOG, past the ropes: snow over the bog with tufts of dead sedge poking through.
+const BOG_GRASS = [
+  '................',
+  '..d.D...........',
+  '..dDd.......D.d.',
+  '.WWWWW......dDd.',
+  '...........WWWWW',
+  '................',
+  '................',
+  '......d.D.......',
+  '......dDD.......',
+  '.....WWWWW......',
+  '................',
+  '.D.d............',
+  '.dDd............',
+  'WWWWW...........',
+  '................',
+  '................',
+];
+
+// A dead tamarack snag, gray and bare, its broken branches sticking out.
+const SNAG = [
+  '.......kk.......',
+  '......kqQk......',
+  '......kqQk......',
+  '..kk..kqQk......',
+  '...kk.kqQk..kk..',
+  '....kkkqQkkk....',
+  '......kqQkk.....',
+  '......kqQk......',
+  '...kkkkqQk......',
+  '.....kkqQk......',
+  '......kqQk......',
+  '......kqQk......',
+  '.....kqqQQk.....',
+  '....kqqqQQQk....',
+  '...WWkkkkkkWW...',
+  '................',
+];
+
+// DANIEL's shelter: a log lean-to with snow on its roof, dark inside, spruce boughs on the floor. Two tiles wide.
+const LEAN_TO = [
+  '................................',
+  '..wwwwwwwwwwwwwwwwwwwwwwwwwwww..',
+  '.wwwwwwwwwwwwwwwwwwwwwwwwwwwwww.',
+  'kWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWk',
+  'knnnNnnnNnnnNnnnNnnnNnnnNnnnNnnk',
+  'kNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNk',
+  '.knkHHHHHHHHHHHHHHHHHHHHHHHHknk.',
+  '.knkHHHHHHHHHHHHHHHHHHHHHHHHknk.',
+  '.knkHHHHHHHHHHHHHHHHHHHHHHHHknk.',
+  '.knkHHHHHHHHHHHHHHHHHHHHHHHHknk.',
+  '.knkHHHHHHHHHHHHHHHHHHHHHHHHknk.',
+  '.knkHHHHHHHHHHHHHHHHHHHHHHHHknk.',
+  '.knkHHHHHHHHHHHHHHHHHHHHHHHHknk.',
+  '.knkhGhhhGhhhGhhhGhhhGhhhGhhknk.',
+  '.WWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.',
+  '................................',
+];
+
+// A little campfire in a ring of stones, its flames flickering between two frames.
+const FIRE = [[
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+  '.......f........',
+  '......fpf.......',
+  '.....fpfpf......',
+  '.....pfffp......',
+  '....kpfwfpk.....',
+  '...qQnNnNnQq....',
+  '..qQq.kkk.qQq...',
+  '...qQqqqqqQq....',
+  '....WWWWWWW.....',
+  '................',
+  '................',
+], [
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+  '.......f.f......',
+  '......fpfp......',
+  '.....pffffp.....',
+  '....kpfwfpk.....',
+  '...qQnNnNnQq....',
+  '..qQq.kkk.qQq...',
+  '...qQqqqqqQq....',
+  '....WWWWWWW.....',
+  '................',
+  '................',
+]];
+
 export const LUDLOW_DEFS = {
   snowbank:   { art: SNOWBANK, base: 'snow', solid: true },
   plowedRoad: { art: PLOWED, perch: true },          // north-south
@@ -250,6 +377,8 @@ export const LUDLOW_DEFS = {
   jump:       { art: stamp(CORDUROY, KICKER), slope: true, jump: true },
   moguls:     { art: MOGULS, perch: true, slope: true, moguls: true },
   powder:     { art: POWDER, perch: true, slope: true },  // the glades: ungroomed, slides like a slope
+  gateLeft:   { art: stamp(CORDUROY, GATE_LEFT), solid: true },  // ski into one and you wipe out
+  gateRight:  { art: stamp(CORDUROY, recolor(mirror(GATE_LEFT), { p: 'u', P: 'U' })), solid: true },
   trailGreen: { art: trailSign(CIRCLE, 'g'), base: 'snow', solid: true },  // give it sign text
   trailBlue:  { art: trailSign(SQUARE, 'u'), base: 'snow', solid: true },
   trailBlack: { art: trailSign(DIAMOND, 'k'), base: 'snow', solid: true },
@@ -258,4 +387,10 @@ export const LUDLOW_DEFS = {
   liftTower:  { art: stamp(CABLES, TOWER), base: 'snow', solid: true },
   liftDeck:   { art: chairAt(LIFT_DECK, 2, 0), base: 'snow' },  // walkable: the bottom one asks if you want to ride up
   ice:        { art: ICE, solid: true },             // give it sign text: too thin to walk on
+  skiRope:    { art: SKI_ROPE, base: 'snow', solid: true },  // a gate's `locked.tile`: closed till ski patrol drops it
+  bogGrass:   { art: BOG_GRASS, base: 'snow', perch: true },
+  snag:       { art: SNAG, base: 'snow', solid: true },
+  leanToW:    { art: LEAN_TO.map((r) => r.slice(0, 16)), base: 'snow', solid: true },
+  leanToE:    { art: LEAN_TO.map((r) => r.slice(16)), base: 'snow', solid: true },
+  campfire:   { frames: FIRE, frameTime: 0.25, base: 'snow', solid: true, glow: 2, flicker: true },
 };

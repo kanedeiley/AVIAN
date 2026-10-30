@@ -56,6 +56,18 @@ export function drawDialog(ctx, lines, more = false, time = 0) {
   }
 }
 
+/** A menu of answers stacked on top of the message box, at the right, with a cursor by `selected`. */
+export function drawChoices(ctx, labels, selected) {
+  const w = Math.max(...labels.map((l) => l.length)) * 8 + 28;
+  const h = labels.length * 14 + 10;
+  const x = 240 - w, y = 116 - h;
+  drawBox(ctx, x, y, w, h);
+  labels.forEach((label, i) => {
+    if (i === selected) drawText(ctx, '>', x + 8, y + 6 + i * 14);
+    drawText(ctx, label, x + 18, y + 6 + i * 14);
+  });
+}
+
 // A tiny 3x5 pixel font (capitals and a comma), for small labels under a big line.
 // Shop signs are lettered in it too (storefront() in assets/storeTiles.js).
 export const TINY = {

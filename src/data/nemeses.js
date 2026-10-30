@@ -107,4 +107,34 @@ export const NEMESES = {
       'It isn\'t done with you. Try again!',
     ],
   },
+  // VERMONT's: out on TAMARACK BOG, past the ropes north of the Okemo summit. DANIEL got lost
+  // chasing it, and nobody names it until you find him (his clues only describe it).
+  greatGrayOwl: {
+    bird: 'greatGrayOwl',
+    map: 'tamarackBog', x: 26, y: 6,
+    region: 'vermont',
+    requires: { flags: ['foundDaniel'], species: 12 },
+    film: 8,
+    patience: 55,
+    hits: 5,
+    hitStars: 2,
+    rage: 1.15,
+    locked: [
+      'Something huge and gray sits on a dead snag at the edge of the bog, perfectly still.',
+      'Its round face turns toward you. Then it\'s just... not there. A moment later, it\'s back.',
+    ],
+    challenge: [
+      'Your NEMESIS BIRD, the GREAT GRAY OWL, listens to the snow...',
+      'Land 5 sharp photos (2 stars or better) before it loses patience. It sits forever, then glides without a sound!',
+    ],
+    won: [
+      'You photographed the GREAT GRAY OWL, the NEMESIS BIRD of the GREEN MOUNTAINS!',
+      'It drops off the snag and floats away over the bog without a sound.',
+      'DANIEL has waited years for this. Go tell him at EIGHT OH BREW!',
+    ],
+    lost: [
+      'The GREAT GRAY OWL slipped off into the spruces like smoke...',
+      'and a minute later it was back on its snag, as if it had never left. Try again!',
+    ],
+  },
 };

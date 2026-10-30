@@ -1,8 +1,8 @@
 // Ludlow, Vermont, where the train north from Milford gets in. Built from
 // Kane's sketch, and snowy all over (the VERMONT region is `snowy`: the day's
 // weather comes down as snow). MAIN STREET runs east-west across the middle:
-// west is the road up to OKEMO MOUNTAIN (maps/okemo.js), east is closed by a
-// snowbank. North of it: the LUDLOW INN (a three-story storefront() prop,
+// west is the road up to OKEMO MOUNTAIN (maps/okemo.js), east is the road
+// to New Hampshire, snowed shut (a gate) until the bus runs. North of it: the LUDLOW INN (a three-story storefront() prop,
 // shut) with a fieldstone wing on its east side where the stairs go down to
 // EIGHT OH BREW (maps/eightOhBrew.js), where HANNAH is. A creek comes down from
 // the north and takes a windy turn east; the road north crosses it on a little
@@ -13,14 +13,18 @@
 // a bumper. Tiles are in assets/ludlowTiles.js (snow and snowy pines in
 // caveTiles.js, house sidings in farmTiles.js and canalTiles.js); the shops are
 // snowy storefront() props (assets/storeTiles.js). The rows were painted with
-// a script.
+// a script. Up a footpath between the creek and the houses, north, is
+// BLACK RIVER WOODS (maps/blackRiverWoods.js), snowed shut until HANNAH calls her club's first
+// meeting; and once she's given you a ticket, the bus east to the WHITE
+// MOUNTAINS (maps/pinkhamNotch.js) waits at the stop near the end of Main St,
+// where the plows have finally cleared the road east.
 const ROWS = [
-  'ppppppppppppppppppppps~~ss111h1ssssss111h1ss111h1s111h1s',
-  'pspsspssssssspssssspss~~ss22222ssssss22222ss22222s22222s',
-  'psssssssspssssssspssss~~ss33333ssssss33333ss33333s33333s',
-  'ppssssssssssssssssssss~~ss45454ssssssABABAssGHGHGs45454s',
-  'psspsssssssssssssspss~~~ss67876ssssssDEFEDssGHJHGs67876s',
-  'pssssssssssssssssssss~~sssss,ssss###-------------------b',
+  'ppppppppppppppppppppps~~,,111h1ssssss111h1ss111h1s111h1s',
+  'pspsspssssssspssssspss~~,,22222ssssss22222ss22222s22222s',
+  'psssssssspssssssspssss~~,,33333ssssss33333ss33333s33333s',
+  'ppssssssssssssssssssss~~,,45454ssssssABABAssGHGHGs45454s',
+  'psspsssssssssssssspss~~~,,67876ssssssDEFEDssGHJHGs67876s',
+  'pssssssssssssssssssss~~s,,,,,ssss###-------------------b',
   'ppsssssssssssssssssss~~sspss,ssss###-------------------b',
   'pssssssssssssssssssps~~sssss,,,,,###-------------------b',
   'pspssssssssssss^^^sss~~sssspsssss###sssssssspsssssssssss',
@@ -28,10 +32,10 @@ const ROWS = [
   'psssslssssssssswZLsss~~~~~~~ss~~[###]~~~~~~~~~~~~~~sssss',
   'pssMssssss,sssss,ssss~~~~~~~~~~~[###]~~~ssss~~~~~~~~~~~~',
   'psssssssss,sssss,sssssssss~~~~~~s###sssssssssssss~~~~~~~',
-  'sS,,l,,,,,,,,,l,,,,,,,,,,l,,,,,,,###,,S,,,,,l,,,,,,,l,,s',
-  '-------------------------------------------------------b',
-  '-------------------------------------------------------b',
-  '-------------------------------------------------------b',
+  'sS,,l,,,,,,,,,l,,,,,,,,,,l,,,,,,,###,,S,,,,,l,S,,,,,l,,S',
+  '--------------------------------------------------------',
+  '--------------------------------------------------------',
+  '--------------------------------------------------------',
   'p,,,,l,,,,,,,,,,,,,,l,,,,,,,,,,,,,,l,,,,,,,,,,,,,,,,,,,p',
   'psssssss,,ssssss,,sssss,,sssss,,sssss,,,sssss,,Ysssssssp',
   'psssssss,,ssssss,,sssss,,sssss,,sssss,,,sssss,,Rsssssssp',
@@ -112,7 +116,21 @@ export default {
     { x: 5, y: 21, to: 'skiShop', toX: 5, toY: 6, facing: 'up' },
     // Through the arch in the inn's stone wing and down the stairs into Eight Oh Brew.
     { x: 16, y: 10, to: 'eightOhBrew', toX: 6, toY: 7, facing: 'up' },
+    // North, up the footpath between the creek and the houses: BLACK RIVER WOODS, snowed shut until
+    // HANNAH calls the club's first meeting.
+    ...[24, 25].map((x) => ({
+      x, y: 0, to: 'blackRiverWoods', toX: x - 10, toY: 28, facing: 'up',
+      locked: { flag: 'clubWalkCalled', tile: 'snowbank', text: ['Snow is drifted deep over a footpath into the woods.', 'Nobody\'s walked it all winter.'] },
+    })),
+    // The bus to the WHITE MOUNTAINS, parked at the stop near the east end of Main St once HANNAH has given you a ticket.
+    { x: 45, y: 15, to: 'pinkhamNotch', toX: 25, toY: 11, facing: 'down', bus: 'the WHITE MOUNTAINS', after: 'busTicket' },
   ],
+  // MAIN STREET east, ROUTE 103 to New Hampshire: snowed shut until the plows clear it for the bus,
+  // the night HANNAH gives you a ticket. After that it runs on off the east edge, where the bus goes.
+  gates: [14, 15, 16].map((y) => ({
+    x: 55, y,
+    locked: { flag: 'busTicket', tile: 'snowbank', text: ['A snowbank across MAIN STREET.', 'ROUTE 103 east to NEW HAMPSHIRE. Closed until the plows get through.'] },
+  })),
   props: [
     { x: 6, y: 5, id: 'ludlowInnFront' },
     { x: 2, y: 18, id: 'skiShopFront' },
@@ -121,12 +139,15 @@ export default {
     { x: 25, y: 18, id: 'ludlowCafeFront' },
     { x: 32, y: 18, id: 'outfitterFront' },
     { x: 40, y: 19, id: 'ludlowStationFront' },
+    { x: 42, y: 14, id: 'mountainBus', after: 'busTicket' },
   ],
   signs: [
     { x: 38, y: 13, text: ['LUDLOW, VERMONT', 'North: the bridge over the creek. South: the shops and the station.'] },
     { x: 1, y: 13, text: ['ROAD TO OKEMO', 'West, up to the mountain. Get some skis at the SKI SHOP!'] },
-    ...[14, 15, 16].map((y) => ({ x: 55, y, text: ['A snowbank across MAIN STREET.', 'East: closed until the plows get this far.'] })),
     ...[5, 6, 7].map((y) => ({ x: 55, y, text: ['A snowbank across the road.', 'The houses back here are as far as the plows got.'] })),
+    { x: 55, y: 13, text: ['ROUTE 103 EAST', 'To NEW HAMPSHIRE and the WHITE MOUNTAINS. Too far to walk: take the BUS!'] },
+    { x: 46, y: 13, text: ['BUS STOP', 'Service east to the WHITE MOUNTAINS is suspended until the roads are clear.'], until: 'busTicket' },
+    { x: 46, y: 13, text: ['BUS STOP', 'East to the WHITE MOUNTAINS. The bus is waiting!'], after: 'busTicket' },
     { x: 10, y: 10, text: ['LUDLOW INN', 'A sign on the door: NO VACANCY. IT\'S SKI SEASON!'] },
     ...[[15, 10], [16, 9]].map(([x, y]) => ({ x, y, text: ['A pink neon sign hangs over the stairs: 802.', 'EIGHT OH BREW. DOWN THE STAIRS.'] })),
     { x: 17, y: 10, text: ['An iron lantern, flickering on the stone.'] },

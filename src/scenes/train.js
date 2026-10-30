@@ -1,5 +1,5 @@
-// A train ride between stations (a map warp with `train`: see Overworld.onStep).
-// You sit by the windows while the train pulls out, the hills, trees and
+// A train ride between stations (a map warp with `train`: see Overworld.onStep),
+// or a bus ride between bus stops (a warp with `bus`). You sit by the windows while the train pulls out, the hills, trees and
 // telegraph poles slide by, and a box says where you're headed. A (or B) reads
 // on; after the last page the train slows into the station and you get off on
 // the map at the other end of the warp. A `snowy` ride (to or from a snowy
@@ -18,11 +18,17 @@ const SILL = 12;        // the windows' top edge
 // The scenery's colors: sky, far mountains, hills, tree crowns, a crown's snowy top (or none), the ground.
 const GREEN = { sky: '#90c8f0', far: '#7890b0', hills: '#58a840', crown: '#307830', cap: null, ground: '#4a8a38' };
 const WINTER = { sky: '#b8cce0', far: '#a8b4cc', hills: '#e8eef4', crown: '#2a5a3a', cap: '#f8f8f8', ground: '#f0f4f8' };
+// What you ride in: the color of its wall and seats, and what you're told as it pulls out.
+const VEHICLES = {
+  train: { wall: '#a03830', seat: '#283c80', seatTop: '#4060b0', pullOut: 'The doors slide shut, and the train pulls out of the station.' },
+  bus: { wall: '#3a7a48', seat: '#5a3818', seatTop: '#8a5a30', pullOut: 'The doors hiss shut, and the bus pulls out onto the road.' },
+};
 
 export class TrainScene {
-  /** `dest` is the station's name; `arrive` puts you on its map once you're back in `returnTo`. */
-  constructor(game, dest, returnTo, arrive, snowy = false) {
+  /** `dest` is the station's (or stop's) name; `arrive` puts you on its map once you're back in `returnTo`. */
+  constructor(game, dest, returnTo, arrive, snowy = false, vehicle = 'train') {
     this.game = game;
+    this.vehicle = VEHICLES[vehicle];
     this.colors = snowy ? WINTER : GREEN;
     this.snowy = snowy;
     this.returnTo = returnTo;
@@ -31,7 +37,7 @@ export class TrainScene {
     this.drift = 0;     // how far the scenery has slid, in nearest-layer px
     this.stopping = null; // seconds since the train started slowing down
     this.pages = paginate([
-      'The doors slide shut, and the train pulls out of the station.',
+      this.vehicle.pullOut,
       `Next stop: ${dest}!`,
     ]);
     this.page = 0;
@@ -138,7 +144,7 @@ export class TrainScene {
     const rock = this.speed() > 0 && Math.floor(this.drift / 40) % 7 === 0 ? 1 : 0;
     ctx.save();
     ctx.translate(0, rock);
-    ctx.fillStyle = '#a03830';
+    ctx.fillStyle = this.vehicle.wall;
     ctx.beginPath();
     ctx.rect(0, -2, VIEW_W, VIEW_H + 4);
     for (const [l, r] of WINDOWS) ctx.rect(l, SILL, r - l, WALL_TOP - SILL); // the windows: holes, by evenodd
@@ -156,9 +162,9 @@ export class TrainScene {
     ctx.fillRect(0, 2, VIEW_W, 2);
 
     // Seat backs under the windows.
-    ctx.fillStyle = '#283c80';
+    ctx.fillStyle = this.vehicle.seat;
     for (const [l, r] of WINDOWS) ctx.fillRect(l + 8, WALL_TOP + 5, r - l - 16, VIEW_H - WALL_TOP);
-    ctx.fillStyle = '#4060b0';
+    ctx.fillStyle = this.vehicle.seatTop;
     for (const [l, r] of WINDOWS) ctx.fillRect(l + 10, WALL_TOP + 7, r - l - 20, 4);
     ctx.restore();
   }
